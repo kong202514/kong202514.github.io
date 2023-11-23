@@ -1,0 +1,30 @@
+
+
+var blok = document.querySelectorAll(".menu_bar")
+
+
+function add_class(event) {
+    blok = event.target.style.backgroundColor = "#FFFFCC"
+    blok = event.target.style.width = "20%"
+    blok = event.target.style.height = "2em"
+
+
+}
+
+function remove(event) {
+    blok = event.target.style.backgroundColor = ""
+    blok = event.target.style.width = ""
+    blok = event.target.style.height = ""
+
+}
+
+
+
+blok.forEach((a) => {
+    a.addEventListener('mouseover', add_class)
+    a.addEventListener('mouseout', remove)
+
+
+})
+
+
