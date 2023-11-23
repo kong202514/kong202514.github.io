@@ -5,6 +5,10 @@
 
   }
 
+  .navbar {
+      background-color: fuchsia;
+  }
+
   .head {
       width: 100%;
       height: 50%;
