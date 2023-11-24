@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <style>
+        @import "compass/css3";
+
+        .line {
+            position: absolute;
+
+            .line-inner.active {
+                stroke: #0f0;
+                stroke-width: 5;
+            }
+        }
+
+        .node {
+            background: rgba(200, 200, 200, 0.8);
+            display: inline-block;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: move;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+
+            * {
+                cursor: default;
+            }
+
+            &.node-slot {
+                textarea {
+                    width: 170px;
+                    margin-left: 110px;
+                }
+            }
+
+            .node-attach {
+                display: block;
+                width: 100px;
+                height: 100px;
+                background: #000;
+                position: absolute;
+                border-radius: 10px;
+            }
+
+            h1 {
+                padding-bottom: 5px;
+                cursor: text;
+            }
+
+            textarea {
+                width: 280px;
+                height: 140px;
+                min-height: 100px;
+                min-width: 100px;
+            }
+
+            .link {
+                cursor: crosshair;
+                position: absolute;
+                display: block;
+                width: 11px;
+                height: 11px;
+                background: #fff;
+                border-radius: 16px;
+                border: 5px solid #000;
+
+                &.left {
+                    left: 0;
+                    top: 50%;
+                    margin: -8px 0 0 -12px;
+                }
+
+                &.right {
+                    right: 0;
+                    top: 50%;
+                    margin: -8px -12px 0 0;
+                }
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <svg class="line" width="120" height="120" version="1.1" xmlns="http://www.w3.org/2000/svg">
+        <line class="line-inner" x1="20" y1="100" x2="100" y2="20" stroke="black" stroke-width="3" />
+    </svg>
+
+    <article class="node">
+        <div class="node-inner">
+            <header>
+                <h1 contenteditable>My Title</h1>
+            </header>
+            <textarea></textarea>
+            <span class="link left"></span>
+            <span id="line-start" class="link right"></span>
+        </div>
+    </article>
+
+    <article class="node node-slot" style="top: 300px; left: 400px">
+        <div class="node-inner">
+            <header>
+                <h1 contenteditable>My Title</h1>
+            </header>
+            <span class="node-attach"></span>
+            <textarea></textarea>
+            <span id="line-end" class="link left"></span>
+            <span class="link right"></span>
+
+            <details>
+                <p>Additional details go here</p>
+            </details>
+        </div>
+    </article>
+</body>
+
+
+
+<script>
+
+
+    $('.node').draggable({ cancel: 'div', drag: function () { setLine(); } });
+
+    /**
+     * Create a square bounding box from an array of x and y points
+     * @param {array} A collection of objects with x and y coordinates {x, y}
+     * @returns {object} Square formatted as {x, y, width, height} from the given vertices
+     */
+    function getBoundingBox(vertices) {
+        // Setup basic test properties
+        var xMin = Number.POSITIVE_INFINITY,
+            yMin = Number.POSITIVE_INFINITY,
+            xMax = 0,
+            yMax = 0;
+
+        // Loop through and test all vertices to generate x and y coordinates
+        for (var i = vertices.length; i--;) {
+            // Test x
+            if (vertices[i][0] < xMin) {
+                xMin = vertices[i][0];
+            }
+            if (vertices[i][0] > xMax) {
+                xMax = vertices[i][0];
+            }
+
+            // Test y
+            if (vertices[i][1] < yMin) {
+                yMin = vertices[i][1];
+            }
+            if (vertices[i][1] > yMax) {
+                yMax = vertices[i][1];
+            }
+        }
+
+        // Create a square from the passed data
+        return {
+            x: xMin,
+            y: yMin,
+            width: xMax - xMin,
+            height: yMax - yMin
+        };
+    }
+
+    function setLine() {
+        var x1, x2, y1, y2;
+        var posStart = $('#line-start').offset();
+        var posEnd = $('#line-end').offset();
+        var box = getBoundingBox([[posStart.left, posStart.top], [posEnd.left, posEnd.top]]);
+        var offset = 10;
+        $('.line:first').css({
+            left: box.x + 'px',
+            top: box.y + 'px',
+            width: box.width + offset + 'px',
+            height: box.height + offset + 'px'
+        });
+
+        if (getDir(posStart.left, posEnd.left) === -1) {
+            x1 = offset;
+            x2 = box.width + offset;
+        } else {
+            x1 = box.width + offset;
+            x2 = offset;
+        }
+
+        if (getDir(posStart.top, posEnd.top) === -1) {
+            y1 = offset;
+            y2 = box.height + offset;
+        } else {
+            y1 = box.height + offset;
+            y2 = offset;
+        }
+
+        $('.line-inner:first').attr({
+            // @TODO Must be the corner of the first element
+            x1: x1,
+            y1: y1,
+            // @TODO Must be the corner of the last element
+            x2: x2,
+            y2: y2
+        });
+    }
+
+    function getDir(start, end) {
+        if (start < end) {
+            return -1;
+        } else {
+            return 1;
+        }
+    }
+
+    setLine();
+
+    // Demonstrate how the line only can be clicked
+    $(document).click(function () { $('.line-inner').get(0).classList.remove("active"); });
+    $('.line-inner').click(function (e) { e.stopPropagation(); this.classList.add("active"); });
+
+
+
+
+</script>
+
+</html>
