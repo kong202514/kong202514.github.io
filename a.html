@@ -1,0 +1,122 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Repository</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #343a40;
+        }
+
+        header {
+            background-color: #007bff;
+            color: #fff;
+            padding: 1em;
+            text-align: center;
+        }
+
+        main {
+            max-width: 800px;
+            margin: 2em auto;
+            padding: 1em;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        h2 {
+            color: #007bff;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        select,
+        textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 16px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            padding: 10px;
+            background-color: #f1f1f1;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Code Repository</h1>
+    </header>
+    <main>
+        <h2>Add Your Code</h2>
+        <form id="codeForm">
+            <label for="language">Select Language:</label>
+            <select id="language" name="language">
+                <option value="html">HTML</option>
+                <option value="javascript">JavaScript</option>
+                <!-- Add more language options as needed -->
+            </select>
+            <br>
+            <label for="code">Enter Your Code:</label>
+            <textarea id="code" name="code" rows="10" required></textarea>
+            <br>
+            <button type="button" onclick="saveCode()">Save Code</button>
+        </form>
+
+        <h2>Code Repository</h2>
+        <ul id="codeList"></ul>
+    </main>
+
+    <script>
+        function saveCode() {
+            const language = document.getElementById('language').value;
+            const code = document.getElementById('code').value;
+
+            // You would need to implement the server-side logic to save the code
+            // This example just adds the code to the list on the client side
+            const codeList = document.getElementById('codeList');
+            const listItem = document.createElement('li');
+            listItem.textContent = `${language}: ${code}`;
+            codeList.appendChild(listItem);
+        }
+    </script>
+</body>
+
+</html>
