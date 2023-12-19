@@ -11,6 +11,9 @@ function add_class(event) {
 
 }
 
+
+// image001.png
+
 function remove(event) {
     blok = event.target.style.backgroundColor = ""
     blok = event.target.style.width = ""
