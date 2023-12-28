@@ -34,12 +34,9 @@ let w = [
 
 
  
-
-
 // รับอ้างถึงปุ่มและผลลัพธ์
-const buttons2 = document.querySelectorAll('qq');
-const resultDiv2 = document.querySelector('.ms');
-resultDiv2.innerHTML = "wwww"
+const buttons = document.querySelectorAll('button');
+const resultDiv = document.getElementById('ms');
 
 // กำหนดการทำงานเมื่อปุ่มถูกคลิก
 buttons.forEach(button => {
@@ -48,8 +45,25 @@ buttons.forEach(button => {
         const buttonData = button.textContent;
         
         // แสดงข้อมูลที่ดึงออกมาใน div ผลลัพธ์
-         
-        resultDiv2.textContent = `ข้อมูลที่ดึงออกมา: ${buttonData}`;
+        resultDiv.textContent = `ข้อมูลที่ดึงออกมา: ${buttonData}`;
     });
 });
 
+
+
+
+
+// // รับอ้างถึงปุ่มและผลลัพธ์
+// const buttons2 = document.querySelectorAll('button');
+// const resultDiv2 = document.getElementById('ms');
+
+// // กำหนดการทำงานเมื่อปุ่มถูกคลิก
+// buttons.forEach(button => {
+//     button.addEventListener('click', () => {
+//         // ดึงข้อมูลออกมาจากปุ่มที่ถูกคลิก
+//         const buttonData = button.textContent;
+        
+//         // แสดงข้อมูลที่ดึงออกมาใน div ผลลัพธ์
+//         resultDiv2.textContent = `ข้อมูลที่ดึงออกมา: ${buttonData}`;
+//     });
+// });
