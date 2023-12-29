@@ -4,7 +4,7 @@
  }
 
  .e {
-   /* display: none; */
+   display:show;
    background-color: rgb(255, 0, 179);
  }
 
