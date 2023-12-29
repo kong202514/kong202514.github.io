@@ -39,7 +39,7 @@ const all_buttons = document.querySelectorAll('button');
 const text_output = document.getElementById('ms');
 const bt0 = document.getElementById('bt0');
 const bt1 = document.getElementById('bt1');
-
+// khhfrgthghfhgfg
 
 function ss() {
 
