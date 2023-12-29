@@ -63,51 +63,6 @@ all_buttons.forEach(button => {
         let a = ['วันอาทิตย์', 'วันจันทร์', 'วันอังคาร', 'วันพุธ', 'วันพฤหัสบดี', 'วันศุกร์', 'วันเสาร์ ']
 
 
-
-
-
-        // if (condition) {
-
-        // } else if (condition) {
-
-        // } else if (condition) {
-
-        // } else if (condition) {
-
-        // } else if (condition) {
-
-        // } else if (condition) {
-
-        // } else if (condition) {
-
-        // } else if (condition) {
-
-        // } else if (condition) {
-
-        // } else if (condition) {
-
-        // }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         if (button_data === 'วันอาทิตย์') {
 
             bt0.textContent = "อก "
