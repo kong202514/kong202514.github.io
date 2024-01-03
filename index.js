@@ -103,7 +103,7 @@ all_buttons.forEach(button => {
                     imgs[1].src = ba[1]
                     imgs[2].src = ba[2]
                     imgs[3].src = ba[3]
-                    text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' หลังแขน   555555   '
+                    // text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' หลังแขน   555555   '
                 }
             })
             // text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' หลังแขน  หลังแขน  '
