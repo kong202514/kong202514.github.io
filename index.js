@@ -51,10 +51,10 @@ let sd = [
     'img/ไหล่/4.png'
 ]
 let df = [
-    'img/df/1.png',
-    'img/df/2.png',
-    'img/df/3.png',
-    'img/df/4.png'
+    'img/df/1.PNG',
+    'img/df/2.PNG',
+    'img/df/3.PNG',
+    'img/df/4.PNG'
 ]
 let ba = [
     'img/หลังแขน/1.png',
