@@ -93,7 +93,7 @@ all_buttons.forEach(button => {
                     imgs[1].src = c[1]
                     imgs[2].src = c[2]
                     imgs[3].src = c[3]
-                    text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' อก   555555   '
+                    // text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' อก   555555   '
                 }
             })
 
@@ -106,7 +106,7 @@ all_buttons.forEach(button => {
                     text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' หลังแขน   555555   '
                 }
             })
-            text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' หลังแขน  หลังแขน  '
+            // text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' หลังแขน  หลังแขน  '
         }
 
         if (button_data === 'วันจันทร์') {
@@ -119,7 +119,7 @@ all_buttons.forEach(button => {
                     imgs[1].src = sd[1]
                     imgs[2].src = sd[2]
                     imgs[3].src = sd[3]
-                    text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' อก   555555   '
+                    // text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' อก   555555   '
                 }
             })
 
@@ -129,11 +129,11 @@ all_buttons.forEach(button => {
                     imgs[1].src = fa[1]
                     imgs[2].src = fa[2]
                     imgs[3].src = fa[3]
-                    text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' หลังแขน   555555   '
+                    // text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' หลังแขน   555555   '
                 }
             })
 
-            text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' ไหล่  หน้าแขน   '
+            // text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' ไหล่  หน้าแขน   '
 
         }
 
@@ -141,14 +141,14 @@ all_buttons.forEach(button => {
             bt0.textContent = "ขา "
             bt1.textContent = "  "
 
-            text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' ขา   '
+            // text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' ขา   '
         }
 
         if (button_data === 'วันพุธ') {
             bt0.textContent = "พัก "
             bt1.textContent = "พัก "
 
-            text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + 'พัก'
+            // text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + 'พัก'
         }
 
         if (button_data === 'วันพฤหัสบดี') {
@@ -161,7 +161,7 @@ all_buttons.forEach(button => {
                     imgs[1].src = c[1]
                     imgs[2].src = c[2]
                     imgs[3].src = c[3]
-                    text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' อก   555555   '
+                    // text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' อก   555555   '
                 }
             })
 
@@ -171,11 +171,11 @@ all_buttons.forEach(button => {
                     imgs[1].src = ba[1]
                     imgs[2].src = ba[2]
                     imgs[3].src = ba[3]
-                    text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' หลังแขน   555555   '
+                    // text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' หลังแขน   555555   '
                 }
             })
 
-            text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' อก   หลังแขน'
+            // text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' อก   หลังแขน'
         }
 
         if (button_data === 'วันศุกร์') {
@@ -188,7 +188,7 @@ all_buttons.forEach(button => {
                     imgs[1].src = sd[1]
                     imgs[2].src = sd[2]
                     imgs[3].src = sd[3]
-                    text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' อก   555555   '
+                    // text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' อก   555555   '
                 }
             })
 
@@ -199,7 +199,7 @@ all_buttons.forEach(button => {
                     imgs[2].src = fa[2]
                     imgs[3].src = fa[3]
 
-                    text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' หลังแขน   555555   '
+                    // text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' หลังแขน   555555   '
                 }
             })
 
@@ -210,7 +210,7 @@ all_buttons.forEach(button => {
             bt0.textContent = "ขา "
             bt1.textContent = "  "
 
-            text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' ขา '
+            // text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' ขา '//
         }
 
     });
