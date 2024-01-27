@@ -86,6 +86,7 @@ all_buttons.forEach(button => {
         if (button_data === 'วันอาทิตย์') {
             bt0.textContent = "อก "
             bt1.textContent = "หลังแขน "
+<<<<<<< Updated upstream
 
             bt0.addEventListener('click', (a) => {
                 if (a = 'อก') {
@@ -107,7 +108,22 @@ all_buttons.forEach(button => {
                 }
             })
             // text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' หลังแขน  หลังแขน  '
+=======
+            text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' อก  หลังแขน  '
+            bt0.addEventListener('click', function ss() {
+                if (bt0 === "อก") {
+                    text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' อก  5555555     '
+
+                }
+
+            })
+
+>>>>>>> Stashed changes
         }
+        // if (button_data === 'อก') {
+        //     text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' อก  5555555     '
+
+        // }
 
         if (button_data === 'วันจันทร์') {
             bt0.textContent = "ไหล่ "
