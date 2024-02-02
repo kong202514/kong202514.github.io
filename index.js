@@ -86,7 +86,7 @@ all_buttons.forEach(button => {
         if (button_data === 'วันอาทิตย์') {
             bt0.textContent = "อก "
             bt1.textContent = "หลังแขน "
-            // <<<<<<< Updated upstream
+
 
             bt0.addEventListener('click', (a) => {
                 if (a = 'อก') {
@@ -120,10 +120,7 @@ all_buttons.forEach(button => {
 
 
         }
-        // if (button_data === 'อก') {
-        //     text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' อก  5555555     '
 
-        // }
 
         if (button_data === 'วันจันทร์') {
             bt0.textContent = "ไหล่ "
@@ -135,7 +132,7 @@ all_buttons.forEach(button => {
                     imgs[1].src = sd[1]
                     imgs[2].src = sd[2]
                     imgs[3].src = sd[3]
-                    // text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' อก   555555   '
+                    // text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' อก       '
                 }
             })
 
@@ -145,7 +142,7 @@ all_buttons.forEach(button => {
                     imgs[1].src = fa[1]
                     imgs[2].src = fa[2]
                     imgs[3].src = fa[3]
-                    // text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' หลังแขน   555555   '
+                    // text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' หลังแขน       '
                 }
             })
 
@@ -224,7 +221,7 @@ all_buttons.forEach(button => {
 
         if (button_data === 'วันเสาร์') {
             bt0.textContent = "ขา "
-            bt1.textContent = "  "
+            bt1.textContent = ""
 
             // text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' ขา '//
         }
