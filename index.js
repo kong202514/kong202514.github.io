@@ -83,9 +83,11 @@ all_buttons.forEach(button => {
         const button_data = button.textContent;
 
 
+
         if (button_data === 'วันอาทิตย์') {
             bt0.textContent = "อก "
             bt1.textContent = "หลังแขน "
+
 
 
             bt0.addEventListener('click', (a) => {
@@ -221,6 +223,8 @@ all_buttons.forEach(button => {
 
         if (button_data === 'วันเสาร์') {
             bt0.textContent = "ขา "
+ 
+
             bt1.textContent = ""
 
             // text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + ' ขา '//
