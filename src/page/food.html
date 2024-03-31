@@ -1,0 +1,59 @@
+ <!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+        <style> 
+        .ms{
+            font-size: 25px;
+                margin-left: 2%;
+                margin-top: 1.55555%;
+
+
+
+        }
+        </style>
+    </head>
+    <body>
+
+        <div class="ms">
+            <h2>ซอสผัดไทย</h2>
+        </div>
+
+    </body>
+
+    <script>
+
+    let  text = document.querySelector('.ms')
+
+   
+    let unit = {
+        'กรัม':'กรัม',
+        'ถ้วยตวง':'ถ้วยตวง',
+        'เม็ด':'เม็ด',
+     }
+
+     let note = {
+         'สำหรับเจียวหอม': '(สำหรับเจียวหอม)',
+        'สำหรับแช่และปั่นพริก':'(สำหรับแช่และปั่นพริก)' 
+     }
+    var raw_material = [
+        [`น้ำตาลมปิ้ป  480 ${unit.กรัม}`],
+        [`น้ำมะขามเปียก 100 ${unit.กรัม}`],
+        [`น้ำปลา 60 ${unit.กรัม}`],
+        [`ไช้โป้ เคม 45 ${unit.กรัม}`],
+        [`ซอสมะเขือเทศ 200 ${unit.กรัม}`],
+        [`หอมแดง ซอย 230 ${unit.กรัม}` ],
+        [`น้ำมันพืช 50 ${unit.กรัม}`],
+        [`น้ำเปล่า 1200   ${unit.กรัม}`],
+
+
+ 
+];
+
+     for (let item of raw_material) {
+  text.innerHTML +=  "<li>" + item + "<br>";
+}
+ </script>
+</html>
