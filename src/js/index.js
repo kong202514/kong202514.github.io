@@ -39,33 +39,33 @@ const bt1 = document.getElementById('bt1');
 const imgs = document.getElementsByTagName("img");
 
 let c = [
-    'img/อก/1.png',
-    'img/อก/2.png',
-    'img/อก/3.png',
-    'img/อก/4.png'
+    '../img/อก/1.png',
+    '../img/อก/2.png',
+    '../img/อก/3.png',
+    '../img/อก/4.png'
 ]
 let sd = [
-    'img/ไหล่/1.png',
-    'img/ไหล่/2.png',
-    'img/ไหล่/3.png',
-    'img/ไหล่/4.png'
+    '../img/ไหล่/1.png',
+    '../img/ไหล่/2.png',
+    '../img/ไหล่/3.png',
+    '../img/ไหล่/4.png'
 ]
 let df = [
-    'img/df/1.PNG',
-    'img/df/2.PNG',
-    'img/df/3.PNG',
-    'img/df/4.PNG'
+    '../img/df/1.PNG',
+    '../img/df/2.PNG',
+    '../img/df/3.PNG',
+    '../img/df/4.PNG'
 ]
 let ba = [
-    'img/หลังแขน/1.png',
-    'img/หลังแขน/2.png',
-    'img/หลังแขน/3.png',
+    '../img/หลังแขน/1.png',
+    '../img/หลังแขน/2.png',
+    '../img/หลังแขน/3.png',
     df[3]
 
 ]
 let fa = [
-    'img/หน้าแขน/1.png',
-    'img/หน้าแขน/2.png',
+    '../img/หน้าแขน/1.png',
+    '../img/หน้าแขน/2.png',
     df[2],
     df[3]
 
@@ -162,7 +162,6 @@ all_buttons.forEach(button => {
         if (button_data === 'วันพุธ') {
             bt0.textContent = "พัก "
             bt1.textContent = "พัก "
-
             // text_output.textContent = 'ข้อมูลที่ดึงออกมา:' + 'พัก'
         }
 
