@@ -43,6 +43,7 @@ function showData(users) {
     const deleteCol = row.insertCell(2)
     nameCol.innerHTML = users.data().name
     ageCol.innerHTML = users.data().age
+
     console.log(users.data().name + "  =====  " + users.data().age);
 }
 
@@ -64,6 +65,8 @@ form.addEventListener('submit',(e)=>{
     form.name.value=""
     form.age.value=""
     alert("บันทึกข้อมูลเรียบร้อย")
+
+
 })
 
 
