@@ -55,19 +55,19 @@ data.forEach((users) => {
 })
 
 
-//ดึงข้อมูลจากแบบฟอร์ม
-form.addEventListener('submit',(e)=>{
-    e.preventDefault()
-    addDoc(collection(db,'users'),{
-        name:form.name.value,
-        age:form.age.value
-    })
-    form.name.value=""
-    form.age.value=""
-    alert("บันทึกข้อมูลเรียบร้อย")
+// //ดึงข้อมูลจากแบบฟอร์ม
+// form.addEventListener('submit',(e)=>{
+//     e.preventDefault()
+//     addDoc(collection(db,'users'),{
+//         name:form.name.value,
+//         age:form.age.value
+//     })
+//     form.name.value=""
+//     form.age.value=""
+//     alert("บันทึกข้อมูลเรียบร้อย")
 
 
-})
+// })
 
 
 
