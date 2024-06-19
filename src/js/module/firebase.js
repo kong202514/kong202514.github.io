@@ -1,8 +1,9 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-import { getFirestore, collection, getDocs ,addDoc} from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
 
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-analytics.js";
+
 
 
 
@@ -17,22 +18,35 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-// const analytics = getAnalytics(app);
 const app = initializeApp(firebaseConfig)
+
     , db = getFirestore(app)
+
+
+
+
+
+function get_user_(db) {
+    const user_Col = collection(db, 'users')
+    const user_Snapshot = getDocs(user_Col)
+    return user_Snapshot
+}
+
+
+
+
+// Initialize Firebase
+
+
+
 
 let t = document.querySelector(".ms")
 const form = document.getElementById("addForm")
 
-async function getEmployees(db) {
-    const empCol = collection(db, 'users')
-    const empSnapshot = await getDocs(empCol)
-    return empSnapshot
-}
-const data = await getEmployees(db)
+const data = await get_user_(db)
 
- 
 
+console.log(data);
 
 
 function showData(users) {
@@ -51,26 +65,25 @@ function showData(users) {
 //ดึงกลุ่ม document
 data.forEach((users) => {
     showData(users)
-     
+
 })
 
 
-// //ดึงข้อมูลจากแบบฟอร์ม
-// form.addEventListener('submit',(e)=>{
-//     e.preventDefault()
-//     addDoc(collection(db,'users'),{
-//         name:form.name.value,
-//         age:form.age.value
-//     })
-//     form.name.value=""
-//     form.age.value=""
-//     alert("บันทึกข้อมูลเรียบร้อย")
+//ดึงข้อมูลจากแบบฟอร์ม
+form.addEventListener('submit', (e) => {
+    e.preventDefault()
+    addDoc(collection(db, 'users'), {
+        name: form.name.value,
+        age: form.age.value
+    })
+    form.name.value = ""
+    form.age.value = ""
+    alert("บันทึกข้อมูลเรียบร้อย")
 
 
-// })
+})
 
 
 
 //////////////////
 
- 
