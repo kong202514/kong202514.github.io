@@ -78,10 +78,15 @@ form.addEventListener('submit', (e) => {
     })
     form.name.value = ""
     form.age.value = ""
-    alert("บันทึกข้อมูลเรียบร้อย")
 
 
-})
+   
+    
+    setTimeout(() => {
+        location.reload();
+    }, 2500);
+    
+    })
 
 
 
