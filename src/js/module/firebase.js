@@ -52,9 +52,13 @@ console.log(data);
 function showData(users) {
 
     const row = table.insertRow(-1)
+
     const nameCol = row.insertCell(0)
     const ageCol = row.insertCell(1)
+
+
     const deleteCol = row.insertCell(2)
+
     nameCol.innerHTML = users.data().name
     ageCol.innerHTML = users.data().age
 
@@ -80,13 +84,13 @@ form.addEventListener('submit', (e) => {
     form.age.value = ""
 
 
-   
-    
+
+
     setTimeout(() => {
         location.reload();
     }, 2500);
-    
-    })
+
+})
 
 
 
