@@ -18,12 +18,12 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig)
-
+let app = initializeApp(firebaseConfig)
     , db = getFirestore(app)
-
-
-
+    , data = await get_user_(db)
+    , form = document.getElementById("addForm")
+    , user_name = []
+    , user_age = []
 
 
 function get_user_(db) {
@@ -33,23 +33,29 @@ function get_user_(db) {
 }
 
 
+data.forEach((user) => {
+    user_name.push(showData_user_name(user));
+    user_age.push(showData_user_age(user));
+    showData(user);
+});
 
 
-// Initialize Firebase
+
+
+console.log(user_name);
+console.log(user_age);
 
 
 
-
-let t = document.querySelector(".ms")
-const form = document.getElementById("addForm")
-
-const data = await get_user_(db)
+function showData_user_name(users) {
+    return users.data().name
 
 
-console.log(data);
-
+}
 
 function showData(users) {
+
+
 
     const row = table.insertRow(-1)
 
@@ -57,42 +63,71 @@ function showData(users) {
     const ageCol = row.insertCell(1)
 
 
-    const deleteCol = row.insertCell(2)
+
 
     nameCol.innerHTML = users.data().name
     ageCol.innerHTML = users.data().age
 
-    console.log(users.data().name + "  =====  " + users.data().age);
+    // console.log(users.data().name + "  =   age " + users.data().age);
+
+
+
+
+
+
+}
+function showData_user_age(users) {
+
+    return users.data().age
+
 }
 
 
-//ดึงกลุ่ม document
-data.forEach((users) => {
-    showData(users)
-
-})
 
 
 //ดึงข้อมูลจากแบบฟอร์ม
-form.addEventListener('submit', (e) => {
+form.addEventListener('submit', async (e) => {
     e.preventDefault()
-    addDoc(collection(db, 'users'), {
-        name: form.name.value,
-        age: form.age.value
-    })
-    form.name.value = ""
-    form.age.value = ""
+    let name = form.name.value
+    , age = Number(form.age.value)
 
 
+    if (name === "") {
+        alert('name nooooo');
+    } else if (age === "") {
+        alert('age nooooo');
+    } else if (isNaN(age)) {
+        alert('age isNaN');
+        return;
+    }
 
+    // addDoc(collection(db, 'users'), {
+    //     name: name,
+    //     age: age
+    // })
+
+
+    await addDoc(collection(db, 'users'), { name, age });
+
+    clear_data();
 
     setTimeout(() => {
         location.reload();
     }, 2500);
 
+
+
+
+
+
+
+
+
+
 })
 
-
-
-//////////////////
+function clear_data() {
+    form.name.value = "";
+    form.age.value = "";
+}
 
