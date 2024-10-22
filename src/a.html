@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แสดงข้อมูลจากไฟล์ JSON</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background-color: #f4f4f4; /* สีพื้นหลัง */
+        }
+
+        h1 {
+            text-align: center; /* จัดกลางหัวข้อ */
+        }
+
+        #data-container {
+            display: flex; /* ใช้ flexbox ในการจัดเรียง */
+            flex-wrap: wrap; /* ทำให้สามารถตัดบรรทัดได้ */
+            justify-content: center; /* จัดกลางข้อมูล */
+            gap: 20px; /* ระยะห่างระหว่างข้อมูล */
+        }
+
+        .data-item {
+            background-color: #fff; /* สีพื้นของกล่องข้อมูล */
+            padding: 10px; /* เว้นขอบในกล่อง */
+            border: 1px solid #ddd; /* ขอบกล่อง */
+            border-radius: 5px; /* มุมกล่องมน */
+            width: 200px; /* กว้างของกล่อง */
+            text-align: center; /* จัดกลางข้อความในกล่อง */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* เงาของกล่อง */
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Data from JSON File</h1>
+    <div id="data-container"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            fetch('data.json') // ดึงข้อมูลจากไฟล์ JSON
+                .then(response => {
+                    if (!response.ok) { // ตรวจสอบการตอบกลับ
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json(); // แปลงข้อมูลเป็น JSON
+                })
+                .then(data => {
+                    const container = document.getElementById('data-container'); // หา div สำหรับใส่ข้อมูล
+                    
+                    // ฟังก์ชันแสดงข้อมูลแต่ละคน
+                    function displayData(index) {
+                        if (index >= data.user.length) return; // ถ้าผ่านข้อมูลทั้งหมดแล้ว ให้หยุด
+
+                        // สร้างกล่องข้อมูลใหม่
+                        const item = document.createElement('div');
+                        item.classList.add('data-item'); // เพิ่มคลาสเพื่อใช้สไตล์
+
+                        // ใส่ข้อมูลในกล่อง
+                        item.innerHTML = `
+                            <p><strong>ชื่อ:</strong> ${data.user[index].name}</p>
+                            <p><strong>อายุ:</strong> ${data.user[index].age}</p>
+                        `;
+
+                        container.appendChild(item); // เพิ่มกล่องข้อมูลไปยัง container
+
+                        // เรียกฟังก์ชันซ้ำสำหรับคนถัดไป
+                        displayData(index + 1);
+                    }
+
+                    // เริ่มแสดงข้อมูลที่ index 0
+                    displayData(0);
+                })
+                .catch(error => {
+                    console.error('เกิดข้อผิดพลาด:', error); // แสดงข้อผิดพลาดในคอนโซล
+                });
+        });
+    </script>
+
+</body>
+</html>
