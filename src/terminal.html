@@ -1,0 +1,205 @@
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Windows Terminal Web</title>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: black;
+            color: lime;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .terminal {
+            width: 80%;
+            height: 80%;
+            background-color: black;
+            padding: 20px;
+            border: 1px solid rgb(128, 4, 0);
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.6);
+            overflow-y: auto;
+            font-size: auto;
+
+            position: relative;
+        }
+
+        .command-line {
+            display: flex;
+            align-items: center;
+        }
+
+        .prompt {
+            color: rgb(128, 0, 0);
+            margin-right: 10px;
+        }
+
+        input {
+            background-color: black;
+            color: rgb(255, 0, 0);
+            border: none;
+            outline: none;
+            width: 100%;
+            /* font-size: 60px; */
+            font-size: auto;
+
+        }
+
+        input:focus {
+            outline: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="terminal" id="terminal">
+        <div id="output"></div>
+        <div class="command-line">
+            <span class="prompt">></span>
+            <input id="commandInput" type="text" autofocus />
+        </div>
+    </div>
+
+
+    <script>
+        const outputDiv = document.getElementById('output'),
+            commandInput = document.getElementById('commandInput'),
+            terminalDiv = document.getElementById('terminal'),
+            commands = [
+
+                'help',
+
+                
+                'h',
+                'home',
+                'w f',
+                'w y',
+                'echo',
+                'clear',
+                'about',
+                'exit'
+
+
+            ];
+        function open_facebook() {
+            window.open('https://www.facebook.com/', '_blank');
+        }
+
+
+
+        function open_home() {
+            window.open('../index.html');
+        }
+        function open_youtube() {
+            window.open('https://www.youtube.com/', '_blank');
+        }
+        function createCommandLine(command) {
+            const commandLine = document.createElement('div');
+            commandLine.innerHTML = `<span class="prompt">\></span> ${command}`;
+            return commandLine;
+        }
+        function getResponse(command) {
+            const lowerCaseCommand = command.toLowerCase();
+            if (lowerCaseCommand === 'help' || lowerCaseCommand === "h") {
+                return commands;
+            }
+
+
+            if (lowerCaseCommand === 'home') {
+                return open_home();
+            }
+            else if (lowerCaseCommand.startsWith('echo ')) {
+                return command.slice(5);
+            }
+            else if (lowerCaseCommand === 'clear' || lowerCaseCommand === "c") {
+                return 'clear';
+            }
+            else if (lowerCaseCommand === 'w f' || lowerCaseCommand === "f") {
+                return open_facebook();
+            }
+            else if (lowerCaseCommand === 'w y' || lowerCaseCommand === "y") {
+                return open_youtube();
+            }
+            else if (lowerCaseCommand === 'about') {
+                return (
+                    'This is a simple terminal simulation.'
+                )
+            }
+            else if (lowerCaseCommand === 'exit') {
+                return 'Goodbye!';
+            }
+            else {
+                return `'${command}' is not recognized as an internal or external command.`;
+            }
+        }
+
+        function handleClearCommand() {
+            outputDiv.innerHTML = '';
+            commandInput.value = '';
+        }
+
+        function appendResponseToOutput(response) {
+            const responseLine = document.createElement('div');
+            responseLine.textContent = response;
+            outputDiv.appendChild(responseLine);
+            outputDiv.scrollTop = outputDiv.scrollHeight; // เลื่อนหน้าจอไปข้างล่าง
+        }
+
+        function handleCommand() {
+            const command = commandInput.value.trim();
+            if (command) {
+                outputDiv.appendChild(createCommandLine(command));  // แสดงคำสั่งที่พิมพ์เข้ามา
+
+                const response = getResponse(command);  // รับคำตอบจากคำสั่ง
+                if (response === 'clear') {
+                    handleClearCommand();  // ถ้าเป็นคำสั่ง clear, ล้างหน้าจอ
+                    return;
+                }
+
+                appendResponseToOutput(response);  // แสดงคำตอบใน output
+            }
+
+            commandInput.value = '';  // เคลียร์ช่อง input
+        }
+
+
+        // ฟังก์ชันสำหรับเติมคำอัตโนมัติเมื่อกด Tab
+        function autocompleteCommand() {
+            const currentText = commandInput.value;
+            const matchingCommands = commands.filter(cmd => cmd.startsWith(currentText));
+
+            if (matchingCommands.length === 1) {
+                commandInput.value = matchingCommands[0]; // เติมคำสั่งที่ตรงกัน
+            } else if (matchingCommands.length > 1) {
+                // แสดงคำแนะนำถ้ามีหลายคำที่ตรงกัน
+                const suggestionsDiv = document.createElement('div');
+                suggestionsDiv.style.color = 'lime';
+                suggestionsDiv.textContent = 'Suggestions: ' + matchingCommands.join(', ');
+                outputDiv.appendChild(suggestionsDiv);
+            }
+        }
+
+        // การจับการกดปุ่ม Enter และ Tab
+        commandInput.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter') {
+                handleCommand();
+            } else if (event.key === 'Tab') {
+                event.preventDefault(); // ป้องกันการเปลี่ยน focus โดยไม่ตั้งใจ
+                autocompleteCommand();   // เรียกใช้งานฟังก์ชันเติมคำอัตโนมัติ
+            }
+        });
+
+        // เพิ่มฟังก์ชันให้เมื่อคลิกที่พื้นที่ในเทอร์มินอลแล้วไปที่ช่อง input
+        terminalDiv.addEventListener('click', function () {
+            commandInput.focus();
+        });
+    </script>
+</body>
+
+</html>

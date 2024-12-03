@@ -1,11 +1,8 @@
-let user_name_array = []
-
-
+let user_name_array = [];
 
 var container = document.getElementById('data-container');
 var text_output = document.getElementById('text_output');
-var htmlContent = ''; // ตัวแปรสำหรับเก็บ HTML string
-
+var htmlContent = '';
 
 let html_tag = {
     div_open: '<div class="data-item">',
@@ -15,17 +12,14 @@ let html_tag = {
     fields = [
         [{ label: 'ชื่อ', key: 'name' }, { label: 'อายุ', key: 'age' }],
         [{ label: 'id', key: 'id' }, { label: 'price', key: 'price' }]
-    ]
-
+    ];
 
 // ฟังก์ชันสำหรับสร้าง HTML สำหรับแต่ละบุคคล
 function create_Person_HTML(person, fields) {
-    // เปิดแท็ก <div>
     let personHTML = html_tag.div_open;
 
-
     // วนลูปผ่านแต่ละฟิลด์เพื่อสร้างข้อความ HTML
-    personHTML = qqq(fields, person, personHTML);
+    personHTML = generateFieldHTML(fields, person, personHTML);
 
     // ปิดแท็ก <div>
     personHTML += html_tag.div_close;
@@ -33,9 +27,7 @@ function create_Person_HTML(person, fields) {
     return personHTML;
 }
 
-
-
-function qqq(fields, person, personHTML) {
+function generateFieldHTML(fields, person, personHTML) {
     fields.forEach(field => {
         const fieldLabel = field.label;
         const fieldValue = person[field.key];
@@ -44,16 +36,14 @@ function qqq(fields, person, personHTML) {
     return personHTML;
 }
 
-function get_user(data) {
+function renderUserData(data) {
     data.user.forEach(person => {
         htmlContent += create_Person_HTML(person, fields[0]);
     });
     container.innerHTML = htmlContent;
-
 }
 
-
-function get_item(data) {
+function renderItemData(data) {
     data.item.forEach(item => {
         htmlContent += create_Person_HTML(item, fields[1]);
     });
@@ -62,27 +52,22 @@ function get_item(data) {
 
 // ดึงข้อมูลจากไฟล์ JSON
 fetch('data.json')
-    .then(get_data_to_json()) // แปลงข้อมูลเป็น JSON
-    .then(main()
-    )
+    .then(parseJSONResponse()) // แปลงข้อมูลเป็น JSON
+    .then(processData());
 
-
-
-
-function get_data_to_json() {
+function parseJSONResponse() {
     return response => response.json();
 }
 
-function main() {
+function processData() {
     return (data) => {
-        get_user(data);
-        get_item(data);
-        newFunction2(data);
-        
+        renderUserData(data);
+        renderItemData(data);
+        storeUserNames(data);
     };
 }
 
-function newFunction2(data) {
+function storeUserNames(data) {
     user_name_array.push(
         data.user[0].name,
         data.user[1].name,
@@ -90,4 +75,3 @@ function newFunction2(data) {
     );
     text_output.innerHTML += user_name_array;
 }
-
