@@ -1,146 +1,142 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Document</title>
 
-        <!-- css bootstrap 5  -->
-        <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-            rel="stylesheet"
-            integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
-            crossorigin="anonymous" />
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
 
-        <!-- js bootstrap 5  -->
-        <script
-            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
-            crossorigin="anonymous"></script>
+    <!-- css bootstrap 5  -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous" />
 
-        <!-- css in project -->
-        <link rel="stylesheet" href="index.css" />
-        <style>
-            body {
-	background: #f06767;
-	font-family: 'Roboto', sans-serif;
-}
-.maskLine {
-	transition: d 310ms;
-}
-.maskLine:nth-of-type(2) {
-	transition: d 300ms;
-}
-.packages {
-	width: calc(100% - 20px);
-	max-width: 600px;
-	min-width: 315px;
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%,-50%);
-}
-#scaleSlider {
-	width: 100%;
-	cursor: pointer;
-}
-.container {
-  display: flex;
-}
+    <!-- js bootstrap 5  -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
 
-.container > button {
-  flex: 1;
-  margin: 5px;
-	padding: 5px;
-	cursor: pointer;
-}
+    <!-- css in project -->
+    <link rel="stylesheet" href="index.css" />
+    <style>
+        body {
+            background: #f06767;
+            font-family: 'Roboto', sans-serif;
+        }
 
-        </style>
-    </head>
+        .maskLine {
+            transition: d 310ms;
+        }
 
-    <body>
+        .maskLine:nth-of-type(2) {
+            transition: d 300ms;
+        }
 
-        <div class="packages">
-            <svg viewBox="0 0 100 10" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <mask id="progress">
-                        <rect height="100%" width="100%" fill="#000" />
-                        <path class="maskLine" d="M 0 2 h 38" stroke="#fff"
-                            stroke-width="4.5" stroke-linecap="round" />
-                        <path class="maskLine" d="M 0 5 h 38.5" stroke="#fff"
-                            stroke-width="4.5" stroke-linecap="round" />
-                        <path class="maskLine" d="M 0 8 h 38" stroke="#fff"
-                            stroke-width="4.5" stroke-linecap="round" />
-                    </mask>
-                </defs>
-                <path d="M 5 5 h 90" stroke="#ccc" stroke-width="4" />
-                <circle cx="5" cy="5" r="5" fill="#ccc" />
-                <circle cx="35" cy="5" r="5" fill="#ccc" />
-                <circle cx="64" cy="5" r="5" fill="#ccc" />
-                <circle cx="95" cy="5" r="5" fill="#ccc" />
-                <g mask="url(#progress)">
-                    <path d="M 5 5 h 90" stroke="#1196ab" stroke-width="4"
-                        stroke-linecap="round" />
-                    <circle cx="5" cy="5" r="5" fill="#1196ab" />
-                    <circle cx="35" cy="5" r="5" fill="#1196ab" />
-                    <circle cx="64" cy="5" r="5" fill="#1196ab" />
-                    <circle cx="95" cy="5" r="5" fill="#1196ab" />
-                    <!--checks-->
-                    <path
-                        d="M 3 5.5 l 1.5 1.5 l 3 -3.5 M 33 5.5 l 1.5 1.5 l 3 -3.5 M 62 5.5 l 1.5 1.5 l 3 -3.5 M 93 5.5 l 1.5 1.5 l 3 -3.5"
-                        fill="none" stroke="#fff" stroke-width="1"
-                        stroke-linecap="round" stroke-linejoin="round" />
-                </g>
-            </svg>
+        .packages {
+            width: calc(100% - 20px);
+            max-width: 600px;
+            min-width: 315px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
 
-            <div style="display: none">
-                <span id="scaleSliderVal">50</span>
-                <input type="range" id="scaleSlider" min="0" max="100" step="1"
-                    value="50">
+        #scaleSlider {
+            width: 100%;
+            cursor: pointer;
+        }
 
-            </div>
-            <div class="container">
-                <button onclick="setProgress(9)">เริ่ม ต้น</button>
-                <button onclick="setProgress(39)"> 555</button>
-                <button onclick="setProgress(68)">Out for Delivery</button>
-                <button onclick="setProgress(100)">Delivered</button>
-            </div>
+        .container {
+            display: flex;
+        }
+
+        .container>button {
+            flex: 1;
+            margin: 5px;
+            padding: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="packages">
+        <svg viewBox="0 0 100 10" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <mask id="progress">
+                    <rect height="100%" width="100%" fill="#000" />
+                    <path class="maskLine" d="M 0 2 h 38" stroke="#fff" stroke-width="4.5" stroke-linecap="round" />
+                    <path class="maskLine" d="M 0 5 h 38.5" stroke="#fff" stroke-width="4.5" stroke-linecap="round" />
+                    <path class="maskLine" d="M 0 8 h 38" stroke="#fff" stroke-width="4.5" stroke-linecap="round" />
+                </mask>
+            </defs>
+            <path d="M 5 5 h 90" stroke="#ccc" stroke-width="4" />
+            <circle cx="5" cy="5" r="5" fill="#ccc" />
+            <circle cx="35" cy="5" r="5" fill="#ccc" />
+            <circle cx="64" cy="5" r="5" fill="#ccc" />
+            <circle cx="95" cy="5" r="5" fill="#ccc" />
+            <g mask="url(#progress)">
+                <path d="M 5 5 h 90" stroke="#1196ab" stroke-width="4" stroke-linecap="round" />
+                <circle cx="5" cy="5" r="5" fill="#1196ab" />
+                <circle cx="35" cy="5" r="5" fill="#1196ab" />
+                <circle cx="64" cy="5" r="5" fill="#1196ab" />
+                <circle cx="95" cy="5" r="5" fill="#1196ab" />
+                <!--checks-->
+                <path
+                    d="M 3 5.5 l 1.5 1.5 l 3 -3.5 M 33 5.5 l 1.5 1.5 l 3 -3.5 M 62 5.5 l 1.5 1.5 l 3 -3.5 M 93 5.5 l 1.5 1.5 l 3 -3.5"
+                    fill="none" stroke="#fff" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" />
+            </g>
+        </svg>
+
+        <div style="display: none">
+            <span id="scaleSliderVal">50</span>
+            <input type="range" id="scaleSlider" min="0" max="100" step="1" value="50">
+
         </div>
+        <div class="container">
+            <button onclick="setProgress(9)">เริ่ม ต้น</button>
+            <button onclick="setProgress(39)"> 555</button>
+            <button onclick="setProgress(68)">Out for Delivery</button>
+            <button onclick="setProgress(100)">Delivered</button>
+        </div>
+    </div>
 
-    </body>
-    <script>
+</body>
+<script>
     // Get reference to the scale slider element
-const scaleSlider = document.getElementById('scaleSlider');
+    const scaleSlider = document.getElementById('scaleSlider');
 
-// Function to handle slider change
-function handleScaleChangeScale() {
-	let lines = document.querySelectorAll('.maskLine');
-	lines[0].setAttribute('d', `M 0 1.5 h ${scaleSlider.value - 1}`);
-	lines[1].setAttribute('d', `M 0 5 h ${scaleSlider.value - 0.5}`);
-	lines[2].setAttribute('d', `M 0 8.5 h ${scaleSlider.value - 1}`);
-	document.querySelector('#scaleSliderVal').innerText = scaleSlider.value;
-}
-function setProgress(num) {
-	scaleSlider.value = num;
-	handleScaleChangeScale();
-}
- 
-scaleSlider.addEventListener('input', handleScaleChangeScale);
+    // Function to handle slider change
+    function handleScaleChangeScale() {
+        let lines = document.querySelectorAll('.maskLine');
+        lines[0].setAttribute('d', `M 0 1.5 h ${scaleSlider.value - 1}`);
+        lines[1].setAttribute('d', `M 0 5 h ${scaleSlider.value - 0.5}`);
+        lines[2].setAttribute('d', `M 0 8.5 h ${scaleSlider.value - 1}`);
+        document.querySelector('#scaleSliderVal').innerText = scaleSlider.value;
+    }
+    function setProgress(num) {
+        scaleSlider.value = num;
+        handleScaleChangeScale();
+    }
 
- 
-const svg = document.querySelector('svg');
+    scaleSlider.addEventListener('input', handleScaleChangeScale);
 
- 
-const pt = new DOMPoint();
 
- 
-function cursorPoint(evt){
-  pt.x = evt.clientX; pt.y = evt.clientY;
-  return pt.matrixTransform(svg.getScreenCTM().inverse());
-}
-svg.addEventListener('click', (evt) => {
-	let loc = cursorPoint(evt);
-	setProgress(loc.x);
-}, false);
+    const svg = document.querySelector('svg');
+
+
+    const pt = new DOMPoint();
+
+
+    function cursorPoint(evt) {
+        pt.x = evt.clientX; pt.y = evt.clientY;
+        return pt.matrixTransform(svg.getScreenCTM().inverse());
+    }
+    svg.addEventListener('click', (evt) => {
+        let loc = cursorPoint(evt);
+        setProgress(loc.x);
+    }, false);
 </script>
+
 </html>

@@ -89,7 +89,7 @@ function showData_user_age(users) {
 form.addEventListener('submit', async (e) => {
     e.preventDefault()
     let name = form.name.value
-    , age = Number(form.age.value)
+        , age = Number(form.age.value)
 
 
     if (name === "") {

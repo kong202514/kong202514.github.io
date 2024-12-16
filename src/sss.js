@@ -4,6 +4,12 @@ var container = document.getElementById('data-container');
 var text_output = document.getElementById('text_output');
 var htmlContent = '';
 
+
+// ดึงข้อมูลจากไฟล์ JSON
+fetch('data.json')
+    .then(parseJSONResponse()) // แปลงข้อมูลเป็น JSON
+    .then(processData());
+
 let html_tag = {
     div_open: '<div class="data-item">',
     br: "<br>",
@@ -50,10 +56,6 @@ function renderItemData(data) {
     container.innerHTML = htmlContent;
 }
 
-// ดึงข้อมูลจากไฟล์ JSON
-fetch('data.json')
-    .then(parseJSONResponse()) // แปลงข้อมูลเป็น JSON
-    .then(processData());
 
 function parseJSONResponse() {
     return response => response.json();
