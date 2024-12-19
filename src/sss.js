@@ -1,79 +1,109 @@
-let user_name_array = [];
+let user_name = [];
+let user_age = [];
+let user_email = [];
 
-var container = document.getElementById('data-container');
-var text_output = document.getElementById('text_output');
-var htmlContent = '';
+let indexss = 0;
 
+// ฟังก์ชันย้อนกลับ (Previous)
+function Previous() {
+    if (indexss > 0) {
+        indexss -= 1; // ลดค่า index เมื่อกดปุ่ม "Previous"
+    }
+    navigate(0);
+}
 
-// ดึงข้อมูลจากไฟล์ JSON
+// ฟังก์ชันไปข้างหน้า (Next)
+function next() {
+    if (indexss < user_name.length - 1) {
+        indexss += 1; // เพิ่มค่า index เมื่อกดปุ่ม "Next"
+    }
+    navigate(0);
+}
+
+// ฟังก์ชันสำหรับการแสดงข้อมูลและนำข้อมูลไปใช้
 fetch('data.json')
-    .then(parseJSONResponse()) // แปลงข้อมูลเป็น JSON
-    .then(processData());
+    .then(response => response.json())
+    .then(data => {
+        show_all_data(data);
+        add_user_name_to_array(data);
+        get_user_age(data);
+        get_user_email(data);
 
-let html_tag = {
-    div_open: '<div class="data-item">',
-    br: "<br>",
-    div_close: '</div>'
-},
-    fields = [
-        [{ label: 'ชื่อ', key: 'name' }, { label: 'อายุ', key: 'age' }],
-        [{ label: 'id', key: 'id' }, { label: 'price', key: 'price' }]
-    ];
+        console.log(user_name);  // แสดง user_name ใน console
+    })
 
-// ฟังก์ชันสำหรับสร้าง HTML สำหรับแต่ละบุคคล
-function create_Person_HTML(person, fields) {
-    let personHTML = html_tag.div_open;
+let currentIndex = 0;
 
-    // วนลูปผ่านแต่ละฟิลด์เพื่อสร้างข้อความ HTML
-    personHTML = generateFieldHTML(fields, person, personHTML);
+// ฟังก์ชันในการเปลี่ยนค่าจากการคลิกปุ่ม Next/Previous
+function navigate(direction) {
+    currentIndex += direction;
 
-    // ปิดแท็ก <div>
-    personHTML += html_tag.div_close;
+    if (currentIndex < 0) {
+        currentIndex = 0;
+    } else if (currentIndex >= user_name.length) {
+        currentIndex = user_name.length - 1;
+    }
 
-    return personHTML;
+    document.getElementById('name').value = user_name[currentIndex];
+    document.getElementById('age').value = user_age[currentIndex];
+    document.getElementById('email').value = user_email[currentIndex];
 }
 
-function generateFieldHTML(fields, person, personHTML) {
-    fields.forEach(field => {
-        const fieldLabel = field.label;
-        const fieldValue = person[field.key];
-        personHTML += `${fieldLabel}: ${fieldValue}${html_tag.br}`;
+// ฟังก์ชันแสดงข้อมูลในตาราง
+function show_all_data(data) {
+    const tableBody = document.getElementById('data-table').querySelector('tbody');
+    data.forEach(item => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${item.name}</td>
+            <td>${item.age}</td>
+            <td>${item.email}</td>
+        `;
+        tableBody.appendChild(row);
     });
-    return personHTML;
 }
 
-function renderUserData(data) {
-    data.user.forEach(person => {
-        htmlContent += create_Person_HTML(person, fields[0]);
-    });
-    container.innerHTML = htmlContent;
+// ฟังก์ชันเพิ่มชื่อเข้าใน array
+function add_user_name_to_array(data) {
+    for (let i = 0; i < data.length; i++) {
+        user_name.push(data[i].name);
+    }
+    return user_name;
 }
 
-function renderItemData(data) {
-    data.item.forEach(item => {
-        htmlContent += create_Person_HTML(item, fields[1]);
-    });
-    container.innerHTML = htmlContent;
+// ฟังก์ชันเพิ่มอายุเข้าใน array
+function get_user_age(data) {
+    for (let i = 0; i < data.length; i++) {
+        user_age.push(data[i].age);
+    }
+    return user_age;
 }
 
-
-function parseJSONResponse() {
-    return response => response.json();
+// ฟังก์ชันเพิ่มอีเมลเข้าใน array
+function get_user_email(data) {
+    for (let i = 0; i < data.length; i++) {
+        user_email.push(data[i].email);
+    }
+    return user_email;
 }
 
-function processData() {
-    return (data) => {
-        renderUserData(data);
-        renderItemData(data);
-        storeUserNames(data);
-    };
+// ฟังก์ชันสำหรับบันทึกข้อมูลกลับลงไฟล์ JSON
+function saveData(data, filename) {
+ 
+        const blob = new Blob([JSON.stringify(data, null, 4)], { type: 'application/json' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        link.click();
+    
+
 }
 
-function storeUserNames(data) {
-    user_name_array.push(
-        data.user[0].name,
-        data.user[1].name,
-        data.user[2].name
-    );
-    text_output.innerHTML += user_name_array;
-}
+// ตัวอย่างการใช้งาน
+const data = {
+    name: 'John',
+    age: 30,
+    city: 'Bangkok'
+};
+
+saveToJson(data, 'data.json');

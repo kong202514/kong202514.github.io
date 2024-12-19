@@ -1,25 +1,12 @@
-{
-    "user": [
-        {
-            "name": "gong",
-            "age": "55"
-        },
-        {
-            "name": "google",
-            "age": "20"
-        },
-        {
-            "name": "buy",
-            "age": "12"
-        }
-    ],
-    "item": [
-        {
-            "id": 1,
-            "price":15
-        },
-        {
-            "id": 2,
-            "price": 150}
-    ]
-}
+ [
+    {
+        "name": "gong",
+        "age": 21,
+        "email": "kong@gmail.com"
+    },
+    {
+        "name": "test",
+        "age": 15,
+        "email": "test@example.com"
+    }
+]

@@ -1,47 +1,83 @@
-<!DOCTYPE html>
-<html lang="en">
+<html >
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Document</title>
-        <style>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Display JSON Data</title>
+    <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
-            padding: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
             background-color: #f4f4f4;
         }
-
-        h1 {
-            text-align: center;
-        }
-
-        #data-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 20px;
-        }
-
-        .data-item {
-            background-color: #fff;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            width: 200px;
-            text-align: center;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
     </style>
-    </head>
+</head>
 
-    <body>
+<body>
+    <h1>JSON Data Display</h1>
+    <table id="data-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Email</th>
+                <!-- <th>del</th>
+                <th>Edit</th> -->
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Data will be inserted here -->
+        </tbody>
+    </table>
 
-        <h1>Data from JSON File</h1>
-        <div id="data-container"></div>
-        <div id="text_output"></div>
 
-    </body>
-<script src="./sss.js"></script>
+   
+        <h2>Fill Form with Array Data</h2>
+    
+        <form id="myForm">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name"><br><br>
+    
+            <label for="age">Age:</label>
+            <input type="text" id="age" name="age"><br><br>
+    
+            <label for="email">Email:</label>
+            <input type="text" id="email" name="email"><br><br>
+    
+            <input type="submit" onclick="saveData()"  value="Submit">
+            <!-- <button onclick="saveData()">Submit</button> -->
+
+        </form>
+ 
+
+        
+   
+ <hr>
+ 
+
+ 
+<button onclick="navigate(-1)">Previous</button>
+<button onclick="navigate(1)">Next</button>
+  
+</body>
+<script src="sss.js"></script>
 </html>
+
+
+
+    
