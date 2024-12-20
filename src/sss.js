@@ -86,20 +86,22 @@ function get_user_email(data) {
     }
     return user_email;
 }
-// ฟังก์ชันสำหรับบันทึกข้อมูลกลับลงไฟล์ JSON
+
+
+const fs = require('fs');
+
+// ฟังก์ชันสำหรับบันทึกข้อมูลลงในไฟล์ JSON
 function saveData(data, filename) {
-    const blob = new Blob([JSON.stringify(data, null, 4)], { type: 'application/json' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    link.click();
+    fs.writeFileSync(filename, JSON.stringify(data, null, 4), 'utf8');
+    console.log(`${filename} has been saved.`);
 }
 
-// ตัวอย่างการใช้งาน
+// ตัวอย่างข้อมูลที่ต้องการบันทึก
 const data = {
-    name: 'John',
+    name: 'wwwww',
     age: 30,
     city: 'Bangkok'
 };
 
+// บันทึกข้อมูลลงไฟล์ data.json
 saveData(data, 'data.json');

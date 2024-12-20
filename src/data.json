@@ -1,12 +1,5 @@
- [
-    {
-        "name": "gong",
-        "age": 21,
-        "email": "kong@gmail.com"
-    },
-    {
-        "name": "test",
-        "age": 15,
-        "email": "test@example.com"
-    }
-]
+{
+    "name": "wwwww",
+    "age": 30,
+    "city": "Bangkok"
+}
