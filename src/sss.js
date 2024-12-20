@@ -86,17 +86,13 @@ function get_user_email(data) {
     }
     return user_email;
 }
-
 // ฟังก์ชันสำหรับบันทึกข้อมูลกลับลงไฟล์ JSON
 function saveData(data, filename) {
- 
-        const blob = new Blob([JSON.stringify(data, null, 4)], { type: 'application/json' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = filename;
-        link.click();
-    
-
+    const blob = new Blob([JSON.stringify(data, null, 4)], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
 }
 
 // ตัวอย่างการใช้งาน
@@ -106,4 +102,4 @@ const data = {
     city: 'Bangkok'
 };
 
-saveToJson(data, 'data.json');
+saveData(data, 'data.json');
