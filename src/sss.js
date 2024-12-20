@@ -30,7 +30,7 @@ fetch('data.json')
         get_user_email(data);
 
         console.log(user_name);  // แสดง user_name ใน console
-    })
+
 
 let currentIndex = 0;
 
@@ -88,20 +88,33 @@ function get_user_email(data) {
 }
 
 
-const fs = require('fs');
 
-// ฟังก์ชันสำหรับบันทึกข้อมูลลงในไฟล์ JSON
-function saveData(data, filename) {
-    fs.writeFileSync(filename, JSON.stringify(data, null, 4), 'utf8');
-    console.log(`${filename} has been saved.`);
-}
+        function saveDataToServer() {
+            const editedData = user_name.map((name, index) => ({
+                name: name,
+                age: user_age[index],
+                email: user_email[index],
+            }));
 
-// ตัวอย่างข้อมูลที่ต้องการบันทึก
-const data = {
-    name: 'wwwww',
-    age: 30,
-    city: 'Bangkok'
-};
+            fetch('/save-data', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(editedData),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Data saved successfully!');
+                    } else {
+                        alert('Failed to save data.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
 
-// บันทึกข้อมูลลงไฟล์ data.json
-saveData(data, 'data.json');
+
+    })
