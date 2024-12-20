@@ -1,15 +1,14 @@
 const express = require('express');
+const path = require('path');
 const app = express();
 const PORT = 3000;
 
-app.use(express.json()); // สำหรับรับ JSON จาก Client
-
-// เส้นทางหลัก
+// ส่งไฟล์ HTML
 app.get('/', (req, res) => {
-    res.send('Welcome to Tarot Backend');
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// เริ่มต้นเซิร์ฟเวอร์
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
+
