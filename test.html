@@ -1,15 +1,53 @@
-<html>
+<html lang="th">
 
 <head>
-    <title>
-        ยินดีต้อนรับ
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เช็คสถานะของเช็คบล็อก</title>
 
-    </title>
+
+    <!-- css bootstrap 5  -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+
+    <!-- js bootstrap 5  -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+
 </head>
 
 <body>
-การเว้น <br> บรรทัด
-"hello word"
+
+
+    <div class="form-check form-switch">
+        <input class="form-check-input SwitchCheck" type="checkbox" id="flexSwitchCheckDefault">
+        <label class="form-check-label" for="flexSwitchCheckDefault">checkbox input 1 </label>
+
+    </div>
+    <div class="form-check form-switch">
+        <input class="form-check-input SwitchCheck" type="checkbox" id="flexSwitchCheckDefault">
+        <label class="form-check-label" for="flexSwitchCheckDefault">checkbox input 1 </label>
+
+    </div>
+
+
+    <button onclick="checkStatus()">ตรวจสอบสถานะ</button>
+    <p id="status"></p>
+
+    <script>
+        function checkStatus() {
+            var checkbox = document.querySelectorAll("#flexSwitchCheckDefault");
+            var status = document.getElementById("status");
+
+            console.log(checkbox[0].checked);
+            console.log(checkbox[1].checked);
+
+        }
+
+
+    </script>
+
 </body>
 
 </html>

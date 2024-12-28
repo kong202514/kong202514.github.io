@@ -9,28 +9,46 @@ const firebaseConfig = {
     appId: "1:90209929521:web:a675cc4cd33fb19aa00810",
     measurementId: "G-QR4F959BW2"
 };
+
+
+
 let app = initializeApp(firebaseConfig)
     , db = getFirestore(app)
-    , data = await get_user_(db)
+    // , data = await get_user_(db) //0
+    , users = await get_data_from_db('users') // 1
+    , routine = await get_data_from_db('test') //0
     , form = document.getElementById("addForm")
     , user_name = []
     , user_age = []
-function get_user_(db) {
-    const user_Col = collection(db, 'users')
+
+
+function get_data_from_db(db_in) {
+    const user_Col = collection(db, db_in)
     const user_Snapshot = getDocs(user_Col)
     return user_Snapshot
 }
 
+
+
 // console.log(data);
 
-data.forEach((user) => {
+users.forEach((user) => {
     user_name.push(showData_user_name(user));
     user_age.push(showData_user_age(user));
-    console.log(user_name);
-    
+    // console.log(user_name);
+
     show_all_Data(user);
+
 });
 
+routine.forEach((user) => {
+    user_name.push(showData_user_name(user));
+    user_age.push(showData_user_age(user));
+    // console.log(user_name);
+
+    show_all_Data(user);
+
+});
 
 
 
@@ -51,7 +69,7 @@ function show_all_Data(users) {
     const ageCol = row.insertCell(1)
     nameCol.innerHTML = users.data().name
     ageCol.innerHTML = users.data().age
-    // console.log(users.data().name + "  =   age " + users.data().age);
+
 }
 function showData_user_age(users) {
     return users.data().age
@@ -71,19 +89,16 @@ form.addEventListener('submit', async (e) => {
         alert('age isNaN');
         return;
     }
-    // addDoc(collection(db, 'users'), {
-    //     name: name,
-    //     age: age
-    // })
-    add_data(name, age);
+
+    add_data("users", name, age);
     clear_data();
     relode();
 
 
-    
+
 })
-function add_data(name, age) {
-    addDoc(collection(db, 'users'), { name, age });
+function add_data(db_name, name, age) {
+    addDoc(collection(db, db_name), { name, age });
 }
 
 function relode() {
