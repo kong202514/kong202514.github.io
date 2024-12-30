@@ -20,7 +20,7 @@ let app = initializeApp(firebaseConfig)
     , routine = await get_data_from_db('test') //0
     , form = document.getElementById("addForm")
     , btn = document.getElementById("btn")
-    , y = []
+    , y = [] 
     , x = []
 
 
