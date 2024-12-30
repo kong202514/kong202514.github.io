@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ตารางกิจกรรม - Firebase</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    /* ทำให้ background ของตารางเป็นสีอ่อน */
+    .table {
+      background-color: #f8f9fa;
+    }
+
+    /* เพิ่มสีเมื่อ hover แถวในตาราง */
+    .table-hover tbody tr:hover {
+      background-color: #e0e0e0;
+    }
+
+    /* เพิ่มสีของปุ่ม */
+    .btn-success {
+      background-color: #28a745;
+    }
+
+    .btn-success:hover {
+      background-color: #218838;
+    }
+
+    /* เพิ่มสีพื้นหลังให้กับหัวตาราง */
+    .table-dark th {
+      background-color: #6ce290;
+      color: #000;
+    }
+
+    /* กำหนดการจัดเรียงข้อความ */
+    h1 {
+      color: #007bff;
+    }
+
+    .table th,
+    .table td {
+      padding: 15px;
+    }
+
+    /* ทำให้ checkbox เป็นวงกลม */
+    input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      /* ทำให้เป็นวงกลม */
+      appearance: none;
+      /* ปิดการแสดงผลของเริ่มต้น */
+      border: 2px solid #28a745;
+      /* กำหนดกรอบสี */
+      background-color: #fff;
+      position: relative;
+      display: block;
+      margin: auto;
+      /* จัดให้อยู่ตรงกลาง */
+    }
+
+    /* เมื่อ checkbox ถูกเลือก */
+    input[type="checkbox"]:checked {
+      background-color: #28a745;
+      border-color: #28a745;
+    }
+
+    /* ทำให้ checkbox อยู่ตรงกลาง */
+    .table td {
+      text-align: center;
+    }
+
+    /* ทำให้วงกลมภายใน checkbox เมื่อเลือก */
+    input[type="checkbox"]:after {
+      content: '';
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: #fff;
+      transition: background-color 0.3s ease;
+    }
+
+    /* เมื่อ checkbox ถูกเลือก */
+    input[type="checkbox"]:checked:after {
+      background-color: #fff;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container mt-5">
+    <h1 class="text-center mb-4">ตารางกิจกรรม</h1>
+    <table class="table table-bordered table-hover table-striped">
+      <thead class="table-dark" id="table-header"></thead>
+      <tbody id="table-body"></tbody>
+    </table>
+    <div class="d-flex justify-content-center mt-4">
+      <button id="save-button" class="btn btn-success btn-lg">เซฟข้อมูล</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+    const firebaseConfig = { apiKey: "AIzaSyBEnXLzs0KErv6Y-W6gGUUglIKL7EwkUpM", authDomain: "oopp-39320.firebaseapp.com", projectId: "oopp-39320", storageBucket: "oopp-39320.appspot.com", messagingSenderId: "90209929521", appId: "1:90209929521:web:a675cc4cd33fb19aa00810", measurementId: "G-QR4F959BW2" };
+    const app = initializeApp(firebaseConfig), db = getFirestore(app);
+
+    const tasks = ["แปรงฟัน", "กินข้าว เช้า", "กินข้าว เที่ยง", "ฝึกกิเนจ", "อ่านหนังสือ", "กินข้าวเย็น"];
+
+    function generateDates() {
+      const dates = [], startDate = new Date(2025, 0, 1), endDate = new Date(2025, 0, 31);
+      while (startDate <= endDate) {
+        dates.push(`${startDate.getDate().toString().padStart(2, '0')}/${(startDate.getMonth() + 1).toString().padStart(2, '0')}/${startDate.getFullYear() + 543}`);
+        startDate.setDate(startDate.getDate() + 1);
+      }
+      return dates;
+    }
+
+    function createTableHeader() {
+      const tableHeader = document.getElementById('table-header');
+      const row = document.createElement('tr');
+      row.innerHTML = `<th>วันที่</th>${tasks.map(task => `<th>${task}</th>`).join('')}`;
+      tableHeader.appendChild(row);
+    }
+
+    function populateTable() {
+      const tableBody = document.getElementById('table-body');
+      generateDates().forEach(date => {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td>${date}</td>${tasks.map(task => `<td><input type="checkbox" data-date="${date}" data-task="${task}"></td>`).join('')}`;
+        tableBody.appendChild(row);
+      });
+    }
+
+    document.getElementById("save-button").addEventListener("click", () => {
+      const dataToSave = {};
+      document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+        let { date, task } = checkbox.dataset;
+        date = date.replace(/\//g, "_");
+        if (!dataToSave[date]) dataToSave[date] = {};
+        dataToSave[date][task] = { status: checkbox.checked };
+      });
+      setDoc(doc(db, "tasks", "user_tasks"), dataToSave).then(() => alert("ข้อมูลถูกบันทึกเรียบร้อย!"));
+    });
+
+    function fetchData() {
+      getDoc(doc(db, "tasks", "user_tasks")).then(snapshot => {
+        if (snapshot.exists()) {
+          const data = snapshot.data();
+          Object.keys(data).forEach(date => {
+            const formattedDate = date.replace(/_/g, "/");
+            Object.keys(data[date]).forEach(task => {
+              const checkbox = document.querySelector(`input[data-date="${formattedDate}"][data-task="${task}"]`);
+              if (checkbox) checkbox.checked = data[date][task].status;
+            });
+          });
+        }
+      });
+    }
+
+    createTableHeader();
+    populateTable();
+    fetchData();
+  </script>
+</body>
+
+</html>

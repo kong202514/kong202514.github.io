@@ -1,6 +1,7 @@
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
 import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+
+// Firebase Configuration
 const firebaseConfig = {
     apiKey: "AIzaSyBEnXLzs0KErv6Y-W6gGUUglIKL7EwkUpM",
     authDomain: "oopp-39320.firebaseapp.com",
@@ -11,76 +12,106 @@ const firebaseConfig = {
     measurementId: "G-QR4F959BW2"
 };
 
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
+// 1. สร้าง div container สำหรับ checkbox
+const container = document.createElement('div');
+container.classList.add('h1');
 
-let app = initializeApp(firebaseConfig)
-    , db = getFirestore(app)
-    // , data = await get_user_(db) //0
+// 2. สร้างข้อมูลรายการ checkbox
+const tasks = [
+    { id: 'flexSwitchCheckDefault1', label: 'อ่านหนังสือ' },
+    { id: 'flexSwitchCheckDefault2', label: 'ออกกำลังกาย 1' },
+    { id: 'flexSwitchCheckDefault3', label: 'ขายของ 1' }
+];
 
-    , routine = await get_data_from_db('test') //0
-    , form = document.getElementById("addForm")
-    , btn = document.getElementById("btn")
-    , y = [] 
-    , x = []
+// 3. สร้าง checkbox สำหรับแต่ละรายการใน tasks
+tasks.forEach(task => {
+    // สร้าง div ที่บรรจุ checkbox
+    const formCheckDiv = document.createElement('div');
+    formCheckDiv.classList.add('form-check', 'form-switch');
 
+    // สร้าง input checkbox
+    const checkbox = document.createElement('input');
+    checkbox.classList.add('form-check-input');
+    checkbox.type = 'checkbox';
+    checkbox.id = task.id;
 
-function get_data_from_db(db_in) {
-    const user_Col = collection(db, db_in)
-    const user_Snapshot = getDocs(user_Col)
-    return user_Snapshot
+    // สร้าง label
+    const label = document.createElement('label');
+    label.classList.add('form-check-label');
+    label.setAttribute('for', task.id);
+    label.textContent = task.label;
+
+    // เพิ่ม checkbox และ label ลงใน div
+    formCheckDiv.appendChild(checkbox);
+    formCheckDiv.appendChild(label);
+
+    // เพิ่ม div ของ checkbox ลงใน container
+    container.appendChild(formCheckDiv);
+});
+
+// 4. สร้างปุ่มและข้อความแสดงสถานะ
+const button = document.createElement('button');
+button.id = 'btn';
+button.textContent = 'บันทึกสถานะ';
+
+const statusParagraph = document.createElement('p');
+statusParagraph.id = 'status';
+
+// 5. เพิ่มทุกอย่างลงใน body หรือ element ที่ต้องการ
+document.body.appendChild(container);
+document.body.appendChild(button);
+document.body.appendChild(statusParagraph);
+
+// 6. การจัดการกับการคลิกปุ่ม (ต้องการใช้ async/await สำหรับการดึงข้อมูลจาก Firestore)
+async function checkStatus() {
+    const checkbox1 = document.getElementById('flexSwitchCheckDefault1');
+    const checkbox2 = document.getElementById('flexSwitchCheckDefault2');
+    const checkbox3 = document.getElementById('flexSwitchCheckDefault3');
+
+    // สร้างอ็อบเจ็กต์ routines เพื่อจัดเก็บสถานะของ checkbox
+    const routines = {
+        day: " 1/12/2567",
+        "อ่านหนังสือ": checkbox1.checked,
+        "ออกกำลังกาย": checkbox2.checked,
+        "ขายของ": checkbox3.checked
+    };
+
+    // เพิ่มข้อมูลลงใน Firestore
+    try {
+        await addDoc(collection(db, "test"), routines);
+        console.log("ข้อมูลถูกบันทึกเรียบร้อยแล้ว:", routines);
+    } catch (error) {
+        console.log(error);
+        statusParagraph.innerHTML = "เกิดข้อผิดพลาดในการบันทึกข้อมูล:" + error.message;
+    }
 }
 
-let routines = {
-    day: "31/5/2566",
-    อ่านหนังสือ: true,
-    ออกกำลังกาย: true,
-    ขายของ: false
+// 7. เพิ่ม event listener สำหรับปุ่ม
+button.addEventListener('click', checkStatus);
+
+// ฟังก์ชันสำหรับดึงข้อมูลจาก Firestore (อัปเดตสถานะจากฐานข้อมูล)
+async function fetchData() {
+    const querySnapshot = await getDocs(collection(db, "test"));
+    const routines = [];
+
+    querySnapshot.forEach((doc) => {
+        routines.push(doc.data());
+    });
+
+    if (routines.length > 0) {
+        statusParagraph.innerHTML = routines.map(routine => `
+        วัน: ${routine.day}<br>
+        อ่านหนังสือ: ${routine["อ่านหนังสือ"] ? 'ทำแล้ว' : 'ยังไม่ทำ'}<br>
+        ออกกำลังกาย: ${routine["ออกกำลังกาย"] ? 'ทำแล้ว' : 'ยังไม่ทำ'}<br>
+        ขายของ: ${routine["ขายของ"] ? 'ทำแล้ว' : 'ยังไม่ทำ'}<br><br>
+    `).join('');
+    }
+
 }
-// add_data("test", name, age);
 
-btn.addEventListener("click", checkStatus)
-
-var status = document.getElementById("status");
-function checkStatus() {
-    var checkbox = document.querySelectorAll("#flexSwitchCheckDefault");
-    routines.อ่านหนังสือ = checkbox[0].checked;
-    routines.ออกกำลังกาย = checkbox[1].checked;
-    routines.ขายของ = checkbox[2].checked;
-    console.log(routines);
-    addDoc(collection(db, "test"), { routines });
-}
-// console.log(data);
-
-
-
-routine.forEach((data) => {
-    y.push(data.data())
-         
-     
-}); 
-
-let z = JSON.stringify(y);
-
-x = JSON.parse(z); 
-
-console.log(x[0].routines.อ่านหนังสือ);
- 
-status.innerHTML = x.map((data, index) => {
-    return `Day: ${data.routines.day}<br>
-    อ่านหนังสือ: ${data.routines.อ่านหนังสือ}<br>
-    ออกกำลังกาย: ${data.routines.ออกกำลังกาย}<br>
-    ขายของ: ${data.routines.ขายของ}<br>
-    <hr>`;
-}).join("");
-
-
-
-
-// console.log(y[0].routine.day);
-
-
-
-
-
-
-
+// เรียกฟังก์ชัน fetchData เมื่อโหลดหน้า
+fetchData();
