@@ -110,8 +110,14 @@
 
     const firebaseConfig = { apiKey: "AIzaSyBEnXLzs0KErv6Y-W6gGUUglIKL7EwkUpM", authDomain: "oopp-39320.firebaseapp.com", projectId: "oopp-39320", storageBucket: "oopp-39320.appspot.com", messagingSenderId: "90209929521", appId: "1:90209929521:web:a675cc4cd33fb19aa00810", measurementId: "G-QR4F959BW2" };
     const app = initializeApp(firebaseConfig), db = getFirestore(app);
-
-    const tasks = ["แปรงฟัน", "กินข้าว เช้า", "กินข้าว เที่ยง", "ฝึกกิเนจ", "อ่านหนังสือ", "กินข้าวเย็น"];
+    const tasks = [
+      "แปรงฟัน",
+      "กินข้าว เช้า",
+      "กินข้าว เที่ยง",
+      "ฝึกกินจุ",
+      "อ่านหนังสือ",
+      "กินข้าวเย็น"
+    ];
 
     function generateDates() {
       const dates = [], startDate = new Date(2025, 0, 1), endDate = new Date(2025, 0, 31);
