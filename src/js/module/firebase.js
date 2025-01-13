@@ -85,10 +85,8 @@ form.addEventListener('submit', async (e) => {
         alert('name nooooo');
     } else if (age === "") {
         alert('age nooooo');
-    } else if (isNaN(age)) {
-        alert('age isNaN');
-        return;
     }
+    
 
     add_data("users", name, age);
     clear_data();
