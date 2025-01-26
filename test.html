@@ -1,53 +1,143 @@
-<html lang="th">
+<!DOCTYPE html>
+<html lang="en">
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f0f8ff;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+    }
+
+    .container {
+        text-align: center;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        background-color: #ffffff;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    h1 {
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+    #data-container {
+        margin-top: 20px;
+    }
+
+    .station {
+        margin-bottom: 15px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: #fafafa;
+        text-align: left;
+    }
+
+    .station h2 {
+        margin: 0 0 5px 0;
+    }
+
+    .station p {
+        margin: 5px 0;
+    }
+</style>
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>เช็คสถานะของเช็คบล็อก</title>
-
-
-    <!-- css bootstrap 5  -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-
-    <!-- js bootstrap 5  -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
-        crossorigin="anonymous"></script>
-
+    <title>ข้อมูล PM 2.5 นครราชสีมา</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
-
-
-    <div class="form-check form-switch">
-        <input class="form-check-input SwitchCheck" type="checkbox" id="flexSwitchCheckDefault">
-        <label class="form-check-label" for="flexSwitchCheckDefault">checkbox input 1 </label>
-
+    <div class="container">
+        <h1>ข้อมูล PM 2.5 จังหวัดนครราชสีมา</h1>
+        <div id="data-container"></div>
     </div>
-    <div class="form-check form-switch">
-        <input class="form-check-input SwitchCheck" type="checkbox" id="flexSwitchCheckDefault">
-        <label class="form-check-label" for="flexSwitchCheckDefault">checkbox input 1 </label>
-
-    </div>
-
-
-    <button onclick="checkStatus()">ตรวจสอบสถานะ</button>
-    <p id="status"></p>
-
     <script>
-        function checkStatus() {
-            var checkbox = document.querySelectorAll("#flexSwitchCheckDefault");
-            var status = document.getElementById("status");
 
-            console.log(checkbox[0].checked);
-            console.log(checkbox[1].checked);
+        const districts = [
+            { name: "เมืองนครราชสีมา" },
+            { name: "พิมาย" },
+            { name: "ปากช่อง" },
+            // เพิ่มชื่ออำเภอที่ต้องการดึงข้อมูล
+        ];
 
+        const API_TOKEN = "36800109a6c265613be3bd6a41b12f202117aa0f";
+
+        async function fetchAirQualityData(district) {
+            const API_URL = `https://api.waqi.info/feed/${encodeURIComponent(
+                district.name
+            )}/?token=${API_TOKEN}`;
+
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+
+                if (data.status === "ok") {
+                    return { name: district.name, data: data.data };
+                } else {
+                    return { name: district.name, error: "ไม่พบข้อมูลสำหรับอำเภอนี้" };
+                }
+            } catch (error) {
+                console.error(`Error fetching data for ${district.name}:`, error);
+                return { name: district.name, error: "เกิดข้อผิดพลาดในการเชื่อมต่อ API" };
+            }
         }
+
+        async function displayAllAirQualityData() {
+            const container = document.getElementById("data-container");
+            container.innerHTML = "<p>กำลังโหลดข้อมูล...</p>";
+
+            const results = await Promise.all(
+                districts.map((district) => fetchAirQualityData(district))
+            );
+
+            container.innerHTML = "";
+
+            results.forEach((result) => {
+                const stationDiv = document.createElement("div");
+                stationDiv.className = "station";
+
+                if (result.error) {
+                    stationDiv.innerHTML = `
+        <h2>${result.name}</h2>
+        <p style="color: red;">${result.error}</p>
+      `;
+                } else {
+                    stationDiv.innerHTML = `
+        <h2>${result.name}</h2>
+        <p><strong>AQI:</strong> ${result.data.aqi}</p>
+        <p><strong>สถานะอากาศ:</strong> ${getAirQualityStatus(result.data.aqi)}</p>
+      `;
+                }
+
+                container.appendChild(stationDiv);
+            });
+        }
+
+        function getAirQualityStatus(aqi) {
+            if (aqi <= 50) return "ดี";
+            if (aqi <= 100) return "ปานกลาง";
+            if (aqi <= 150) return "เริ่มมีผลกระทบ";
+            if (aqi <= 200) return "ไม่ดีต่อสุขภาพ";
+            if (aqi <= 300) return "ไม่ดีต่อสุขภาพอย่างมาก";
+            return "อันตราย";
+        }
+
+        // เริ่มแสดงข้อมูล
+        displayAllAirQualityData();
+
+
 
 
     </script>
-
 </body>
 
 </html>

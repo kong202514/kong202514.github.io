@@ -128,21 +128,21 @@
 
 
 
-const fileData = {
-    author: "Maria",
-    title: "Date.prototype.toJSON()",
-    createdAt: new Date(2019, 3, 15),
-    updatedAt: new Date(2020, 6, 26),
-};
-const response = JSON.stringify(fileData);
+// const fileData = {
+//     author: "Maria",
+//     title: "Date.prototype.toJSON()",
+//     createdAt: new Date(2019, 3, 15),
+//     updatedAt: new Date(2020, 6, 26),
+// };
+// const response = JSON.stringify(fileData);
 
-// Imagine transmission through network
+// // Imagine transmission through network
 
-const data = JSON.parse(response, (key, value) => {
-    if (key === "createdAt" || key === "updatedAt") {
-        return new Date(value);
-    }
-    return value;
-});
+// const data = JSON.parse(response, (key, value) => {
+//     if (key === "createdAt" || key === "updatedAt") {
+//         return new Date(value);
+//     }
+//     return value;
+// });
 
-console.log(data);
+// console.log(data);
