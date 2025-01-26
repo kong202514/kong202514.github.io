@@ -7,10 +7,14 @@ const app = initializeApp(firebaseConfig), db = getFirestore(app);
 const tasks = [
     "แปรงฟัน",
     "กินข้าว เช้า",
+    "อ่านหนังสือ",
     "กินข้าว เที่ยง",
     "ฝึกกินจุ",
-    "อ่านหนังสือ",
-    "กินข้าวเย็น"
+    "ขายของ",
+    "ออกกำลังกาย",
+    "กินข้าว เย็น",
+   
+
 ];
 
 function generateDates() {

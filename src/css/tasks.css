@@ -1,0 +1,82 @@
+ /* ทำให้ background ของตารางเป็นสีอ่อน */
+ .table {
+     background-color: #f8f9fa;
+ }
+
+ /* เพิ่มสีเมื่อ hover แถวในตาราง */
+ .table-hover tbody tr:hover {
+     background-color: #e0e0e0;
+ }
+
+ /* เพิ่มสีของปุ่ม */
+ .btn-success {
+     background-color: #28a745;
+ }
+
+ .btn-success:hover {
+     background-color: #218838;
+ }
+
+ /* เพิ่มสีพื้นหลังให้กับหัวตาราง */
+ .table-dark th {
+     background-color: #6ce290;
+     color: #000;
+ }
+
+ /* กำหนดการจัดเรียงข้อความ */
+ h1 {
+     color: #007bff;
+ }
+
+ .table th,
+ .table td {
+     padding: 15px;
+ }
+
+ /* ทำให้ checkbox เป็นวงกลม */
+ input[type="checkbox"] {
+     width: 20px;
+     height: 20px;
+     border-radius: 50%;
+     /* ทำให้เป็นวงกลม */
+     appearance: none;
+     /* ปิดการแสดงผลของเริ่มต้น */
+     border: 2px solid #6f8674;
+     /* กำหนดกรอบสี */
+     background-color: #fff;
+
+     position: relative;
+     display: block;
+     margin: auto;
+     /* จัดให้อยู่ตรงกลาง */
+ }
+
+ /* เมื่อ checkbox ถูกเลือก */
+ input[type="checkbox"]:checked {
+     background-color: #28a745;
+     border-color: #28a745;
+ }
+
+ /* ทำให้ checkbox อยู่ตรงกลาง */
+ .table td {
+     text-align: center;
+ }
+
+ /* ทำให้วงกลมภายใน checkbox เมื่อเลือก */
+ input[type="checkbox"]:after {
+     content: '';
+     position: absolute;
+     top: 4px;
+     left: 4px;
+     width: 10px;
+     height: 10px;
+     border-radius: 50%;
+     background-color: #fff;
+     transition: background-color 0.3s ease;
+ }
+
+ /* เมื่อ checkbox ถูกเลือก */
+ input[type="checkbox"]:checked:after {
+     background-color: #28a745;
+
+ }

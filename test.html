@@ -1,143 +1,109 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="en">
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        background-color: #f0f8ff;
-        margin: 0;
-        padding: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
-    }
-
-    .container {
-        text-align: center;
-        padding: 20px;
-        border: 1px solid #ccc;
-        border-radius: 10px;
-        background-color: #ffffff;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    }
-
-    h1 {
-        margin-bottom: 20px;
-        color: #333;
-    }
-
-    #data-container {
-        margin-top: 20px;
-    }
-
-    .station {
-        margin-bottom: 15px;
-        padding: 10px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        background-color: #fafafa;
-        text-align: left;
-    }
-
-    .station h2 {
-        margin: 0 0 5px 0;
-    }
-
-    .station p {
-        margin: 5px 0;
-    }
-</style>
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ข้อมูล PM 2.5 นครราชสีมา</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Local Storage Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            margin: 5px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        .btn.delete {
+            background-color: #dc3545;
+        }
+
+        .btn.delete:hover {
+            background-color: #a71d2a;
+        }
+    </style>
 </head>
 
 <body>
-    <div class="container">
-        <h1>ข้อมูล PM 2.5 จังหวัดนครราชสีมา</h1>
-        <div id="data-container"></div>
-    </div>
+
+    <h1>Local Storage Example</h1>
+
+    <form id="dataForm">
+        <label for="name">Name:</label>
+        <input type="text" id="name" placeholder="Enter your name" required>
+        <br><br>
+        <label for="birthDate">Birth Date:</label>
+        <input type="date" id="birthDate" required>
+        <br><br>
+        <button type="submit" class="btn">Save to Local Storage</button>
+    </form>
+
+    <button id="deleteData" class="btn delete">Delete All Data</button>
+    <p id="status"></p>
+
     <script>
+        // Reference to form and buttons
+        const form = document.getElementById('dataForm');
+        const deleteButton = document.getElementById('deleteData');
+        const status = document.getElementById('status');
 
-        const districts = [
-            { name: "เมืองนครราชสีมา" },
-            { name: "พิมาย" },
-            { name: "ปากช่อง" },
-            // เพิ่มชื่ออำเภอที่ต้องการดึงข้อมูล
-        ];
+        // Save data to Local Storage
+        form.addEventListener('submit', (e) => {
+            e.preventDefault(); // Prevent page reload
 
-        const API_TOKEN = "36800109a6c265613be3bd6a41b12f202117aa0f";
+            const name = document.getElementById('name').value;
+            const birthDate = document.getElementById('birthDate').value;
 
-        async function fetchAirQualityData(district) {
-            const API_URL = `https://api.waqi.info/feed/${encodeURIComponent(
-                district.name
-            )}/?token=${API_TOKEN}`;
+            // Save data as an object in Local Storage
+            const userData = {
+                name: name,
+                birthDate: birthDate,
+                savedAt: new Date().toISOString(), // Save the current timestamp
+            };
 
-            try {
-                const response = await fetch(API_URL);
-                const data = await response.json();
+            localStorage.setItem('userData', JSON.stringify(userData));
 
-                if (data.status === "ok") {
-                    return { name: district.name, data: data.data };
-                } else {
-                    return { name: district.name, error: "ไม่พบข้อมูลสำหรับอำเภอนี้" };
-                }
-            } catch (error) {
-                console.error(`Error fetching data for ${district.name}:`, error);
-                return { name: district.name, error: "เกิดข้อผิดพลาดในการเชื่อมต่อ API" };
+
+            status.textContent = 'Data saved successfully!';
+            status.style.color = 'green';
+
+            // Clear form fields
+            form.reset();
+        });
+
+        // Delete all data from Local Storage
+        deleteButton.addEventListener('click', () => {
+            localStorage.removeItem('userData'); // Remove specific data
+            status.textContent = 'All data deleted!';
+            status.style.color = 'red';
+        });
+
+        // Display message if data exists
+        window.onload = () => {
+            const savedData = localStorage.getItem('userData');
+            if (savedData) {
+                status.textContent = 'You have saved data. Press "Delete All Data" to clear.';
+                status.style.color = 'blue';
             }
-        }
+        };
 
-        async function displayAllAirQualityData() {
-            const container = document.getElementById("data-container");
-            container.innerHTML = "<p>กำลังโหลดข้อมูล...</p>";
+        let a = localStorage.getItem('userData')
+        b = JSON.stringify(a)
 
-            const results = await Promise.all(
-                districts.map((district) => fetchAirQualityData(district))
-            );
-
-            container.innerHTML = "";
-
-            results.forEach((result) => {
-                const stationDiv = document.createElement("div");
-                stationDiv.className = "station";
-
-                if (result.error) {
-                    stationDiv.innerHTML = `
-        <h2>${result.name}</h2>
-        <p style="color: red;">${result.error}</p>
-      `;
-                } else {
-                    stationDiv.innerHTML = `
-        <h2>${result.name}</h2>
-        <p><strong>AQI:</strong> ${result.data.aqi}</p>
-        <p><strong>สถานะอากาศ:</strong> ${getAirQualityStatus(result.data.aqi)}</p>
-      `;
-                }
-
-                container.appendChild(stationDiv);
-            });
-        }
-
-        function getAirQualityStatus(aqi) {
-            if (aqi <= 50) return "ดี";
-            if (aqi <= 100) return "ปานกลาง";
-            if (aqi <= 150) return "เริ่มมีผลกระทบ";
-            if (aqi <= 200) return "ไม่ดีต่อสุขภาพ";
-            if (aqi <= 300) return "ไม่ดีต่อสุขภาพอย่างมาก";
-            return "อันตราย";
-        }
-
-        // เริ่มแสดงข้อมูล
-        displayAllAirQualityData();
-
-
-
-
+        console.log(b);
     </script>
+
 </body>
 
 </html>
