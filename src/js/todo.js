@@ -12,10 +12,9 @@ import {
     // orderBy is not used as sorting is done in memory to avoid index issues
 } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 
- 
+
 // Get references to HTML elements
 const noteTitleInput = document.getElementById('noteTitle');
- 
 const noteContentInput = document.getElementById('noteContent');
 const codeLanguageInput = document.getElementById('codeLanguage');
 const codeSnippetInput = document.getElementById('codeSnippet');
@@ -168,7 +167,7 @@ function showErrorMessage(message) {
         <div class="bg-white p-6 rounded-lg shadow-lg max-w-sm text-center">
             <p class="text-lg font-semibold text-red-600 mb-4">ข้อผิดพลาด!</p>
             <p class="text-gray-700 mb-6">${escapeHTML(message)}</p>
-            <button onclick="this.closest('.fixed').remove()" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">ปิด</button>
+            <button onclick="this.closest('.fixed').remove()" class="bg-teal-500 text-white px-4 py-2 rounded-md hover:bg-teal-600">ปิด</button>
         </div>
     `;
     document.body.appendChild(messageBox);
@@ -181,6 +180,7 @@ function resetImageInput() {
     imagePreview.classList.add('hidden');
     clearImageBtn.classList.add('hidden');
     currentImageData = null; // Reset current image data
+    console.log("Image input and preview reset.");
 }
 
 // Function to clear all input fields
@@ -200,12 +200,12 @@ function clearInputFields() {
 
 // Function to display notes in the UI
 function displayNotes() {
-    notesListDiv.innerHTML = '<h2 class="text-2xl font-semibold text-gray-700 mb-4">ความรู้ที่บันทึกไว้</h2>';
+    notesListDiv.innerHTML = '<h2 class="text-2xl font-semibold text-[#4A5A6A] mb-4">ความรู้ที่บันทึกไว้</h2>';
 
     if (notes.length === 0) {
         const message = document.createElement('p');
         message.id = 'noNotesMessage';
-        message.className = 'text-gray-500 text-center italic';
+        message.className = 'text-[#8D9BAA] text-center italic';
         message.textContent = 'ยังไม่มีความรู้ที่บันทึกไว้';
         notesListDiv.appendChild(message);
     } else {
@@ -215,11 +215,11 @@ function displayNotes() {
             noteCard.setAttribute('data-id', note.id);
 
             const titleElement = document.createElement('h3');
-            titleElement.className = 'text-xl font-semibold text-blue-700 mb-2';
+            titleElement.className = 'text-xl font-semibold text-[#007B8C] mb-2';
             titleElement.textContent = note.title;
 
             const contentElement = document.createElement('p');
-            contentElement.className = 'text-gray-700 text-base mb-4 flex-grow';
+            contentElement.className = 'text-[#3A4A5A] text-base mb-4 flex-grow';
             contentElement.textContent = note.content;
 
             noteCard.appendChild(titleElement);
@@ -228,8 +228,8 @@ function displayNotes() {
             // Add Code Section if available
             if (note.codeSnippet) {
                 const codeSectionTitle = document.createElement('h3');
-                codeSectionTitle.className = 'text-lg font-medium text-gray-700 mt-4 mb-1';
-                codeSectionTitle.innerHTML = `โค้ด: <span class="text-blue-600">${note.language ? `(${escapeHTML(note.language)})` : ''}</span>`;
+                codeSectionTitle.className = 'text-lg font-medium text-[#4A5A6A] mt-4 mb-1';
+                codeSectionTitle.innerHTML = `โค้ด: <span class="text-[#00A3B5]">${note.language ? `(${escapeHTML(note.language)})` : ''}</span>`;
                 noteCard.appendChild(codeSectionTitle);
 
                 const codePre = document.createElement('pre');
@@ -244,12 +244,12 @@ function displayNotes() {
             // Add Code Output Section if available
             if (note.codeOutput) {
                 const outputSectionTitle = document.createElement('h3');
-                outputSectionTitle.className = 'text-lg font-medium text-gray-700 mt-4 mb-1';
+                outputSectionTitle.className = 'text-lg font-medium text-[#4A5A6A] mt-4 mb-1';
                 outputSectionTitle.textContent = 'ผลลัพธ์/คำอธิบาย:';
                 noteCard.appendChild(outputSectionTitle);
 
                 const outputDiv = document.createElement('div');
-                outputDiv.className = 'bg-gray-100 p-3 rounded-lg text-sm font-mono whitespace-pre-wrap break-words';
+                outputDiv.className = 'bg-[#F2F6F8] p-3 rounded-lg text-sm font-mono whitespace-pre-wrap break-words text-[#3A4A5A]';
                 outputDiv.textContent = note.codeOutput;
                 noteCard.appendChild(outputDiv);
             }
@@ -257,7 +257,7 @@ function displayNotes() {
             // Add Image Section if available
             if (note.imageSrc) {
                 const imageSectionTitle = document.createElement('h3');
-                imageSectionTitle.className = 'text-lg font-medium text-gray-700 mt-4 mb-1';
+                imageSectionTitle.className = 'text-lg font-medium text-[#4A5A6A] mt-4 mb-1';
                 imageSectionTitle.textContent = 'รูปภาพที่บันทึกไว้:';
                 noteCard.appendChild(imageSectionTitle);
 
@@ -272,7 +272,7 @@ function displayNotes() {
             }
 
             const timestampElement = document.createElement('p');
-            timestampElement.className = 'text-gray-500 text-sm mt-2';
+            timestampElement.className = 'text-[#8D9BAA] text-sm mt-2';
             timestampElement.textContent = `บันทึกเมื่อ: ${new Date(note.timestamp).toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' })}`;
             noteCard.appendChild(timestampElement);
 
@@ -287,7 +287,7 @@ function displayNotes() {
             const deleteButton = document.createElement('button');
             deleteButton.className = 'delete-btn';
             deleteButton.textContent = 'ลบ';
-            deleteButton.onclick = () => confirmDelete(note.id); // Use custom confirmation
+            deleteButton.onclick = () => confirmDelete(note.id); // Call custom confirmation
 
             actionButtonsDiv.appendChild(editButton);
             actionButtonsDiv.appendChild(deleteButton);
@@ -299,24 +299,20 @@ function displayNotes() {
 }
 
 // Custom confirmation dialog for deletion
- 
 function confirmDelete(idToDelete) {
     const confirmBox = document.createElement('div');
     confirmBox.className = 'fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50';
-
     confirmBox.innerHTML = `
-        <div class="   p-6 rounded-lg shadow-lg max-w-sm text-center">
-            <p class="text-lg font-semibold text-gray-800 mb-4">ยืนยันการลบ?</p>
-            <p class="text-gray-700 mb-6">คุณแน่ใจหรือไม่ว่าต้องการลบความรู้นี้?</p>
+        <div class="bg-white p-6 rounded-lg shadow-lg max-w-sm text-center custom-confirm-box">
+            <p class="text-lg font-semibold text-[#3A4A5A] mb-4">ยืนยันการลบ?</p>
+            <p class="text-[#4A5A6A] mb-6">คุณแน่ใจหรือไม่ว่าต้องการลบความรู้นี้?</p>
             <div class="flex justify-center space-x-4">
-                <button id="confirmDeleteBtn" class="bg-warning text-black px-4 py-2 rounded-md hover:bg-red-600">ลบ</button>
-                <button id="cancelDeleteBtn" class="bg-warning text-black px-4 py-2 rounded-md hover:bg-gray-500">ยกเลิก</button>
+                <button id="confirmDeleteBtn" class="btn-delete-confirm">ลบ</button>
+                <button id="cancelDeleteBtn" class="btn-cancel-confirm">ยกเลิก</button>
             </div>
         </div>
     `;
-
-   
-    notesList.appendChild(confirmBox);
+    notesListDiv.appendChild(confirmBox); // Append to body to ensure it's on top
 
     document.getElementById('confirmDeleteBtn').onclick = () => {
         deleteNoteFromFirestore(idToDelete);
@@ -353,26 +349,43 @@ clearImageBtn.addEventListener('click', resetImageInput);
 
 // Paste event listener for images
 document.addEventListener('paste', (event) => {
+    console.log("Paste event fired."); // Log when paste event happens
     const items = event.clipboardData.items;
+    let imageFound = false;
     for (let i = 0; i < items.length; i++) {
+        console.log(`Item ${i}: type = ${items[i].type}`); // Log item type
         if (items[i].type.indexOf('image') !== -1) {
             const file = items[i].getAsFile();
             if (file) {
+                console.log("Image file found in clipboard:", file.name, file.size, file.type); // Log image file details
                 resetImageInput(); // Clear any existing image before processing new one
 
                 const reader = new FileReader();
                 reader.onload = (e) => {
+                    console.log("FileReader loaded image:", e.target.result.substring(0, 50) + "..."); // Log part of Base64 data
                     imagePreview.src = e.target.result;
                     imagePreview.classList.remove('hidden');
+                    // Ensure the image element is visible by setting display style directly
+                    imagePreview.style.display = 'block';
                     clearImageBtn.classList.remove('hidden');
                     currentImageData = e.target.result; // Store Base64 string
                 };
+                reader.onerror = (e) => {
+                    console.error("FileReader error:", e);
+                    showErrorMessage("เกิดข้อผิดพลาดในการโหลดรูปภาพจากคลิปบอร์ด");
+                };
                 reader.readAsDataURL(file); // Read the image file as a data URL
 
-                event.preventDefault(); // Prevent default paste behavior
+                imageFound = true;
+                event.preventDefault(); // Prevent default paste behavior (e.g., pasting binary as text)
                 break; // Stop after finding the first image
+            } else {
+                console.log("File object is null, even though type is image.");
             }
         }
+    }
+    if (!imageFound) {
+        console.log("No image found in clipboard items.");
     }
 });
 
@@ -421,6 +434,8 @@ function editNote(idToEdit) {
         if (noteToEdit.imageSrc) {
             imagePreview.src = noteToEdit.imageSrc;
             imagePreview.classList.remove('hidden');
+            // Ensure display style is block when showing image
+            imagePreview.style.display = 'block';
             clearImageBtn.classList.remove('hidden');
             currentImageData = noteToEdit.imageSrc;
         } else {
@@ -436,7 +451,3 @@ function editNote(idToEdit) {
 
 // Cancel Edit Button Listener
 cancelEditBtn.addEventListener('click', clearInputFields);
-
-
-
- 
