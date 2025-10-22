@@ -1,84 +1,404 @@
-<html >
+<html lang="th">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Display JSON Data</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Sticky Notes — OOP</title>
+
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&family=Kanit:wght@300;400;600&display=swap"
+        rel="stylesheet">
+
     <style>
+        :root {
+            --bg: #ffffff;
+            --panel: #ffffff;
+            --accent: #6b6bf0;
+            --text: #111;
+            --muted: #666;
+        }
+
+        body.dark {
+            --bg: #8f949f;
+            --panel: #b9aeae;
+            --accent: #7cc9ff;
+            --text: #ffffff;
+            --muted: #9aa3b2;
+        }
+
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Sarabun', 'Kanit', system-ui;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
+        .app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
         }
 
-        th,
-        td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
+        header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0));
+            box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
+            z-index: 10;
         }
 
-        th {
-            background-color: #f4f4f4;
+        header .title {
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .toolbar {
+            margin-left: auto;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .btn {
+            background: var(--panel);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            padding: 8px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(2, 6, 23, 0.06);
+        }
+
+        .search {
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            background: var(--panel);
+        }
+
+        .board {
+            position: relative;
+            flex: 1;
+            overflow: auto;
+            background-image: repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.02) 0 1px, transparent 1px 120px);
+        }
+
+        .note {
+            position: absolute;
+            width: 200px;
+            color: #0f1115;
+            min-width: 120px;
+            min-height: 120px;
+            padding: 10px;
+            box-sizing: border-box;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(2, 6, 23, 0.12);
+            user-select: none;
+            resize: both;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .note:hover {
+            transform: scale(1.02);
+        }
+
+        footer {
+            padding: 10px 14px;
+            text-align: center;
+            color: var(--muted);
         }
     </style>
 </head>
 
 <body>
-    <h1>JSON Data Display</h1>
-    <table id="data-table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Age</th>
-                <th>Email</th>
-                <!-- <th>del</th>
-                <th>Edit</th> -->
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Data will be inserted here -->
-        </tbody>
-    </table>
+    <div class="app">
+        <header>
+            <div class="title">Sticky Notes — OOP</div>
+            <input id="search" class="search" placeholder="ค้นหาโน้ต..." />
+            <div class="toolbar">
+                <button class="btn" id="addNote">+</button>
+                <button class="btn" id="toggleDark">Dark</button>
+                <button class="btn" id="cloudSyncBtn">☁️ Sync</button>
+            </div>
+        </header>
+
+        <main id="board" class="board"></main>
+
+        <footer>
+            Double-click เพื่อแก้ไข / กด 🔗 เพื่อเชื่อม / ลากย้ายได้ / บันทึกอัตโนมัติ
+        </footer>
+    </div>
+
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+        import { getFirestore, setDoc, doc } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB3kPHRDHeYd6rjspNjCH11QG7T2bTd7PM",
+            authDomain: "stickey-note-6bb95.firebaseapp.com",
+            projectId: "stickey-note-6bb95",
+            storageBucket: "stickey-note-6bb95.firebasestorage.app",
+            messagingSenderId: "266704545369",
+            appId: "1:266704545369:web:e403d47f324a91234a3348",
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // ========================
+        // 🔶 CLASS: Note
+        // ========================
+        class Note {
+            constructor(app, id, text = '', color = '#fffacd', x = 50, y = 50, width = 200, height = 200) {
+                this.app = app;
+                this.id = id;
+                this.text = text;
+                this.color = color;
+                this.x = x;
+                this.y = y;
+                this.width = width;
+                this.height = height;
+                this.createElement();
+            }
+
+            createElement() {
+                this.el = document.createElement('div');
+                this.el.className = 'note';
+                this.el.style.backgroundColor = this.color;
+                this.el.style.left = this.x + 'px';
+                this.el.style.top = this.y + 'px';
+                this.el.style.width = this.width + 'px';
+                this.el.style.height = this.height + 'px';
+                this.el.dataset.id = this.id;
+
+                this.el.innerHTML = `
+          <div class="flex justify-between mb-1">
+            <button class="connect">🔗</button>
+            <div>
+              <input type="color" class="color-picker" value="${this.color}">
+              <button class="delete">🗑️</button>
+            </div>
+          </div>
+          <div class="content" contenteditable="true">${this.text}</div>
+        `;
+
+                // Events
+                this.el.querySelector('.delete').onclick = () => this.app.deleteNote(this.id);
+                this.el.querySelector('.color-picker').oninput = (e) => {
+                    this.color = e.target.value;
+                    this.el.style.backgroundColor = this.color;
+                    this.app.saveAll();
+                };
+                this.el.querySelector('.connect').onclick = () => this.app.connectionManager.startConnection(this);
+                this.el.querySelector('.content').oninput = () => {
+                    this.text = this.el.querySelector('.content').innerText;
+                    this.app.saveAll();
+                };
+
+                this.enableDrag();
+            }
+
+            enableDrag() {
+                let offsetX, offsetY, dragging = false;
+                this.el.addEventListener('mousedown', (e) => {
+                    if (e.target.closest('input,button,.content')) return;
+                    dragging = true;
+                    offsetX = e.offsetX;
+                    offsetY = e.offsetY;
+                    this.el.style.zIndex = 9999;
+                });
+                document.addEventListener('mousemove', (e) => {
+                    if (!dragging) return;
+                    this.x = e.pageX - offsetX;
+                    this.y = e.pageY - offsetY;
+                    this.el.style.left = this.x + 'px';
+                    this.el.style.top = this.y + 'px';
+                    this.app.connectionManager.updateLines(this.id);
+                });
+                document.addEventListener('mouseup', () => {
+                    if (dragging) {
+                        dragging = false;
+                        this.el.style.zIndex = '';
+                        this.app.saveAll();
+                    }
+                });
+            }
+
+            getCenter() {
+                const rect = this.el.getBoundingClientRect();
+                const boardRect = this.app.container.getBoundingClientRect();
+                return {
+                    x: rect.left - boardRect.left + rect.width / 2,
+                    y: rect.top - boardRect.top + rect.height / 2
+                };
+            }
+
+        }
+
+        // ========================
+        // 🔶 CLASS: Connection Manager
+        // ========================
+        class NoteConnectionManager {
+            constructor(app) {
+                this.app = app;
+                this.connections = [];
+                this.svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                this.svg.style.position = 'absolute';
+                this.svg.style.top = 0;
+                this.svg.style.left = 0;
+                this.svg.style.width = '100%';
+                this.svg.style.height = '100%';
+                this.svg.style.pointerEvents = 'none';
+                this.app.container.prepend(this.svg);
+
+                this.pendingStart = null;
+            }
+
+            startConnection(note) {
+                if (!this.pendingStart) {
+                    this.pendingStart = note;
+                    note.el.classList.add('ring-2', 'ring-blue-400');
+                } else {
+                    const from = this.pendingStart;
+                    const to = note;
+                    if (from.id !== to.id) this.addConnection(from.id, to.id);
+                    from.el.classList.remove('ring-2', 'ring-blue-400');
+                    this.pendingStart = null;
+                }
+            }
+
+            addConnection(fromId, toId) {
+                const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                line.setAttribute('stroke', 'gray');
+                line.setAttribute('stroke-width', '2');
+                this.svg.appendChild(line);
+
+                this.connections.push({ from: fromId, to: toId, line });
+                this.updateLinePosition(fromId, toId, line);
+                this.app.saveAll();
+            }
+
+            updateLinePosition(fromId, toId, line) {
+                const from = this.app.getNoteById(fromId);
+                const to = this.app.getNoteById(toId);
+                if (!from || !to) return;
+                const A = from.getCenter();
+                const B = to.getCenter();
+                line.setAttribute('x1', A.x);
+                line.setAttribute('y1', A.y);
+                line.setAttribute('x2', B.x);
+                line.setAttribute('y2', B.y);
+            }
 
 
-   
-        <h2>Fill Form with Array Data</h2>
-    
-        <form id="myForm">
-            <label for="name">Name:</label>
-            <input type="text" id="name" name="name"><br><br>
-    
-            <label for="age">Age:</label>
-            <input type="text" id="age" name="age"><br><br>
-    
-            <label for="email">Email:</label>
-            <input type="text" id="email" name="email"><br><br>
-    
-            <input type="submit"   id="qqq" value="Submit">
-            <!-- <button onclick="saveData()">Submit</button> -->
-            <button onclick="saveData()">Previous</button>
+            updateLines(noteId) {
+                this.connections.forEach(c => {
+                    if (c.from === noteId || c.to === noteId)
+                        this.updateLinePosition(c.from, c.to, c.line);
+                });
+            }
 
-        </form>
- 
+            loadConnections(data) {
+                data.forEach(c => {
+                    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                    line.setAttribute('stroke', 'gray');
+                    line.setAttribute('stroke-width', '2');
+                    this.svg.appendChild(line);
+                    this.connections.push({ ...c, line });
+                    this.updateLinePosition(c.from, c.to, line);
+                });
+            }
 
-        
-   
- <hr>
- 
+            serialize() {
+                return this.connections.map(c => ({ from: c.from, to: c.to }));
+            }
+        }
 
- 
-<button onclick="navigate(-1)">Previous</button>
-<button onclick="navigate(1)">Next</button>
-  
+        // ========================
+        // 🔶 CLASS: App
+        // ========================
+        class StickyApp {
+            constructor() {
+                this.notes = [];
+                this.container = document.getElementById('board');
+                this.addBtn = document.getElementById('addNote');
+                this.connectionManager = new NoteConnectionManager(this);
+
+                this.loadAll();
+                this.addBtn.onclick = () => this.addNote();
+            }
+
+            addNote() {
+                const id = Date.now();
+                const note = new Note(this, id);
+                this.notes.push(note);
+                this.container.appendChild(note.el);
+                this.saveAll();
+            }
+
+            getNoteById(id) {
+                return this.notes.find(n => n.id === id);
+            }
+
+            deleteNote(id) {
+                this.notes = this.notes.filter(n => n.id !== id);
+                this.container.querySelector(`.note[data-id="${id}"]`)?.remove();
+                this.connectionManager.connections = this.connectionManager.connections.filter(c => c.from !== id && c.to !== id);
+                this.saveAll();
+            }
+
+            async saveAll() {
+                const data = {
+                    notes: this.notes.map(n => ({
+                        id: n.id,
+                        text: n.text,
+                        color: n.color,
+                        x: n.x,
+                        y: n.y,
+                        width: n.width,
+                        height: n.height
+                    })),
+                    connections: this.connectionManager.serialize(),
+                    updatedAt: new Date().toISOString()
+                };
+
+                localStorage.setItem('notesData', JSON.stringify(data));
+                try {
+                    await setDoc(doc(db, "stickynotes", "default"), data);
+                    console.log("✅ Cloud sync success");
+                } catch (err) {
+                    console.error("❌ Cloud sync failed", err);
+                }
+            }
+
+            loadAll() {
+                const data = JSON.parse(localStorage.getItem('notesData') || '{}');
+                if (data.notes) {
+                    this.notes = data.notes.map(n => new Note(this, n.id, n.text, n.color, n.x, n.y, n.width, n.height));
+                    this.notes.forEach(note => this.container.appendChild(note.el));
+                }
+                if (data.connections) this.connectionManager.loadConnections(data.connections);
+            }
+        }
+
+        const appInstance = new StickyApp();
+
+        // ========================
+        // 🌙 Dark Mode
+        // ========================
+        const toggleDark = document.getElementById('toggleDark');
+        if (localStorage.theme === 'dark') document.body.classList.add('dark');
+        toggleDark.addEventListener('click', () => {
+            document.body.classList.toggle('dark');
+            localStorage.theme = document.body.classList.contains('dark') ? 'dark' : 'light';
+        });
+    </script>
 </body>
-<script src="sss.js"></script>
+
 </html>
-
-
-
-    

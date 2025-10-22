@@ -1,7 +1,15 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-const firebaseConfig = { apiKey: "AIzaSyBEnXLzs0KErv6Y-W6gGUUglIKL7EwkUpM", authDomain: "oopp-39320.firebaseapp.com", projectId: "oopp-39320", storageBucket: "oopp-39320.appspot.com", messagingSenderId: "90209929521", appId: "1:90209929521:web:a675cc4cd33fb19aa00810", measurementId: "G-QR4F959BW2" };
+const firebaseConfig = {
+    apiKey: "AIzaSyBEnXLzs0KErv6Y-W6gGUUglIKL7EwkUpM",
+    authDomain: "oopp-39320.firebaseapp.com",
+    projectId: "oopp-39320",
+    storageBucket: "oopp-39320.appspot.com",
+    messagingSenderId: "90209929521",
+    appId: "1:90209929521:web:a675cc4cd33fb19aa00810",
+    measurementId: "G-QR4F959BW2"
+};
 const app = initializeApp(firebaseConfig), db = getFirestore(app);
 
 const tasks = [
@@ -13,7 +21,7 @@ const tasks = [
     "ขายของ",
     "ออกกำลังกาย",
     "กินข้าว เย็น",
-   
+
 
 ];
 
