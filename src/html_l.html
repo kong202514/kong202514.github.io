@@ -1,4 +1,4 @@
-!DOCTYPE html>
+ 
 <html lang="th">
 
 <head>
@@ -331,6 +331,7 @@
         </div>
 
         <div class="nav-controls" id="nav-controls">
+       
         </div>
 
     </div>
@@ -518,10 +519,11 @@
                 homeBtn.style.display = 'block';
                 homeBtn.id = 'home-btn-mobile';
 
+                navControlsDiv.appendChild(nextBtn);
                 navControlsDiv.appendChild(prevBtn);
                 navControlsDiv.appendChild(homeBtn);
                 navControlsDiv.appendChild(pageStatus);
-                navControlsDiv.appendChild(nextBtn);
+              
 
                 prevBtn.disabled = index === 1;
                 nextBtn.disabled = index === sectionsData.length;
@@ -676,14 +678,12 @@
         addReviewSection(
             "11. แท็กหัวข้อรวม <h1> ถึง <h6>",
             "ใช้สำหรับกำหนดลำดับความสำคัญของหัวข้อ โดย <code>&lt;h1&gt;</code> สำคัญที่สุด.",
-            `
-             <h1>หัวข้อหลัก h1 </h1>
+            `\n<h1>หัวข้อหลัก h1 </h1>
              <h2>หัวข้อหลัก h2 </h2>
              <h3>หัวข้อหลัก h3 </h3>
              <h4>หัวข้อหลัก h4 </h4>
              <h5>หัวข้อหลัก h5 </h5>
              <h6>หัวข้อหลัก h6 </h6>
-              
              `
             ,
             "C. การจัดรูปแบบข้อความและย่อหน้า"
