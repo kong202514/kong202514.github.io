@@ -1,4 +1,3 @@
- 
 <html lang="th">
 
 <head>
@@ -331,7 +330,7 @@
         </div>
 
         <div class="nav-controls" id="nav-controls">
-       
+
         </div>
 
     </div>
@@ -376,7 +375,7 @@
                 title: title,
                 description: description,
                 code: codeExample,
-                category: category || null
+                category: category || null // หมวดหมู่
             });
         }
 
@@ -523,7 +522,7 @@
                 navControlsDiv.appendChild(prevBtn);
                 navControlsDiv.appendChild(homeBtn);
                 navControlsDiv.appendChild(pageStatus);
-              
+
 
                 prevBtn.disabled = index === 1;
                 nextBtn.disabled = index === sectionsData.length;
@@ -615,31 +614,31 @@
             "1. โครงสร้างพื้นฐาน HTML5",
             "เป็นโครงสร้างหลักของหน้าเว็บ, ประกอบด้วย Doctype, <html>, <head> และ <body>.",
             "<!DOCTYPE html>\n<html lang=\"th\">\n<head>...</head>\n<body>...</body>\n</html>",
-            "A. โครงสร้างพื้นฐานของเอกสาร"
+            "A. html พื้นฐาน "
         );
         addReviewSection(
             "2. คำสั่ง <!DOCTYPE html> (การประกาศชนิดเอกสาร)",
             "ใช้ประกาศว่าเอกสารนี้เป็นชนิด HTML5 ต้องอยู่บรรทัดแรกสุดของเอกสารเสมอ.",
             "<!DOCTYPE html>",
-            "A. โครงสร้างพื้นฐานของเอกสาร"
+            "A. html พื้นฐาน "
         );
         addReviewSection(
             "3. แท็กราก <html> และ Attribute lang",
             "เป็นแท็กที่ครอบคลุมเนื้อหาทั้งหมดของเอกสาร. <code>lang=\"th\"</code> บอกเบราว์เซอร์ว่าเป็นภาษาไทย.",
             "<html lang=\"th\">",
-            "A. โครงสร้างพื้นฐานของเอกสาร"
+            "A. html พื้นฐาน "
         );
         addReviewSection(
             "4. แท็กส่วนหัว <head> (Metadata)",
             "กำหนดข้อมูลที่เกี่ยวกับเอกสาร (Metadata) ซึ่งจะไม่แสดงผลบนหน้าจอ เช่น ชื่อหน้า, ชุดตัวอักษร, และลิงก์ไปยัง CSS.",
             "<head>\n <meta charset=\"UTF-8\">\n <title>...</title>\n</head>",
-            "A. โครงสร้างพื้นฐานของเอกสาร"
+            "A. html พื้นฐาน "
         );
         addReviewSection(
             "5. แท็กส่วนเนื้อหา <body>",
             "คือส่วนที่ใช้สำหรับแสดงเนื้อหาทั้งหมดที่ผู้ใช้จะเห็นบนหน้าจอ เช่น ข้อความ, รูปภาพ, ลิงก์ และตาราง.",
             "<body>\n \n</body>",
-            "A. โครงสร้างพื้นฐานของเอกสาร"
+            "A. html พื้นฐาน "
         );
 
         // === B. การจัดการ Metadata และ Link (6-9) ===
@@ -647,25 +646,25 @@
             "6. แท็กชื่อหน้า <title>",
             "ข้อความที่อยู่ภายในแท็กนี้จะไปแสดงเป็น **ชื่อบนแท็บเบราว์เซอร์** ของหน้าเว็บ.",
             "<head>\n <title>คู่มือทบทวน HTML พื้นฐาน</title>\n</head>",
-            "B. การจัดการ Metadata และ Link"
+            "A. html พื้นฐาน "
         );
         addReviewSection(
             "7. แท็กกำหนดชุดตัวอักษร <meta charset>",
             "จำเป็นอย่างยิ่งสำหรับภาษาไทย ควรใช้ <code>UTF-8</code> เพื่อรองรับตัวอักษรได้หลากหลาย.",
             "<meta charset=\"UTF-8\">",
-            "B. การจัดการ Metadata และ Link"
+            "A. html พื้นฐาน "
         );
         addReviewSection(
             "8. แท็กกำหนด Viewport สำหรับ Responsive Design",
             "ช่วยให้เว็บเพจปรับขนาดตามหน้าจออุปกรณ์มือถือได้อย่างถูกต้อง.",
             "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">",
-            "B. การจัดการ Metadata และ Link"
+            "A. html พื้นฐาน "
         );
         addReviewSection(
             "9. การลิงก์ไปยังไฟล์ CSS ภายนอก",
             "ใช้แท็ก <code>&lt;link&gt;</code> เพื่อนำเข้าไฟล์จัดรูปแบบ CSS.",
             "<link rel=\"stylesheet\" href=\"styles.css\">",
-            "B. การจัดการ Metadata และ Link"
+            "A. html พื้นฐาน "
         );
 
         // === C. การจัดรูปแบบข้อความและย่อหน้า (10-15) ===
@@ -673,7 +672,7 @@
             "10. แท็กย่อหน้า <p> (Paragraph)",
             "ใช้สำหรับสร้างย่อหน้าข้อความ. เบราว์เซอร์จะเว้นบรรทัดก่อนและหลังแท็ก <code>&lt;p&gt;</code>.",
             "<p>นี่คือย่อหน้าข้อความแรก</p>\n<p>นี่คือย่อหน้าข้อความที่สอง</p>",
-            "C. การจัดรูปแบบข้อความและย่อหน้า"
+            "A. html พื้นฐาน "
         );
         addReviewSection(
             "11. แท็กหัวข้อรวม <h1> ถึง <h6>",
@@ -686,31 +685,31 @@
              <h6>หัวข้อหลัก h6 </h6>
              `
             ,
-            "C. การจัดรูปแบบข้อความและย่อหน้า"
+            "A. html พื้นฐาน "
         );
         addReviewSection(
             "12. การเว้นบรรทัดด้วยแท็ก <br> (Line break)",
             "เป็นแท็กเดี่ยวที่ใช้ขึ้นบรรทัดใหม่ **โดยไม่เริ่มย่อหน้าใหม่**.",
             "บรรทัดแรก<br>บรรทัดที่สอง",
-            "C. การจัดรูปแบบข้อความและย่อหน้า"
+            "A. html พื้นฐาน "
         );
         addReviewSection(
             "13. ตัวหนา (<strong>) และ ตัวเอียง (<em>) - Semantic",
             "<code>&lt;strong&gt;</code> เน้นความสำคัญ, <code>&lt;em&gt;</code> เน้นเสียง. ควรใช้แทน <code>&lt;b&gt;</code> และ <code>&lt;i&gt;</code> ใน HTML5.",
             "นี่คือข้อความที่ <strong>สำคัญมาก</strong> และ <em>ควรจะอ่าน</em>.",
-            "C. การจัดรูปแบบข้อความและย่อหน้า"
+            "A. html พื้นฐาน "
         );
         addReviewSection(
             "14. ตัวห้อย (<sub>) และ ตัวยก (<sup>)",
             "ใช้แท็ก <code>&lt;sub&gt;</code> สำหรับตัวห้อย และ <code>&lt;sup&gt;</code> สำหรับตัวยก.",
             "น้ำคือ H<sub>2</sub>O และ E=mc<sup>2</sup>.",
-            "C. การจัดรูปแบบข้อความและย่อหน้า"
+            "A. html พื้นฐาน "
         );
         addReviewSection(
             "15. การใส่เส้นคั่นแนวนอนด้วยแท็ก <hr>",
             "เป็นแท็กเดี่ยวที่ใช้สร้างเส้นคั่นแนวนอน (Horizontal Rule) เพื่อแบ่งเนื้อหาส่วนต่างๆ.",
             "<p>เนื้อหาส่วนบน</p>\n<hr>\n<p>เนื้อหาส่วนล่าง</p>",
-            "C. การจัดรูปแบบข้อความและย่อหน้า"
+            "A. html พื้นฐาน "
         );
 
         // === D. การเชื่อมโยงและรูปภาพ (16-20) ===
@@ -718,31 +717,31 @@
             "16. การสร้างลิงก์ (Hyperlink) ด้วยแท็ก <a>",
             "ใช้ <code>&lt;a&gt;</code> กำหนดจุดเชื่อมโยง, <code>href</code> กำหนด URL ปลายทาง.",
             "<a href=\"https://www.google.com\">ไปที่ Google</a>",
-            "D. การเชื่อมโยงและรูปภาพ"
+            "A. html พื้นฐาน "
         );
         addReviewSection(
             "17. Attribute target=\"_blank\" (เปิดแท็บใหม่)",
             "ใช้ <code>target=\"_blank\"</code> เพื่อบังคับให้ลิงก์เปิดในหน้าต่างหรือแท็บใหม่.",
             "<a href=\"#\" target=\"_blank\">เปิดในแท็บใหม่</a>",
-            "D. การเชื่อมโยงและรูปภาพ"
+            "A. html พื้นฐาน "
         );
         addReviewSection(
             "18. การสร้างลิงก์ภายในหน้า (Anchor Link)",
             "กำหนด <code>id</code> ในส่วนเป้าหมาย, แล้วอ้างอิงด้วย <code>#id</code> ในแท็ก <code>&lt;a&gt;</code>.",
             "<a href=\"#section2\">ไปหัวข้อ 2</a>... <h2 id=\"section2\">หัวข้อ 2</h2>",
-            "D. การเชื่อมโยงและรูปภาพ"
+            "A. html พื้นฐาน "
         );
         addReviewSection(
             "19. การแทรกรูปภาพด้วยแท็ก <img>",
             "เป็นแท็กเดี่ยว, <code>src</code> คือที่อยู่รูปภาพ, <code>alt</code> คือข้อความอธิบาย (สำคัญต่อ SEO).",
             "<img src=\"logo.png\" alt=\"โลโก้บริษัท\">",
-            "D. การเชื่อมโยงและรูปภาพ"
+            "A. html พื้นฐาน "
         );
         addReviewSection(
             "20. การกำหนดขนาดรูปภาพด้วย Attribute width และ height",
             "ใช้กำหนดความกว้างและความสูงของรูปภาพเป็นพิกเซล.",
             "<img src=\"image.jpg\" width=\"200\" height=\"150\">",
-            "D. การเชื่อมโยงและรูปภาพ"
+            "A. html พื้นฐาน "
         );
 
         // === E. การสร้างรายการ (List) (21-25) ===
@@ -750,31 +749,31 @@
             "21. รายการแบบมีลำดับ (Ordered List) <ol>",
             "ใช้ <code>&lt;ol&gt;</code> และ <code>&lt;li&gt;</code>, จะแสดงเป็นตัวเลขหรือตัวอักษรตามลำดับ.",
             "<ol>\n <li>รายการที่ 1</li>\n <li>รายการที่ 2</li>\n</ol>",
-            "E. การสร้างรายการ (List)"
+            "A. html พื้นฐาน "
         );
         addReviewSection(
             "22. รายการแบบไม่มีลำดับ (Unordered List) <ul>",
             "ใช้ <code>&lt;ul&gt;</code> และ <code>&lt;li&gt;</code>, จะแสดงเป็นจุด Bullet.",
             "<ul>\n <li>แอปเปิล</li>\n <li>กล้วย</li>\n</ul>",
-            "E. การสร้างรายการ (List)"
+            "A. html พื้นฐาน "
         );
         addReviewSection(
             "23. Attribute type ของรายการแบบมีลำดับ",
             "ใช้กำหนดสไตล์ของลำดับ เช่น <code>type=\"A\"</code> (ตัวอักษรใหญ่), <code>type=\"i\"</code> (เลขโรมันเล็ก).",
             '<ol type="A">\n <li>ก</li>\n</ol>',
-            "E. การสร้างรายการ (List)"
+            "A. html พื้นฐาน "
         );
         addReviewSection(
             "24. การทำรายการซ้อนกัน (Nested Lists)",
             "สามารถวางแท็ก <code>&lt;ul&gt;</code> หรือ <code>&lt;ol&gt;</code> ไว้ภายใน <code>&lt;li&gt;</code> ได้.",
             "<ul>\n <li>ผลไม้\n  <ol>\n   <li>ส้ม</li>\n  </ol>\n </li>\n</ul>",
-            "E. การสร้างรายการ (List)"
+            "A. html พื้นฐาน "
         );
         addReviewSection(
             "25. รายการแบบคำจำกัดความ (Description List) <dl>",
             "ใช้สำหรับแสดงรายการของคำและคำอธิบาย (<code>&lt;dt&gt;</code>: คำ, <code>&lt;dd&gt;</code>: คำอธิบาย).",
             "<dl>\n <dt>HTML</dt>\n <dd>ภาษา Markup</dd>\n</dl>",
-            "E. การสร้างรายการ (List)"
+            "A. html พื้นฐาน "
         );
 
         // === F. การจัดการตาราง (Table) (26-30) ===
@@ -782,31 +781,31 @@
             "26. แท็กการสร้างตาราง <table>, <tr>, <td>",
             "<code>&lt;table&gt;</code> (ตาราง), <code>&lt;tr&gt;</code> (แถว), <code>&lt;td&gt;</code> (เซลล์ข้อมูล).",
             "<table border='1'>\n <tr>\n  <td>ข้อมูล 1</td>\n </tr>\n</table>",
-            "F. การจัดการตาราง (Table)"
+            "A. html พื้นฐาน "
         );
         addReviewSection(
             "27. แท็กหัวตาราง (Table Header) <th>",
             "ใช้แทน <code>&lt;td&gt;</code> ในแถวแรกเพื่อกำหนดเป็นส่วนหัวของตาราง (มักแสดงเป็นตัวหนาและอยู่กึ่งกลาง).",
             "<table>\n <tr>\n  <th>ชื่อ</th>\n  <th>คะแนน</th>\n </tr>\n</table>",
-            "F. การจัดการตาราง (Table)"
+            "A. html พื้นฐาน "
         );
         addReviewSection(
             "28. ส่วนหัว (<thead>), ส่วนเนื้อหา (<tbody>), ส่วนท้าย (<tfoot>) ตาราง",
             "ช่วยกำหนดโครงสร้างตารางเพื่อการจัดรูปแบบและ SEO ที่ดีขึ้น.",
             "<table>\n <thead><tr><th>หัวข้อ</th></tr></thead>\n <tbody><tr><td>ข้อมูล</td></tr></tbody>\n</table>",
-            "F. การจัดการตาราง (Table)"
+            "A. html พื้นฐาน "
         );
         addReviewSection(
             "29. การรวมเซลล์ในแนวนอน (Colspan) และแนวตั้ง (Rowspan)",
             "ใช้ <code>colspan</code> (แนวนอน) และ <code>rowspan</code> (แนวตั้ง) ในแท็ก <code>&lt;td&gt;</code> หรือ <code>&lt;th&gt;</code>.",
             '<table border="1">\n <tr><td colspan="2">รวม 2 คอลัมน์</td></tr>\n</table>',
-            "F. การจัดการตาราง (Table)"
+            "A. html พื้นฐาน "
         );
         addReviewSection(
             "30. คุณสมบัติระยะห่างภายใน (cellpadding) และระหว่างเซลล์ (cellspacing)",
             "<code>cellpadding</code> (ขอบเซลล์ถึงเนื้อหา). <code>cellspacing</code> (ระหว่างเซลล์).",
             '<table border="1" cellpadding="8" cellspacing="4"><tr><td>ข้อมูล</td></tr></table>',
-            "F. การจัดการตาราง (Table)"
+            "A. html พื้นฐาน "
         );
 
         // === G. การสร้างฟอร์ม (Form) และ Input พื้นฐาน (31-36) ===
@@ -814,37 +813,37 @@
             "31. แท็กการสร้างฟอร์ม <form> และ Attribute action/method",
             "<code>&lt;form&gt;</code> ห่อหุ้ม Input. <code>action</code>: URL ปลายทาง. <code>method</code>: 'get' หรือ 'post'.",
             '<form action="submit_data.php" method="post">\n \n</form>',
-            "G. การสร้างฟอร์มและ Input พื้นฐาน"
+            "A. html พื้นฐาน "
         );
         addReviewSection(
             "32. แท็ก Input พื้นฐาน: text, password, submit",
             "<code>type=\"text\"</code>, <code>type=\"password\"</code>, <code>type=\"submit\"</code> (ปุ่มส่งข้อมูล).",
             '<input type="text" name="user">\n<input type="password" name="pass">\n<input type="submit" value="ส่ง">',
-            "G. การสร้างฟอร์มและ Input พื้นฐาน"
+            "A. html พื้นฐาน "
         );
         addReviewSection(
             "33. Input Type: checkbox และ radio",
             "<code>checkbox</code>: เลือกได้หลายรายการ. <code>radio</code>: เลือกได้รายการเดียว (ต้องมี <code>name</code> เดียวกัน).",
             '<input type="checkbox" name="fruit"> แอปเปิล\n<input type="radio" name="gender" value="m"> ชาย',
-            "G. การสร้างฟอร์มและ Input พื้นฐาน"
+            "A. html พื้นฐาน "
         );
         addReviewSection(
             "34. การใช้ Label (<label>) เพื่อผูกกับ Input",
             "ใช้ <code>&lt;label&gt;</code> และ <code>for</code> attribute เพื่อเพิ่มความสามารถในการเข้าถึงและทำให้คลิกง่ายขึ้น.",
             '<label for="username">ชื่อ:</label>\n<input type="text" id="username">',
-            "G. การสร้างฟอร์มและ Input พื้นฐาน"
+            "A. html พื้นฐาน "
         );
         addReviewSection(
             "35. กล่องข้อความหลายบรรทัด <textarea>",
             "ใช้สำหรับรับข้อมูลข้อความจำนวนมาก, สามารถกำหนด <code>rows</code> และ <code>cols</code> ได้.",
             '<textarea rows="4" cols="50" placeholder="ความคิดเห็น"></textarea>',
-            "G. การสร้างฟอร์มและ Input พื้นฐาน"
+            "A. html พื้นฐาน "
         );
         addReviewSection(
             "36. การสร้าง Dropdown List (<select> และ <option>)",
             "<code>&lt;select&gt;</code> คือกล่องหลัก, <code>&lt;option&gt;</code> คือรายการตัวเลือก.",
             '<select name="country">\n <option value="th">ไทย</option>\n <option value="en">อังกฤษ</option>\n</select>',
-            "G. การสร้างฟอร์มและ Input พื้นฐาน"
+            "A. html พื้นฐาน "
         );
 
         // === H. Input Type ใน HTML5 (37-40) ===
@@ -852,25 +851,25 @@
             "37. Input Type: number และ range",
             "<code>number</code>: สำหรับตัวเลข (มีปุ่มเพิ่ม/ลด). <code>range</code>: ตัวเลื่อนเลือกค่า (Slider).",
             '<input type="number" min="1" max="10">\n<input type="range" min="0" max="100">',
-            "H. Input Type ใน HTML5"
+            "A. html พื้นฐาน "
         );
         addReviewSection(
             "38. Input Type: email และ url",
             "บังคับให้ผู้ใช้กรอกรูปแบบอีเมลหรือ URL ที่ถูกต้อง (มีการตรวจสอบเบื้องต้น).",
             '<input type="email" placeholder="อีเมล">\n<input type="url" placeholder="เว็บไซต์">',
-            "H. Input Type ใน HTML5"
+            "A. html พื้นฐาน "
         );
         addReviewSection(
             "39. Input Type: date และ color",
             "<code>date</code>: ปฏิทินเลือกวันที่. <code>color</code>: ตัวเลือกสี.",
             '<label>วันเกิด:</label><input type="date">\n<label>สีโปรด:</label><input type="color">',
-            "H. Input Type ใน HTML5"
+            "A. html พื้นฐาน "
         );
         addReviewSection(
             "40. คุณสมบัติ placeholder และ required",
             "<code>placeholder</code>: ข้อความตัวอย่างในช่อง. <code>required</code>: บังคับให้กรอกข้อมูลก่อนส่งฟอร์ม.",
             '<input type="text" placeholder="กรอกชื่อ" required>',
-            "H. Input Type ใน HTML5"
+            "A. html พื้นฐาน "
         );
 
         // === I. HTML5 Semantic Elements (41-45) ===
@@ -878,31 +877,31 @@
             "41. แท็กส่วนหัวของหน้า <header>",
             "ใช้กำหนดส่วนหัวหรือโลโก้ของเว็บไซต์ (ไม่เหมือน <code>&lt;head&gt;</code>).",
             "<header>\n <h1>ชื่อเว็บไซต์</h1>\n</header>",
-            "I. HTML5 Semantic Elements"
+            "A. html พื้นฐาน "
         );
         addReviewSection(
             "42. แท็กส่วนนำทาง <nav>",
             "ใช้สำหรับห่อหุ้มลิงก์นำทางหลักของเว็บไซต์ (เช่น เมนู).",
             "<nav>\n <a href=\"#\">หน้าหลัก</a> | <a href=\"#\">ติดต่อ</a>\n</nav>",
-            "I. HTML5 Semantic Elements"
+            "A. html พื้นฐาน "
         );
         addReviewSection(
             "43. แท็กส่วนหลัก <main> และ ส่วนเนื้อหา <section>",
             "<code>&lt;main&gt;</code>: เนื้อหาหลักที่ไม่ซ้ำกัน. <code>&lt;section&gt;</code>: กลุ่มเนื้อหาที่มีความเกี่ยวข้องกัน.",
             "<main>\n <section>...</section>\n</main>",
-            "I. HTML5 Semantic Elements"
+            "A. html พื้นฐาน "
         );
         addReviewSection(
             "44. แท็กส่วนข้างเคียง <aside>",
             "ใช้สำหรับเนื้อหาที่เกี่ยวข้องแต่แยกออกมา เช่น Sidebar, โฆษณา, หรือลิงก์ที่เกี่ยวข้อง.",
             "<aside>\n <h4>ลิงก์ด่วน</h4>\n <ul>...</ul>\n</aside>",
-            "I. HTML5 Semantic Elements"
+            "A. html พื้นฐาน "
         );
         addReviewSection(
             "45. แท็กส่วนท้าย <figcaption> และ <footer>",
             "<code>&lt;figcaption&gt;</code>: คำอธิบายรูปภาพ/สื่อ. <code>&lt;footer&gt;</code>: ข้อมูลลิขสิทธิ์, ผู้เขียน, ลิงก์ท้ายหน้า.",
             "<footer>\n © 2024 คู่มือ HTML\n</footer>",
-            "I. HTML5 Semantic Elements"
+            "v"
         );
 
         // ----------------------------------------------------
