@@ -8,13 +8,27 @@
         integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <style>
         .container {
+            /* จำกัดความกว้างสูงสุดเพื่อให้ดูดีบนแท็บเล็ต/เดสก์ท็อป แต่บนมือถือจะขยายเต็ม */
             max-width: 600px;
-            margin-top: 20px;
+            margin-top: 15px;
+            /* ลด margin ด้านบนเล็กน้อย */
+            padding: 0 10px;
+            /* เพิ่ม padding ด้านข้างเล็กน้อย */
+        }
+
+        /* ปรับขนาดใหญ่ขึ้นสำหรับโทรศัพท์ */
+        h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        h5 {
+            font-size: 1.25rem;
         }
 
         .output-box {
-            font-size: 2.5rem;
-            font-weight: bold;
+            font-size: 3rem;
+            /* ทำให้ผลลัพธ์ใหญ่ขึ้นชัดเจน */
             padding: 20px;
             background-color: #f8f9fa;
             border-radius: 8px;
@@ -22,8 +36,39 @@
             border: 2px solid #007bff;
         }
 
-        .btn-group-custom .btn {
-            margin: 4px;
+        /* ปรับปรุงการจัดเรียงปุ่มสำหรับมือถือ (รูปแบบนม) */
+        .btn-group-milk-format {
+            margin-bottom: 1rem;
+        }
+
+        .btn-group-milk-format .btn {
+            width: 100%;
+            /* ทำให้ปุ่มเต็มความกว้างในคอลัมน์เล็ก */
+            margin: 5px 0;
+            /* เพิ่มระยะห่างระหว่างปุ่มในแนวตั้ง */
+            white-space: normal;
+            /* อนุญาตให้ข้อความในปุ่มขึ้นบรรทัดใหม่ */
+            padding: 10px 5px;
+            /* เพิ่ม padding เพื่อให้กดง่าย */
+            font-size: 0.9rem;
+        }
+
+        /* ปุ่มเพิ่ม/ลด จำนวนถาด/เศษ */
+        .btn-count-modifier .btn {
+            flex-grow: 1;
+            /* ทำให้ปุ่มขยายเท่าๆ กัน */
+            margin: 5px;
+            padding: 12px 0;
+            /* ทำให้ปุ่มสูงขึ้น กดง่ายขึ้น */
+            font-size: 1rem;
+        }
+
+        /* ปรับปรุงการจัดเรียงกลุ่มปุ่ม */
+        .btn-group-custom {
+            display: flex;
+            flex-wrap: wrap;
+            /* ให้ปุ่มขึ้นบรรทัดใหม่เมื่อหน้าจอแคบ */
+            justify-content: center;
         }
 
         .current-value {
@@ -31,14 +76,10 @@
             color: #28a745;
         }
 
-        /* 1. CSS Class ใหม่สำหรับปุ่มรูปแบบนมที่ถูกเลือก */
         .btn-milk-format.active {
             background-color: #007bff;
-            /* สีพื้นหลัง */
             color: white;
-            /* สีตัวอักษร */
             border-color: #007bff;
-            /* สีขอบ */
         }
     </style>
 
@@ -47,47 +88,43 @@
 <body>
 
     <div class="container text-center">
-        <h3 class="mb-3">เครื่องมือคำนวณจำนวนนม</h3>
+        <h3 class="mt-3 mb-3">เครื่องมือคำนวณจำนวนนม</h3>
 
         <div class="output-box t_output">0</div>
 
         <div class="mb-4">
-            <p>รูปแบบนมที่เลือก: <span id="milkFormatDisplay" class="current-value">0</span></p>
-            <p>จำนวนถาดปัจจุบัน: <span id="trayCountDisplay" class="current-value">0</span></p>
-            <p>จำนวนเศษปัจจุบัน: <span id="extraCountDisplay" class="current-value">0</span></p>
+            <p class="mb-1">รูปแบบนมที่เลือก: <span id="milkFormatDisplay" class="current-value">0</span></p>
+            <p class="mb-1">จำนวนถาดปัจจุบัน: <span id="trayCountDisplay" class="current-value">0</span></p>
+            <p class="mb-1">จำนวนเศษปัจจุบัน: <span id="extraCountDisplay" class="current-value">0</span></p>
         </div>
 
         <hr>
 
         <h5 class="mt-4">รูปแบบนมต่อถาด (จำนวนตั้งต้น)</h5>
-        <div class="btn-group-custom mb-4" id="milkFormatButtons">
-            <button class="btn btn-outline-primary btn-milk-format" onclick="setMilkFormat(120, this)">นม 85 ml 120
-                ขวด</button>
-            <button class="btn btn-outline-primary btn-milk-format" onclick="setMilkFormat(90, this)">นม 140 ml 90
-                ขวด</button>
-            <button class="btn btn-outline-primary btn-milk-format" onclick="setMilkFormat(48, this)">ชาหมักเล็ก หรือ
-                โปรตีนเล็ก 48 ขวด</button>
-            <button class="btn btn-outline-primary btn-milk-format" onclick="setMilkFormat(38, this)">ชาหมักใหญ่ หรือ
-                โปรตีนใหญ่ 38 ขวด</button>
-            <button class="btn btn-outline-primary btn-milk-format" onclick="setMilkFormat(25, this)">นม 400 ml 25
-                ขวด</button>
 
-            <button class="btn btn-outline-primary btn-milk-format" onclick="setMilkFormat(24, this)">โยเกิต 24
-                กระปุก</button>
-
-
-            <button class="btn btn-outline-primary btn-milk-format" onclick="setMilkFormat(30, this)">นม 300 ml 30
-                ขวด</button>
-            <button class="btn btn-outline-primary btn-milk-format" onclick="setMilkFormat(16, this)">นม 700 ml 16
-                ขวด</button>
-            <button class="btn btn-outline-primary btn-milk-format" onclick="setMilkFormat(10, this)">เต้าหู้ 10
-                หลอด</button>
+        <div class="row btn-group-milk-format">
+            <div class="col-6 col-sm-4"><button class="btn btn-outline-primary btn-milk-format"
+                    onclick="setMilkFormat(120, this)">นม 85 ml 120 ขวด</button></div>
+            <div class="col-6 col-sm-4"><button class="btn btn-outline-primary btn-milk-format"
+                    onclick="setMilkFormat(90, this)">นม 140 ml 90 ขวด</button></div>
+            <div class="col-6 col-sm-4"><button class="btn btn-outline-primary btn-milk-format"
+                    onclick="setMilkFormat(48, this)">ชาหมักเล็ก/โปรตีนเล็ก 48 ขวด</button></div>
+            <div class="col-6 col-sm-4"><button class="btn btn-outline-primary btn-milk-format"
+                    onclick="setMilkFormat(38, this)">ชาหมักใหญ่/โปรตีนใหญ่ 38 ขวด</button></div>
+            <div class="col-6 col-sm-4"><button class="btn btn-outline-primary btn-milk-format"
+                    onclick="setMilkFormat(25, this)">นม 400 ml 25 ขวด</button></div>
+            <div class="col-6 col-sm-4"><button class="btn btn-outline-primary btn-milk-format"
+                    onclick="setMilkFormat(30, this)">นม 300 ml 30 ขวด</button></div>
+            <div class="col-6 col-sm-4"><button class="btn btn-outline-primary btn-milk-format"
+                    onclick="setMilkFormat(16, this)">นม 700 ml 16 ขวด</button></div>
+            <div class="col-6 col-sm-4"><button class="btn btn-outline-primary btn-milk-format"
+                    onclick="setMilkFormat(10, this)">เต้าหู้ 10 หลอด</button></div>
         </div>
 
         <hr>
 
         <h5 class="mt-4">จำนวนถาด</h5>
-        <div class="btn-group-custom mb-4">
+        <div class="d-flex flex-wrap justify-content-center btn-count-modifier mb-4">
             <button class="btn btn-success" onclick="updateTrayCount(1)">+1 </button>
             <button class="btn btn-success" onclick="updateTrayCount(5)">+5 </button>
             <button class="btn btn-success" onclick="updateTrayCount(10)">+10 </button>
@@ -100,7 +137,7 @@
         <hr>
 
         <h5 class="mt-4">จำนวนเศษ</h5>
-        <div class="btn-group-custom mb-4">
+        <div class="d-flex flex-wrap justify-content-center btn-count-modifier mb-4">
             <button class="btn btn-success" onclick="updateExtraCount(1)">+1 </button>
             <button class="btn btn-success" onclick="updateExtraCount(5)">+5 </button>
             <button class="btn btn-success" onclick="updateExtraCount(10)">+10 </button>
@@ -123,53 +160,45 @@
 
         // ฟังก์ชันหลักในการคำนวณและแสดงผล
         function calculateAndDisplay() {
-            // สูตรคำนวณ: ผลรวม = รูปแบบนม * จำนวนถาด + จำนวนเศษ
             let total_milk = (milk_format * tray_count) + extra_count;
 
-            // แสดงผลรวม
             document.querySelector('.t_output').innerHTML = total_milk;
 
-            // อัปเดตการแสดงผลสำหรับค่าตัวแปรปัจจุบัน
-            document.getElementById('milkFormatDisplay').innerHTML = "<h1>" + milk_format + "</h1>";
-            document.getElementById('trayCountDisplay').innerHTML = "<h1>" + tray_count + "</h1>";
-            document.getElementById('extraCountDisplay').innerHTML = "<h1>" + extra_count + "</h1>";
+            document.getElementById('milkFormatDisplay').innerHTML = milk_format;
+            document.getElementById('trayCountDisplay').innerHTML = tray_count;
+            document.getElementById('extraCountDisplay').innerHTML = extra_count;
         }
 
-        // 3. ฟังก์ชันสำหรับกำหนดรูปแบบนม (ปรับปรุง)
+        // ฟังก์ชันสำหรับกำหนดรูปแบบนม (พร้อมไฮไลท์)
         function setMilkFormat(value, element) {
-            // ลบ class 'active' ออกจากปุ่มที่เคยถูกเลือกก่อนหน้า (ถ้ามี)
             if (activeMilkFormatButton) {
                 activeMilkFormatButton.classList.remove('active');
             }
 
-            // กำหนดค่ารูปแบบนมใหม่
             milk_format = value;
 
-            // เพิ่ม class 'active' ให้กับปุ่มที่เพิ่งถูกคลิก
             element.classList.add('active');
-
-            // เก็บอ้างอิงถึงปุ่มที่ถูกเลือกปัจจุบัน
             activeMilkFormatButton = element;
 
             calculateAndDisplay();
         }
 
-        // ฟังก์ชันสำหรับเพิ่ม/ลด จำนวนถาด (ไม่เปลี่ยนแปลง)
+        // ฟังก์ชันสำหรับเพิ่ม/ลด จำนวนถาด
         function updateTrayCount(value) {
             if (value === 'reset') {
                 tray_count = 0;
             } else {
-                tray_count = Math.max(0, tray_count + value); // ป้องกันไม่ให้ค่าน้อยกว่า 0
+                tray_count = Math.max(0, tray_count + value);
             }
             calculateAndDisplay();
         }
 
-        // ฟังก์ชันสำหรับเพิ่ม/ลด จำนวนเศษ (ไม่เปลี่ยนแปลง)
+        // ฟังก์ชันสำหรับเพิ่ม/ลด จำนวนเศษ
         function updateExtraCount(value) {
             if (value === 'reset') {
                 extra_count = 0;
             } else {
-                extra_count = Math.max(0, extra_count + value); // ป้องกันไม่ให้ค่าน้อยกว่า 0
+                extra_count = Math.max(0, extra_count + value);
             }
             calculateAndDisplay();
         }
