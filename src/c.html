@@ -1,0 +1,147 @@
+ 
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เครื่องมือคำนวณจำนวนนม</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <style>
+        .container {
+            max-width: 600px;
+            margin-top: 20px;
+        }
+
+        .output-box {
+            font-size: 2.5rem;
+            font-weight: bold;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 2px solid #007bff;
+        }
+
+        .btn-group-custom .btn {
+            margin: 4px;
+        }
+
+        .current-value {
+            font-weight: bold;
+            color: #28a745;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="container text-center">
+        <h3 class="mb-3">เครื่องมือคำนวณจำนวนนม</h3>
+
+        <div class="output-box t_output">0</div>
+
+        <div class="mb-4">
+            <p>รูปแบบนมที่เลือก: <span id="milkFormatDisplay" class="current-value">0</span></p>
+            <p>จำนวนถาดปัจจุบัน: <span id="trayCountDisplay" class="current-value">0</span></p>
+            <p>จำนวนเศษปัจจุบัน: <span id="extraCountDisplay" class="current-value">0</span></p>
+        </div>
+
+        <hr>
+
+        <h5 class="mt-4">รูปแบบนมต่อถาด (จำนวนตั้งต้น)</h5>
+        <div class="btn-group-custom mb-4">
+            <button class="btn btn-outline-primary" onclick="setMilkFormat(120)">120</button>
+            <button class="btn btn-outline-primary" onclick="setMilkFormat(90)">90</button>
+            <button class="btn btn-outline-primary" onclick="setMilkFormat(48)">48</button>
+            <button class="btn btn-outline-primary" onclick="setMilkFormat(38)">38</button>
+            <button class="btn btn-outline-primary" onclick="setMilkFormat(25)">25</button>
+            <button class="btn btn-outline-primary" onclick="setMilkFormat(30)">30</button>
+            <button class="btn btn-outline-primary" onclick="setMilkFormat(16)">16</button>
+            <button class="btn btn-outline-primary" onclick="setMilkFormat(10)">10</button>
+        </div>
+
+        <hr>
+
+        <h5 class="mt-4">จำนวนถาด</h5>
+        <div class="btn-group-custom mb-4">
+            <button class="btn btn-success" onclick="updateTrayCount(1)">+1 </button>
+            <button class="btn btn-success" onclick="updateTrayCount(5)">+5 </button>
+            <button class="btn btn-success" onclick="updateTrayCount(10)">+10 </button>
+            <button class="btn btn-danger" onclick="updateTrayCount(-1)">-1 </button>
+            <button class="btn btn-danger" onclick="updateTrayCount(-5)">-5 </button>
+            <button class="btn btn-danger" onclick="updateTrayCount(-10)">-10 </button>
+            <button class="btn btn-secondary" onclick="updateTrayCount('reset')">รีเซ็ต</button>
+        </div>
+
+        <hr>
+
+        <h5 class="mt-4">จำนวนเศษ</h5>
+        <div class="btn-group-custom mb-4">
+            <button class="btn btn-success" onclick="updateExtraCount(1)">+1 </button>
+            <button class="btn btn-success" onclick="updateExtraCount(5)">+5 </button>
+            <button class="btn btn-success" onclick="updateExtraCount(10)">+10 </button>
+            <button class="btn btn-danger" onclick="updateExtraCount(-1)">-1 </button>
+            <button class="btn btn-danger" onclick="updateExtraCount(-5)">-5 </button>
+            <button class="btn btn-danger" onclick="updateExtraCount(-10)">-10 </button>
+            <button class="btn btn-secondary" onclick="updateExtraCount('reset')">รีเซ็ต</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+    <script>
+        // ตัวแปรสำหรับเก็บค่า
+        let milk_format = 0; // รูปแบบนมต่อถาด (ค่าตั้งต้น)
+        let tray_count = 0; // จำนวนถาด
+        let extra_count = 0; // จำนวนเศษ
+
+        // ฟังก์ชันหลักในการคำนวณและแสดงผล
+        function calculateAndDisplay() {
+            // สูตรคำนวณ: ผลรวม = รูปแบบนม * จำนวนถาด + จำนวนเศษ
+            let total_milk = (milk_format * tray_count) + extra_count;
+
+            // แสดงผลรวม
+            document.querySelector('.t_output').innerHTML = total_milk;
+
+            // อัปเดตการแสดงผลสำหรับค่าตัวแปรปัจจุบัน
+            document.getElementById('milkFormatDisplay').innerHTML = milk_format;
+            document.getElementById('trayCountDisplay').innerHTML = tray_count;
+            document.getElementById('extraCountDisplay').innerHTML = extra_count;
+        }
+
+        // ฟังก์ชันสำหรับกำหนดรูปแบบนม
+        function setMilkFormat(value) {
+            milk_format = value;
+            calculateAndDisplay();
+        }
+
+        // ฟังก์ชันสำหรับเพิ่ม/ลด จำนวนถาด
+        function updateTrayCount(value) {
+            if (value === 'reset') {
+                tray_count = 0;
+            } else {
+                tray_count = Math.max(0, tray_count + value); // ป้องกันไม่ให้ค่าน้อยกว่า 0
+            }
+            calculateAndDisplay();
+        }
+
+        // ฟังก์ชันสำหรับเพิ่ม/ลด จำนวนเศษ
+        function updateExtraCount(value) {
+            if (value === 'reset') {
+                extra_count = 0;
+            } else {
+                extra_count = Math.max(0, extra_count + value); // ป้องกันไม่ให้ค่าน้อยกว่า 0
+            }
+            calculateAndDisplay();
+        }
+
+        // เริ่มต้นการแสดงผลเมื่อโหลดหน้า
+        document.addEventListener('DOMContentLoaded', calculateAndDisplay);
+    </script>
+
+</body>
+
+</html>
