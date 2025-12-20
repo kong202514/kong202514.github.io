@@ -1,10 +1,10 @@
-  DOCTYPE html>
+ 
 <html lang="th">
 
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Sticky Notes — Cloud Sync OOP</title>
+    <title>Sticky Notes — Arrow Connections</title>
 
     <link
         href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&family=Kanit:wght@300;400;600&display=swap"
@@ -13,10 +13,11 @@
     <style>
         :root {
             --bg: #f8fafc;
-            --panel: #ffffff;
+            --panel: #e25353;
             --accent: #6b6bf0;
             --text: #111;
             --muted: #666;
+            --arrow-color: #94a3b8;
         }
 
         body.dark {
@@ -25,6 +26,7 @@
             --accent: #7cc9ff;
             --text: #f8fafc;
             --muted: #94a3b8;
+            --arrow-color: #64748b;
         }
 
         body {
@@ -74,16 +76,15 @@
             cursor: pointer;
             color: var(--text);
             font-weight: 500;
-            transition: all 0.2s;
             display: flex;
             align-items: center;
             gap: 5px;
+            transition: all 0.2s;
         }
 
         .btn:hover {
             background: var(--accent);
             color: white;
-            transform: translateY(-1px);
         }
 
         .search {
@@ -107,19 +108,15 @@
         .note {
             position: absolute;
             width: 200px;
-            min-height: 150px;
+            min-height: 120px;
             padding: 12px;
             border-radius: 12px;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
             display: flex;
+            background-color: #7cc9ff;
             flex-direction: column;
             cursor: grab;
-            transition: transform 0.1s;
             border: 1px solid rgba(0, 0, 0, 0.05);
-        }
-
-        .note:active {
-            cursor: grabbing;
         }
 
         .note-header {
@@ -127,7 +124,6 @@
             justify-content: space-between;
             margin-bottom: 8px;
             opacity: 0.6;
-            transition: opacity 0.2s;
         }
 
         .note:hover .note-header {
@@ -138,7 +134,6 @@
             flex: 1;
             outline: none;
             font-size: 14px;
-            line-height: 1.5;
             color: #1e293b;
         }
 
@@ -148,16 +143,15 @@
             border: none;
             cursor: pointer;
             font-size: 16px;
-            padding: 2px;
         }
 
         .color-picker {
             width: 20px;
             height: 20px;
-            padding: 0;
             border: none;
             border-radius: 50%;
             cursor: pointer;
+            padding: 0;
         }
 
         footer {
@@ -166,10 +160,8 @@
             text-align: center;
             background: var(--panel);
             color: var(--muted);
-            border-top: 1px solid rgba(0, 0, 0, 0.05);
         }
 
-        /* Helper for connection rings */
         .ring-active {
             outline: 3px solid var(--accent);
         }
@@ -190,16 +182,13 @@
 
         <main id="board" class="board"></main>
 
-        <footer>
-            ลากย้ายได้ | บันทึกอัตโนมัติ | กด 🔗 เพื่อเชื่อมเส้นระหว่างโน้ต
-        </footer>
+        <footer>ลากย้ายได้ | บันทึกอัตโนมัติ | กด 🔗 เพื่อสร้างเส้นเชื่อมพร้อมหัวลูกศร</footer>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
         import { getFirestore, setDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
-        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyB3kPHRDHeYd6rjspNjCH11QG7T2bTd7PM",
             authDomain: "stickey-note-6bb95.firebaseapp.com",
@@ -220,8 +209,6 @@
                 this.color = data.color || '#fffacd';
                 this.x = data.x || 50;
                 this.y = data.y || 50;
-                this.width = data.width || 200;
-                this.height = data.height || 150;
                 this.createElement();
             }
 
@@ -235,26 +222,22 @@
 
                 this.el.innerHTML = `
                     <div class="note-header">
-                        <button class="connect" title="เชื่อมต่อ">🔗</button>
+                        <button class="connect">🔗</button>
                         <div>
                             <input type="color" class="color-picker" value="${this.color}">
-                            <button class="delete" title="ลบ">🗑️</button>
+                            <button class="delete">🗑️</button>
                         </div>
                     </div>
                     <div class="content" contenteditable="true">${this.text}</div>
                 `;
 
-                // Logic
                 this.el.querySelector('.delete').onclick = () => this.app.deleteNote(this.id);
-
                 this.el.querySelector('.color-picker').oninput = (e) => {
                     this.color = e.target.value;
                     this.el.style.backgroundColor = this.color;
                     this.app.saveAll();
                 };
-
                 this.el.querySelector('.connect').onclick = () => this.app.connectionManager.startConnection(this);
-
                 this.el.querySelector('.content').onblur = () => {
                     this.text = this.el.querySelector('.content').innerText;
                     this.app.saveAll();
@@ -272,7 +255,6 @@
                     oy = e.clientY - this.el.offsetTop;
                     this.el.style.zIndex = 1000;
                 });
-
                 document.addEventListener('mousemove', (e) => {
                     if (!dragging) return;
                     this.x = e.clientX - ox;
@@ -281,7 +263,6 @@
                     this.el.style.top = this.y + 'px';
                     this.app.connectionManager.updateLines(this.id);
                 });
-
                 document.addEventListener('mouseup', () => {
                     if (dragging) {
                         dragging = false;
@@ -292,23 +273,42 @@
             }
 
             getCenter() {
-                return {
-                    x: this.x + this.el.offsetWidth / 2,
-                    y: this.y + this.el.offsetHeight / 2
-                };
+                return { x: this.x + this.el.offsetWidth / 2, y: this.y + this.el.offsetHeight / 2 };
             }
         }
 
-        // --- Connection Manager ---
+        // --- Connection Manager (With Arrows) ---
         class ConnectionManager {
             constructor(app) {
                 this.app = app;
                 this.connections = [];
                 this.pendingStart = null;
+                this.initSVG();
+            }
+
+            initSVG() {
                 this.svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
                 Object.assign(this.svg.style, {
                     position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none'
                 });
+
+                // สร้าง Marker สำหรับหัวลูกศร
+                const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+                const marker = document.createElementNS("http://www.w3.org/2000/svg", "marker");
+                marker.setAttribute("id", "arrowhead");
+                marker.setAttribute("markerWidth", "10");
+                marker.setAttribute("markerHeight", "7");
+                marker.setAttribute("refX", "22"); // ปรับให้พ้นขอบโน้ตพอดี
+                marker.setAttribute("refY", "3.5");
+                marker.setAttribute("orient", "auto");
+
+                const polygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+                polygon.setAttribute("points", "0 0, 10 3.5, 0 7");
+                polygon.setAttribute("fill", "gray");
+
+                marker.appendChild(polygon);
+                defs.appendChild(marker);
+                this.svg.appendChild(defs);
                 this.app.container.prepend(this.svg);
             }
 
@@ -326,13 +326,19 @@
             }
 
             addConnection(fromId, toId) {
-                const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                line.setAttribute('stroke', '#94a3b8');
-                line.setAttribute('stroke-width', '2');
-                this.svg.appendChild(line);
+                const line = this.createLineElement();
                 this.connections.push({ from: fromId, to: toId, line });
                 this.updateLinePosition(fromId, toId, line);
                 this.app.saveAll();
+            }
+
+            createLineElement() {
+                const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                line.setAttribute('stroke', 'gray');
+                line.setAttribute('stroke-width', '6');
+                line.setAttribute('marker-end', 'url(#arrowhead)'); // ใส่หัวลูกศร
+                this.svg.appendChild(line);
+                return line;
             }
 
             updateLinePosition(fromId, toId, line) {
@@ -353,12 +359,9 @@
             }
 
             renderExisting(data) {
-                this.svg.innerHTML = '';
+                this.connections.forEach(c => c.line?.remove());
                 this.connections = data.map(c => {
-                    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                    line.setAttribute('stroke', '#94a3b8');
-                    line.setAttribute('stroke-width', '2');
-                    this.svg.appendChild(line);
+                    const line = this.createLineElement();
                     this.updateLinePosition(c.from, c.to, line);
                     return { ...c, line };
                 });
@@ -371,11 +374,8 @@
                 this.notes = [];
                 this.container = document.getElementById('board');
                 this.connectionManager = new ConnectionManager(this);
-
-                // UI Elements
                 this.addBtn = document.getElementById('addNote');
                 this.syncBtn = document.getElementById('cloudSyncBtn');
-
                 this.init();
             }
 
@@ -383,13 +383,9 @@
                 this.loadLocal();
                 this.addBtn.onclick = () => this.addNote();
                 this.syncBtn.onclick = () => this.syncWithCloud();
-
-                // Search filter
                 document.getElementById('search').oninput = (e) => {
                     const term = e.target.value.toLowerCase();
-                    this.notes.forEach(n => {
-                        n.el.style.display = n.text.toLowerCase().includes(term) ? '' : 'none';
-                    });
+                    this.notes.forEach(n => n.el.style.display = n.text.toLowerCase().includes(term) ? '' : 'none');
                 };
             }
 
@@ -406,47 +402,29 @@
                 this.notes = this.notes.filter(n => n.id !== id);
                 this.container.querySelector(`.note[data-id="${id}"]`)?.remove();
                 this.connectionManager.connections = this.connectionManager.connections.filter(c => {
-                    if (c.from === id || c.to === id) {
-                        c.line.remove();
-                        return false;
-                    }
+                    if (c.from === id || c.to === id) { c.line.remove(); return false; }
                     return true;
                 });
                 this.saveAll();
             }
 
             renderUI(data) {
-                // Clear UI
                 this.container.querySelectorAll('.note').forEach(n => n.remove());
-                this.notes = [];
-
-                // Load Notes
-                if (data.notes) {
-                    data.notes.forEach(nData => {
-                        const note = new Note(this, nData);
-                        this.notes.push(note);
-                        this.container.appendChild(note.el);
-                    });
-                }
-
-                // Load Connections
-                if (data.connections) {
-                    this.connectionManager.renderExisting(data.connections);
-                }
+                this.notes = (data.notes || []).map(nData => {
+                    const note = new Note(this, nData);
+                    this.container.appendChild(note.el);
+                    return note;
+                });
+                this.connectionManager.renderExisting(data.connections || []);
             }
 
             async saveAll() {
                 const data = {
                     notes: this.notes.map(n => ({ id: n.id, text: n.text, color: n.color, x: n.x, y: n.y })),
-                    connections: this.connectionManager.connections.map(c => ({ from: c.from, to: c.to })),
-                    updatedAt: Date.now()
+                    connections: this.connectionManager.connections.map(c => ({ from: c.from, to: c.to }))
                 };
                 localStorage.setItem('notesData', JSON.stringify(data));
-
-                try {
-                    await setDoc(doc(db, "stickynotes", "default"), data);
-                    console.log("Synced to Cloud");
-                } catch (e) { console.error("Cloud Save Error", e); }
+                try { await setDoc(doc(db, "stickynotes", "default"), data); } catch (e) { console.error(e); }
             }
 
             loadLocal() {
@@ -455,22 +433,20 @@
             }
 
             async syncWithCloud() {
-                this.syncBtn.innerText = "⏳ กำลังซิงค์...";
+                this.syncBtn.innerText = "⏳ Syncing...";
                 try {
                     const snap = await getDoc(doc(db, "stickynotes", "default"));
                     if (snap.exists()) {
                         this.renderUI(snap.data());
                         localStorage.setItem('notesData', JSON.stringify(snap.data()));
-                        alert("ซิงค์ข้อมูลจาก Cloud สำเร็จ!");
                     }
-                } catch (e) { alert("เกิดข้อผิดพลาดในการซิงค์"); }
+                } catch (e) { console.error(e); }
                 this.syncBtn.innerText = "☁️ Sync Cloud";
             }
         }
 
-        const appInstance = new StickyApp();
+        new StickyApp();
 
-        // Dark Mode Logic
         const toggleDark = document.getElementById('toggleDark');
         if (localStorage.theme === 'dark') document.body.classList.add('dark');
         toggleDark.onclick = () => {

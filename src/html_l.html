@@ -1,30 +1,20 @@
+ !DOCTYPE html>
 <html lang="th">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ทบทวนโค้ด HTML (ปรับปรุง UX และยุบสารบัญ)</title>
+    <title>ทบทวนโค้ด HTML - Firestore Version</title>
     <style>
-        /* ==================================== */
-        /* 1. LAYOUT & TYPOGRAPHY */
-        /* ==================================== */
-
+        /* CSS เดิมของคุณ + การปรับปรุงเล็กน้อย */
         :root {
-            /* 🎨 โทนสีใหม่: เน้นความนุ่มนวลและเป็นมิตรต่อสายตา */
             --bg-color: #e8f4f8;
-            /* พื้นหลังสีฟ้าอ่อน/เทาอ่อน */
             --container-bg: #ffffff;
-            /* พื้นหลังกล่องเนื้อหา */
             --text-color: #2c3e50;
-            /* สีข้อความหลัก: น้ำเงินเข้ม */
             --primary-color: #3498db;
-            /* สีเน้นหลัก: ฟ้าสดใส */
             --secondary-color: #e74c3c;
-            /* สีเน้นรอง: แดงส้ม */
             --code-bg: #2c3e50;
-            /* สีเข้มสำหรับ Code Block (น้ำเงินเข้ม) */
             --code-text: #ecf0f1;
-            /* สีสว่างสำหรับข้อความโค้ด */
             --toc-link-hover: #f1f4f9;
             --toc-link-active: #c7e8ff;
             --shadow-color: rgba(0, 0, 0, 0.1);
@@ -37,28 +27,19 @@
             background-color: var(--bg-color);
             display: flex;
             justify-content: center;
-            align-items: flex-start;
             min-height: 100vh;
             font-size: 17px;
-            /* <<=== ปรับขนาดตัวอักษรหลัก */
             color: var(--text-color);
         }
 
         .book-container {
             width: 95%;
             max-width: 900px;
-            margin: 20px 0;
             background-color: var(--container-bg);
             padding: 30px;
             box-shadow: 0 12px 30px var(--shadow-color);
             border-radius: 12px;
-            position: relative;
             border-left: 8px solid var(--primary-color);
-            transition: box-shadow 0.3s ease;
-        }
-
-        .book-container:hover {
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
         }
 
         h1 {
@@ -66,257 +47,110 @@
             border-bottom: 1px solid #dee2e6;
             padding-bottom: 15px;
             margin-top: 0;
-            font-size: 2.2em;
-            /* <<=== ปรับขนาด */
         }
 
         h3 {
             color: var(--primary-color);
             margin-top: 20px;
-            margin-bottom: 15px;
-            font-size: 1.7em;
-            /* <<=== ปรับขนาด */
             border-left: 4px solid var(--primary-color);
             padding-left: 10px;
         }
 
-        p {
-            line-height: 1.8;
-            /* <<=== ปรับระยะห่างระหว่างบรรทัด */
-        }
-
-        /* ==================================== */
-        /* 1.1. TOC STYLING (สารบัญ) */
-        /* ==================================== */
-
+        /* สไตล์สารบัญแบบยุบขยาย */
         .toc-list {
             list-style: none;
             padding: 0;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 5px 20px;
         }
 
         .toc-category {
             font-weight: bold;
             color: var(--secondary-color);
-            margin-top: 25px;
-            margin-bottom: 5px;
-            padding: 8px 0;
-            border-bottom: 2px solid var(--primary-color);
-            font-size: 1.2em;
-            cursor: pointer;
-            user-select: none;
-            position: relative;
-            grid-column: 1 / -1;
-            padding-right: 30px;
-        }
-
-        /* ไอคอนยุบ/ขยาย */
-        .toc-category::after {
-            content: '▼';
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 0.8em;
-            transition: transform 0.2s ease;
-            color: var(--secondary-color);
-        }
-
-        /* สถานะยุบ: หมุนไอคอนไปด้านข้าง */
-        .toc-category.collapsed::after {
-            content: '▶';
-            transform: translateY(-50%) rotate(0deg);
-        }
-
-        .toc-list li a {
-            display: block;
-            padding: 10px 15px;
-            text-decoration: none;
-            color: var(--text-color);
-            border-radius: 6px;
-            transition: background-color 0.2s ease, border-left 0.2s ease;
-            font-size: 1.05em;
-            /* <<=== ปรับขนาด */
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-            border-left: 4px solid transparent;
-        }
-
-        .toc-list li a:hover {
-            background-color: var(--toc-link-hover);
-            border-left: 4px solid var(--primary-color);
-            transform: translateY(-1px);
-        }
-
-        .toc-list li a.active-toc-link {
-            background-color: var(--toc-link-active);
-            border-left: 4px solid var(--primary-color);
-            font-weight: bold;
-            color: var(--primary-color);
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-
-        /* ==================================== */
-        /* 3. CODE BLOCK & RESULT STYLING */
-        /* ==================================== */
-
-        .code-block {
-            background-color: var(--code-bg);
-            color: var(--code-text);
-            padding: 15px;
-            border-radius: 8px;
-            overflow-x: auto;
-            font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
-            font-size: 0.9em;
-            white-space: pre-wrap;
-            line-height: 1.5;
             margin-top: 15px;
-            border: 1px solid #1c2833;
-            max-height: 300px;
-        }
-
-        .result-div {
-            margin-top: 30px;
-            padding: 20px;
-            border-left: 6px solid var(--secondary-color);
-            background-color: #fff3f4;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        .result-div h4 {
-            color: var(--secondary-color);
-            margin-top: 0;
-            font-size: 1.1em;
-            display: flex;
-            align-items: center;
-        }
-
-        .result-div h4::before {
-            content: '▶️';
-            margin-right: 8px;
-        }
-
-
-        /* ==================================== */
-        /* 4. NAVIGATION & BUTTONS STYLING */
-        /* ==================================== */
-
-        .nav-controls {
-            margin-top: 40px;
+            border-bottom: 2px solid var(--primary-color);
+            cursor: pointer;
+            padding: 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .toc-category::after {
+            content: '▼';
+            font-size: 0.8em;
+            transition: 0.3s;
+        }
+
+        .toc-category.collapsed::after {
+            content: '▶';
+        }
+
+        .toc-items-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 5px 15px;
+            padding: 10px 0;
+        }
+
+        .toc-items-container.hidden {
+            display: none;
+        }
+
+        .toc-item a {
+            display: block;
+            padding: 10px;
+            text-decoration: none;
+            color: var(--text-color);
+            border-radius: 6px;
+            border-left: 4px solid transparent;
+            transition: 0.2s;
+        }
+
+        .toc-item a:hover {
+            background: var(--toc-link-hover);
+            border-left-color: var(--primary-color);
+        }
+
+        .code-block {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            margin-top: 15px;
+        }
+
+        .result-div {
+            margin-top: 20px;
+            padding: 15px;
+            border-left: 6px solid var(--secondary-color);
+            background: #fff3f4;
+            border-radius: 8px;
+        }
+
+        .nav-controls {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px dashed #ccc;
             padding-top: 20px;
-            border-top: 1px dashed #ced4da;
         }
 
         .nav-button {
-            background-color: var(--primary-color);
+            background: var(--primary-color);
             color: white;
             border: none;
             padding: 10px 20px;
-            text-align: center;
-            font-size: 16px;
-            cursor: pointer;
             border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
+            cursor: pointer;
             font-weight: bold;
-            min-width: 120px;
-        }
-
-        .nav-button:hover {
-            background-color: #2980b9;
-            /* สีเข้มขึ้นเมื่อ Hover */
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
-            transform: translateY(-2px);
-        }
-
-        .nav-button:active {
-            transform: translateY(0) scale(0.98);
         }
 
         .nav-button:disabled {
-            background-color: #bdc3c7;
-            cursor: not-allowed;
-            box-shadow: none;
-            transform: none;
-        }
-
-        .home-button {
-            background-color: #95a5a6;
-            /* สีเทาสำหรับปุ่ม Home */
-            display: none;
-            /* ซ่อนในหน้าสารบัญ */
-            padding: 10px 15px;
-        }
-
-        .home-button:hover {
-            background-color: #7f8c8d;
-        }
-
-        .page-indicator {
-            text-align: center;
-            font-size: 1em;
-            color: #7f8c8d;
-            font-weight: bold;
-            flex-grow: 1;
-            /* ให้ยืดพื้นที่ระหว่างปุ่ม */
-        }
-
-        /* ==================================== */
-        /* 5. RESPONSIVE DESIGN (สำหรับมือถือ) */
-        /* ==================================== */
-
-        @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-
-            .book-container {
-                width: 100%;
-                padding: 20px;
-                margin: 0;
-            }
-
-            .nav-controls {
-                flex-direction: column;
-                /* จัดปุ่มนำทางให้อยู่ในแนวตั้ง */
-                gap: 15px;
-            }
-
-            .nav-controls .nav-button {
-                width: 100%;
-                min-width: unset;
-            }
-
-            .page-indicator {
-                order: 3;
-                /* ย้ายตัวบอกหน้าไปด้านล่างสุด */
-                margin-top: 10px;
-            }
-
-            /* สลับลำดับปุ่มสำหรับหน้าบทเรียน */
-            .nav-controls #prev-btn {
-                order: 1;
-            }
-
-            .nav-controls #next-btn {
-                order: 2;
-            }
-
-            .nav-controls #home-btn-mobile {
-                order: 1;
-                margin-bottom: 10px;
-            }
-
-            .toc-list {
-                grid-template-columns: 1fr;
-                /* บนมือถือให้เหลือ 1 คอลัมน์ */
-            }
+            background: #bdc3c7;
         }
     </style>
 </head>
@@ -325,590 +159,146 @@
     <div class="book-container">
         <h1>📖 คู่มือทบทวนโค้ด HTML พื้นฐาน</h1>
         <hr>
-
-        <div id="content">
-        </div>
-
-        <div class="nav-controls" id="nav-controls">
-
-        </div>
-
+        <div id="content">กำลังโหลดข้อมูลจาก Firestore...</div>
+        <div class="nav-controls" id="nav-controls"></div>
     </div>
 
-    <script>
-        // อ้างอิงถึงส่วนที่จะใช้แทรกเนื้อหาและปุ่ม
-        const contentDiv = document.getElementById('content');
-        const navControlsDiv = document.getElementById('nav-controls');
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+        import { getFirestore, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
-        // ตัวแปรสถานะ
-        let currentSectionIndex = 0; // Index 0 คือหน้าสารบัญ
-        const sectionsData = []; // เก็บข้อมูลของทุกหัวข้อ
+        const firebaseConfig = {
+            apiKey: "AIzaSyBfz9eZVukWm8JaarG7FrM9Riq8sds-teU",
+            authDomain: "len-html.firebaseapp.com",
+            projectId: "len-html",
+            storageBucket: "len-html.firebasestorage.app",
+            messagingSenderId: "128154153096",
+            appId: "1:128154153096:web:39554e3a5b401f05682f3d"
+        };
 
-        // สร้างปุ่มนำทางใน JavaScript เพื่อให้ควบคุมการแสดงผลได้ง่ายขึ้น
-        const prevBtn = document.createElement('button');
-        prevBtn.id = 'prev-btn';
-        prevBtn.className = 'nav-button';
-        prevBtn.innerHTML = '&#10094; ก่อนหน้า';
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
-        const nextBtn = document.createElement('button');
-        nextBtn.id = 'next-btn';
-        nextBtn.className = 'nav-button';
-        nextBtn.innerHTML = 'ถัดไป &#10095;';
+        let sectionsData = [];
+        let currentIndex = -1; // -1 = หน้าสารบัญ
 
-        const homeBtn = document.createElement('button');
-        homeBtn.id = 'home-btn';
-        homeBtn.className = 'nav-button home-button';
-        homeBtn.innerHTML = '🏠 สารบัญ';
+        // 1. ดึงข้อมูลจาก Firestore
+        const q = query(collection(db, "html_lessons"), orderBy("order", "asc"));
+        onSnapshot(q, (snapshot) => {
+            sectionsData = [];
+            snapshot.forEach(doc => sectionsData.push(doc.data()));
 
-        const pageStatus = document.createElement('div');
-        pageStatus.id = 'page-status';
-        pageStatus.className = 'page-indicator';
-
-        // ----------------------------------------------------
-        // ฟังก์ชันสร้างและเพิ่มข้อมูลฟฟฟฟ
-        // ----------------------------------------------------
-
-        function addReviewSection(title, description, codeExample, category) {
-            const sectionId = "section-" + (sectionsData.length + 1);
-            sectionsData.push({
-                id: sectionId,
-                title: title,
-                description: description,
-                code: codeExample,
-                category: category || null // หมวดหมู่
-            });
-        }
-
-        function buildSectionElement(data, index) {
-            const sectionDiv = document.createElement('div');
-            sectionDiv.className = 'review-section';
-            sectionDiv.id = data.id;
-
-            const titleHeader = document.createElement('h3');
-            titleHeader.textContent = data.title;
-            sectionDiv.appendChild(titleHeader);
-
-            const descriptionPara = document.createElement('p');
-            descriptionPara.innerHTML = `<strong>คำอธิบาย:</strong> ${data.description}`;
-            sectionDiv.appendChild(descriptionPara);
-
-            const codeContainer = document.createElement('pre');
-            codeContainer.className = 'code-block';
-            const codeTag = document.createElement('code');
-
-            codeTag.textContent = data.code;
-            codeContainer.appendChild(codeTag);
-            sectionDiv.appendChild(codeContainer);
-
-            const resultDiv = document.createElement('div');
-            resultDiv.className = 'result-div';
-            resultDiv.innerHTML = `<h4>ผลลัพธ์:</h4>${data.code}`;
-            sectionDiv.appendChild(resultDiv);
-
-            return sectionDiv;
-        }
-
-        // ----------------------------------------------------
-        // ฟังก์ชันสร้างสารบัญ (Table of Contents)
-        // ----------------------------------------------------
-
-        function createTableOfContents() {
-            const tocDiv = document.createElement('div');
-            tocDiv.className = 'toc-section';
-
-            const tocHeader = document.createElement('h3');
-            tocHeader.textContent = '📑 สารบัญบทเรียน';
-            tocDiv.appendChild(tocHeader);
-
-            const tocList = document.createElement('ul');
-            tocList.className = 'toc-list';
-            tocDiv.appendChild(tocList);
-
-            let currentCategory = '';
-            const categoryLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('');
-            let categoryIndex = 0;
-
-            sectionsData.forEach((section, index) => {
-
-                // 1. สร้างหัวข้อหมวดหมู่ใหม่ เมื่อมีการเปลี่ยน category
-                if (section.category && section.category !== currentCategory) {
-                    const categoryItem = document.createElement('li');
-                    categoryItem.className = 'toc-category collapsed'; // <<=== เริ่มต้นด้วยสถานะยุบ
-                    categoryItem.dataset.category = section.category;
-
-                    categoryItem.textContent = `${categoryLetters[categoryIndex++]}. ${section.category.split('. ')[1] || section.category}`;
-                    tocList.appendChild(categoryItem);
-                    currentCategory = section.category;
-
-                    // Event Listener สำหรับการยุบ/ขยาย
-                    categoryItem.addEventListener('click', () => {
-                        categoryItem.classList.toggle('collapsed');
-
-                        // หาและสลับการแสดงผลของรายการย่อยที่อยู่ถัดไปทั้งหมดในหมวดหมู่นั้น
-                        let nextSibling = categoryItem.nextElementSibling;
-                        while (nextSibling && !nextSibling.classList.contains('toc-category')) {
-                            const isCollapsed = categoryItem.classList.contains('collapsed');
-                            nextSibling.style.display = isCollapsed ? 'none' : 'block';
-                            nextSibling = nextSibling.nextElementSibling;
-                        }
-                    });
-                }
-
-                // 2. สร้างลิงก์เนื้อหา
-                const listItem = document.createElement('li');
-                const link = document.createElement('a');
-                link.href = "#";
-                link.textContent = section.title;
-                link.dataset.index = index;
-
-                // <<=== ซ่อนรายการย่อยเมื่อสร้างเสร็จ
-                listItem.style.display = 'none';
-                // <<============================================
-
-
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    currentSectionIndex = parseInt(e.target.dataset.index) + 1;
-                    renderPage(currentSectionIndex);
-                });
-
-                listItem.appendChild(link);
-                tocList.appendChild(listItem);
-            });
-
-            return tocDiv;
-        }
-
-        // ----------------------------------------------------
-        // ฟังก์ชันการนำทางและแสดงผล
-        // ----------------------------------------------------
-
-        function renderPage(index) {
-            contentDiv.innerHTML = '';
-            navControlsDiv.innerHTML = '';
-
-            // 3. อัปเดตสถานะปุ่มและตัวบอกหน้า
-            if (index === 0) {
-                // หน้าสารบัญ
-                const tocElement = createTableOfContents();
-                tocElement.classList.add('active');
-                contentDiv.appendChild(tocElement);
-                pageStatus.textContent = `หน้าหลัก: สารบัญ (${sectionsData.length} หัวข้อ)`;
-
-                // ปุ่มสำหรับหน้าสารบัญ
-                navControlsDiv.appendChild(nextBtn);
-                nextBtn.style.display = 'block';
-                prevBtn.style.display = 'none';
-                homeBtn.style.display = 'none';
-                navControlsDiv.insertBefore(pageStatus, nextBtn);
-
-                prevBtn.disabled = true;
-                nextBtn.disabled = sectionsData.length === 0;
-
-            } else if (index >= 1 && index <= sectionsData.length) {
-                // หน้าบทเรียน
-                const sectionIndex = index - 1;
-                const sectionElement = buildSectionElement(sectionsData[sectionIndex], sectionIndex);
-                sectionElement.classList.add('active');
-                contentDiv.appendChild(sectionElement);
-
-                // ปุ่มสำหรับหน้าบทเรียน
-                prevBtn.style.display = 'block';
-                nextBtn.style.display = 'block';
-                homeBtn.style.display = 'block';
-                homeBtn.id = 'home-btn-mobile';
-
-                navControlsDiv.appendChild(nextBtn);
-                navControlsDiv.appendChild(prevBtn);
-                navControlsDiv.appendChild(homeBtn);
-                navControlsDiv.appendChild(pageStatus);
-
-
-                prevBtn.disabled = index === 1;
-                nextBtn.disabled = index === sectionsData.length;
-
-                // อัปเดตตัวบอกหน้า
-                pageStatus.textContent = `หน้า ${index} / ${sectionsData.length}`;
-            } else {
-                currentSectionIndex = 0;
-                renderPage(currentSectionIndex);
-                return;
-            }
-
-            contentDiv.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
-
-            updateTocActiveLink(index > 0 ? index - 1 : -1);
-        }
-
-        // อัปเดตสถานะ Active ในรายการสารบัญ
-        function updateTocActiveLink(activeDataIndex) {
-            document.querySelectorAll('.toc-list a').forEach(link => {
-                link.classList.remove('active-toc-link');
-                if (parseInt(link.dataset.index) === activeDataIndex) {
-                    link.classList.add('active-toc-link');
-
-                    // <<=== เพิ่ม: ขยายหมวดหมู่ของรายการที่ Active ===
-                    const parentCategory = link.closest('.toc-list').querySelector(`[data-category="${sectionsData[activeDataIndex].category}"]`);
-                    if (parentCategory && parentCategory.classList.contains('collapsed')) {
-                        // ถ้าคลิกรายการย่อยที่อยู่ในหมวดหมู่ที่ยุบอยู่ ให้ขยายหมวดหมู่นั้น
-                        parentCategory.classList.remove('collapsed');
-                        // ต้องแสดงรายการย่อยอื่นๆ ในหมวดหมู่เดียวกันด้วย
-                        let nextSibling = parentCategory.nextElementSibling;
-                        while (nextSibling && !nextSibling.classList.contains('toc-category')) {
-                            nextSibling.style.display = 'block';
-                            nextSibling = nextSibling.nextElementSibling;
-                        }
-                    }
-                    // <<============================================
-                }
-            });
-        }
-
-
-        function nextPage() {
-            if (currentSectionIndex < sectionsData.length) {
-                currentSectionIndex++;
-                renderPage(currentSectionIndex);
-            }
-        }
-
-        function prevPage() {
-            if (currentSectionIndex > 0) {
-                currentSectionIndex--;
-                renderPage(currentSectionIndex);
-            }
-        }
-
-        function goToHome() {
-            currentSectionIndex = 0;
-            renderPage(currentSectionIndex);
-        }
-
-        // ----------------------------------------------------
-        // การตั้งค่า Event Listeners
-        // ----------------------------------------------------
-
-        prevBtn.addEventListener('click', prevPage);
-        nextBtn.addEventListener('click', nextPage);
-        homeBtn.addEventListener('click', goToHome);
-
-        // การจัดการกดปุ่มลูกศร
-        document.addEventListener('keydown', (event) => {
-            if (event.key === 'ArrowRight' && !nextBtn.disabled) {
-                nextPage();
-            } else if (event.key === 'ArrowLeft' && currentSectionIndex > 0) {
-                prevPage();
+            if (sectionsData.length > 0) {
+                if (currentIndex === -1) renderTOC();
+                else renderPage(currentIndex);
             }
         });
 
+        // 2. ฟังก์ชันแสดงสารบัญ
+        function renderTOC() {
+            currentIndex = -1;
+            const contentDiv = document.getElementById('content');
+            contentDiv.innerHTML = '<h3>📑 สารบัญบทเรียน</h3><div id="toc-container" class="toc-list"></div>';
+            const container = document.getElementById('toc-container');
 
-        // ----------------------------------------------------
-        // ข้อมูลสำหรับสร้างส่วนทบทวน (เหมือนเดิม)
-        // ----------------------------------------------------
+            let currentCategory = "";
+            let currentGroup = null;
 
-        // === A. โครงสร้างพื้นฐานของเอกสาร (1-9) ===
-        addReviewSection(
-            "1. โครงสร้างพื้นฐาน HTML5",
-            "เป็นโครงสร้างหลักของหน้าเว็บ, ประกอบด้วย Doctype, <html>, <head> และ <body>.",
-           `<!DOCTYPE html>\n<html lang=\"th\">\n<head>...</head>\n<body>...</body>\n</html>`,
-            "A. html พื้นฐาน "
-        );
-        addReviewSection(
-            "2. คำสั่ง <!DOCTYPE html> (การประกาศชนิดเอกสาร)",
-            "ใช้ประกาศว่าเอกสารนี้เป็นชนิด HTML5 ต้องอยู่บรรทัดแรกสุดของเอกสารเสมอ.",
-            "<!DOCTYPE html>",
-            "A. html พื้นฐาน "
-        );
-        addReviewSection(
-            "3. แท็กราก <html> และ Attribute lang",
-            "เป็นแท็กที่ครอบคลุมเนื้อหาทั้งหมดของเอกสาร. <code>lang=\"th\"</code> บอกเบราว์เซอร์ว่าเป็นภาษาไทย.",
-            "<html lang=\"th\">",
-            "A. html พื้นฐาน "
-        );
-        addReviewSection(
-            "4. แท็กส่วนหัว <head> (Metadata)",
-            "กำหนดข้อมูลที่เกี่ยวกับเอกสาร (Metadata) ซึ่งจะไม่แสดงผลบนหน้าจอ เช่น ชื่อหน้า, ชุดตัวอักษร, และลิงก์ไปยัง CSS.",
-            "<head>\n <meta charset=\"UTF-8\">\n <title>...</title>\n</head>",
-            "A. html พื้นฐาน "
-        );
-        addReviewSection(
-            "5. แท็กส่วนเนื้อหา <body>",
-            "คือส่วนที่ใช้สำหรับแสดงเนื้อหาทั้งหมดที่ผู้ใช้จะเห็นบนหน้าจอ เช่น ข้อความ, รูปภาพ, ลิงก์ และตาราง.",
-            "<body>\n \n</body>",
-            "A. html พื้นฐาน "
-        );
+            sectionsData.forEach((section, index) => {
+                if (section.category !== currentCategory) {
+                    currentCategory = section.category;
 
-   
-        addReviewSection(
-            "6. tag  <title>",
-            "ข้อความที่อยู่ภายในแท็กนี้จะไปแสดงเป็น **ชื่อบนแท็บเบราว์เซอร์** ของหน้าเว็บ.",
-            "<head>\n <title>คู่มือทบทวน HTML พื้นฐาน</title>\n</head>",
-            "A. html พื้นฐาน "
-        );
-        addReviewSection(
-            "7. แท็กกำหนดชุดตัวอักษร <meta charset>",
-            "จำเป็นอย่างยิ่งสำหรับภาษาไทย ควรใช้ <code>UTF-8</code> เพื่อรองรับตัวอักษรได้หลากหลาย.",
-            "<meta charset=\"UTF-8\">",
-            "A. html พื้นฐาน "
-        );
-        addReviewSection(
-            "8. แท็กกำหนด Viewport สำหรับ Responsive Design",
-            "ช่วยให้เว็บเพจปรับขนาดตามหน้าจออุปกรณ์มือถือได้อย่างถูกต้อง.",
-            "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">",
-            "A. html พื้นฐาน "
-        );
-        addReviewSection(
-            "9. การลิงก์ไปยังไฟล์ CSS ภายนอก",
-            "ใช้แท็ก <code>&lt;link&gt;</code> เพื่อนำเข้าไฟล์จัดรูปแบบ CSS.",
-            "<link rel=\"stylesheet\" href=\"styles.css\">",
-            "A. html พื้นฐาน "
-        );
+                    // สร้างหัวข้อหมวดหมู่
+                    const catHeader = document.createElement('div');
+                    catHeader.className = 'toc-category collapsed';
+                    catHeader.innerText = currentCategory;
 
-        // === C. การจัดรูปแบบข้อความและย่อหน้า (10-15) ===
-        addReviewSection(
-            "10. แท็กย่อหน้า <p> (Paragraph)",
-            "ใช้สำหรับสร้างย่อหน้าข้อความ. เบราว์เซอร์จะเว้นบรรทัดก่อนและหลังแท็ก <code>&lt;p&gt;</code>.",
-            "<p>นี่คือย่อหน้าข้อความแรก</p>\n<p>นี่คือย่อหน้าข้อความที่สอง</p>",
-            "A. html พื้นฐาน "
-        );
-        addReviewSection(
-            "11. แท็กหัวข้อรวม <h1> ถึง <h6>",
-            "ใช้สำหรับกำหนดลำดับความสำคัญของหัวข้อ โดย <code>&lt;h1&gt;</code> สำคัญที่สุด.",
-            `\n<h1>หัวข้อหลัก h1 </h1>
-             <h2>หัวข้อหลัก h2 </h2>
-             <h3>หัวข้อหลัก h3 </h3>
-             <h4>หัวข้อหลัก h4 </h4>
-             <h5>หัวข้อหลัก h5 </h5>
-             <h6>หัวข้อหลัก h6 </h6>
-             `
-            ,
-            "A. html พื้นฐาน "
-        );
-        addReviewSection(
-            "12. การเว้นบรรทัดด้วยแท็ก <br> (Line break)",
-            "เป็นแท็กเดี่ยวที่ใช้ขึ้นบรรทัดใหม่ **โดยไม่เริ่มย่อหน้าใหม่**.",
-            "บรรทัดแรก<br>บรรทัดที่สอง",
-            "A. html พื้นฐาน "
-        );
-        addReviewSection(
-            "13. ตัวหนา (<strong>) และ ตัวเอียง (<em>) - Semantic",
-            "<code>&lt;strong&gt;</code> เน้นความสำคัญ, <code>&lt;em&gt;</code> เน้นเสียง. ควรใช้แทน <code>&lt;b&gt;</code> และ <code>&lt;i&gt;</code> ใน HTML5.",
-            "นี่คือข้อความที่ <strong>สำคัญมาก</strong> และ <em>ควรจะอ่าน</em>.",
-            "A. html พื้นฐาน "
-        );
-        addReviewSection(
-            "14. ตัวห้อย (<sub>) และ ตัวยก (<sup>)",
-            "ใช้แท็ก <code>&lt;sub&gt;</code> สำหรับตัวห้อย และ <code>&lt;sup&gt;</code> สำหรับตัวยก.",
-            "น้ำคือ H<sub>2</sub>O และ E=mc<sup>2</sup>.",
-            "A. html พื้นฐาน "
-        );
-        addReviewSection(
-            "15. การใส่เส้นคั่นแนวนอนด้วยแท็ก <hr>",
-            "เป็นแท็กเดี่ยวที่ใช้สร้างเส้นคั่นแนวนอน (Horizontal Rule) เพื่อแบ่งเนื้อหาส่วนต่างๆ.",
-            "<p>เนื้อหาส่วนบน</p>\n<hr>\n<p>เนื้อหาส่วนล่าง</p>",
-            "A. html พื้นฐาน "
-        );
+                    // สร้างกลุ่มรายการย่อย
+                    currentGroup = document.createElement('div');
+                    currentGroup.className = 'toc-items-container hidden';
 
-        // === D. การเชื่อมโยงและรูปภาพ (16-20) ===
-        addReviewSection(
-            "16. การสร้างลิงก์ (Hyperlink) ด้วยแท็ก <a>",
-            "ใช้ <code>&lt;a&gt;</code> กำหนดจุดเชื่อมโยง, <code>href</code> กำหนด URL ปลายทาง.",
-            "<a href=\"https://www.google.com\">ไปที่ Google</a>",
-            "A. html พื้นฐาน "
-        );
-        addReviewSection(
-            "17. Attribute target=\"_blank\" (เปิดแท็บใหม่)",
-            "ใช้ <code>target=\"_blank\"</code> เพื่อบังคับให้ลิงก์เปิดในหน้าต่างหรือแท็บใหม่.",
-            "<a href=\"#\" target=\"_blank\">เปิดในแท็บใหม่</a>",
-            "A. html พื้นฐาน "
-        );
-        addReviewSection(
-            "18. การสร้างลิงก์ภายในหน้า (Anchor Link)",
-            "กำหนด <code>id</code> ในส่วนเป้าหมาย, แล้วอ้างอิงด้วย <code>#id</code> ในแท็ก <code>&lt;a&gt;</code>.",
-            "<a href=\"#section2\">ไปหัวข้อ 2</a>... <h2 id=\"section2\">หัวข้อ 2</h2>",
-            "A. html พื้นฐาน "
-        );
-        addReviewSection(
-            "19. การแทรกรูปภาพด้วยแท็ก <img>",
-            "เป็นแท็กเดี่ยว, <code>src</code> คือที่อยู่รูปภาพ, <code>alt</code> คือข้อความอธิบาย (สำคัญต่อ SEO).",
-            "<img src=\"logo.png\" alt=\"โลโก้บริษัท\">",
-            "A. html พื้นฐาน "
-        );
-        addReviewSection(
-            "20. การกำหนดขนาดรูปภาพด้วย Attribute width และ height",
-            "ใช้กำหนดความกว้างและความสูงของรูปภาพเป็นพิกเซล.",
-            "<img src=\"image.jpg\" width=\"200\" height=\"150\">",
-            "A. html พื้นฐาน "
-        );
+                    catHeader.onclick = () => {
+                        catHeader.classList.toggle('collapsed');
+                        currentGroup.classList.toggle('hidden');
+                    };
 
-        // === E. การสร้างรายการ (List) (21-25) ===
-        addReviewSection(
-            "21. รายการแบบมีลำดับ (Ordered List) <ol>",
-            "ใช้ <code>&lt;ol&gt;</code> และ <code>&lt;li&gt;</code>, จะแสดงเป็นตัวเลขหรือตัวอักษรตามลำดับ.",
-            "<ol>\n <li>รายการที่ 1</li>\n <li>รายการที่ 2</li>\n</ol>",
-            "A. html พื้นฐาน "
-        );
-        addReviewSection(
-            "22. รายการแบบไม่มีลำดับ (Unordered List) <ul>",
-            "ใช้ <code>&lt;ul&gt;</code> และ <code>&lt;li&gt;</code>, จะแสดงเป็นจุด Bullet.",
-            "<ul>\n <li>แอปเปิล</li>\n <li>กล้วย</li>\n</ul>",
-            "A. html พื้นฐาน "
-        );
-        addReviewSection(
-            "23. Attribute type ของรายการแบบมีลำดับ",
-            "ใช้กำหนดสไตล์ของลำดับ เช่น <code>type=\"A\"</code> (ตัวอักษรใหญ่), <code>type=\"i\"</code> (เลขโรมันเล็ก).",
-            '<ol type="A">\n <li>ก</li>\n</ol>',
-            "A. html พื้นฐาน "
-        );
-        addReviewSection(
-            "24. การทำรายการซ้อนกัน (Nested Lists)",
-            "สามารถวางแท็ก <code>&lt;ul&gt;</code> หรือ <code>&lt;ol&gt;</code> ไว้ภายใน <code>&lt;li&gt;</code> ได้.",
-            "<ul>\n <li>ผลไม้\n  <ol>\n   <li>ส้ม</li>\n  </ol>\n </li>\n</ul>",
-            "A. html พื้นฐาน "
-        );
-        addReviewSection(
-            "25. รายการแบบคำจำกัดความ (Description List) <dl>",
-            "ใช้สำหรับแสดงรายการของคำและคำอธิบาย (<code>&lt;dt&gt;</code>: คำ, <code>&lt;dd&gt;</code>: คำอธิบาย).",
-            "<dl>\n <dt>HTML</dt>\n <dd>ภาษา Markup</dd>\n</dl>",
-            "A. html พื้นฐาน "
-        );
+                    container.appendChild(catHeader);
+                    container.appendChild(currentGroup);
+                }
 
-        // === F. การจัดการตาราง (Table) (26-30) ===
-        addReviewSection(
-            "26. แท็กการสร้างตาราง <table>, <tr>, <td>",
-            "<code>&lt;table&gt;</code> (ตาราง), <code>&lt;tr&gt;</code> (แถว), <code>&lt;td&gt;</code> (เซลล์ข้อมูล).",
-            "<table border='1'>\n <tr>\n  <td>ข้อมูล 1</td>\n </tr>\n</table>",
-            "A. html พื้นฐาน "
-        );
-        addReviewSection(
-            "27. แท็กหัวตาราง (Table Header) <th>",
-            "ใช้แทน <code>&lt;td&gt;</code> ในแถวแรกเพื่อกำหนดเป็นส่วนหัวของตาราง (มักแสดงเป็นตัวหนาและอยู่กึ่งกลาง).",
-            "<table>\n <tr>\n  <th>ชื่อ</th>\n  <th>คะแนน</th>\n </tr>\n</table>",
-            "A. html พื้นฐาน "
-        );
-        addReviewSection(
-            "28. ส่วนหัว (<thead>), ส่วนเนื้อหา (<tbody>), ส่วนท้าย (<tfoot>) ตาราง",
-            "ช่วยกำหนดโครงสร้างตารางเพื่อการจัดรูปแบบและ SEO ที่ดีขึ้น.",
-            "<table>\n <thead><tr><th>หัวข้อ</th></tr></thead>\n <tbody><tr><td>ข้อมูล</td></tr></tbody>\n</table>",
-            "A. html พื้นฐาน "
-        );
-        addReviewSection(
-            "29. การรวมเซลล์ในแนวนอน (Colspan) และแนวตั้ง (Rowspan)",
-            "ใช้ <code>colspan</code> (แนวนอน) และ <code>rowspan</code> (แนวตั้ง) ในแท็ก <code>&lt;td&gt;</code> หรือ <code>&lt;th&gt;</code>.",
-            '<table border="1">\n <tr><td colspan="2">รวม 2 คอลัมน์</td></tr>\n</table>',
-            "A. html พื้นฐาน "
-        );
-        addReviewSection(
-            "30. คุณสมบัติระยะห่างภายใน (cellpadding) และระหว่างเซลล์ (cellspacing)",
-            "<code>cellpadding</code> (ขอบเซลล์ถึงเนื้อหา). <code>cellspacing</code> (ระหว่างเซลล์).",
-            '<table border="1" cellpadding="8" cellspacing="4"><tr><td>ข้อมูล</td></tr></table>',
-            "A. html พื้นฐาน "
-        );
+                const item = document.createElement('div');
+                item.className = 'toc-item';
+                item.innerHTML = `<a href="#">${section.title}</a>`;
+                item.onclick = (e) => {
+                    e.preventDefault();
+                    renderPage(index);
+                };
+                currentGroup.appendChild(item);
+            });
+            updateNav();
+        }
 
-        // === G. การสร้างฟอร์ม (Form) และ Input พื้นฐาน (31-36) ===
-        addReviewSection(
-            "31. แท็กการสร้างฟอร์ม <form> และ Attribute action/method",
-            "<code>&lt;form&gt;</code> ห่อหุ้ม Input. <code>action</code>: URL ปลายทาง. <code>method</code>: 'get' หรือ 'post'.",
-            '<form action="submit_data.php" method="post">\n \n</form>',
-            "A. html พื้นฐาน "
-        );
-        addReviewSection(
-            "32. แท็ก Input พื้นฐาน: text, password, submit",
-            "<code>type=\"text\"</code>, <code>type=\"password\"</code>, <code>type=\"submit\"</code> (ปุ่มส่งข้อมูล).",
-            '<input type="text" name="user">\n<input type="password" name="pass">\n<input type="submit" value="ส่ง">',
-            "A. html พื้นฐาน "
-        );
-        addReviewSection(
-            "33. Input Type: checkbox และ radio",
-            "<code>checkbox</code>: เลือกได้หลายรายการ. <code>radio</code>: เลือกได้รายการเดียว (ต้องมี <code>name</code> เดียวกัน).",
-            '<input type="checkbox" name="fruit"> แอปเปิล\n<input type="radio" name="gender" value="m"> ชาย',
-            "A. html พื้นฐาน "
-        );
-        addReviewSection(
-            "34. การใช้ Label (<label>) เพื่อผูกกับ Input",
-            "ใช้ <code>&lt;label&gt;</code> และ <code>for</code> attribute เพื่อเพิ่มความสามารถในการเข้าถึงและทำให้คลิกง่ายขึ้น.",
-            '<label for="username">ชื่อ:</label>\n<input type="text" id="username">',
-            "A. html พื้นฐาน "
-        );
-        addReviewSection(
-            "35. กล่องข้อความหลายบรรทัด <textarea>",
-            "ใช้สำหรับรับข้อมูลข้อความจำนวนมาก, สามารถกำหนด <code>rows</code> และ <code>cols</code> ได้.",
-            '<textarea rows="4" cols="50" placeholder="ความคิดเห็น"></textarea>',
-            "A. html พื้นฐาน "
-        );
-        addReviewSection(
-            "36. การสร้าง Dropdown List (<select> และ <option>)",
-            "<code>&lt;select&gt;</code> คือกล่องหลัก, <code>&lt;option&gt;</code> คือรายการตัวเลือก.",
-            '<select name="country">\n <option value="th">ไทย</option>\n <option value="en">อังกฤษ</option>\n</select>',
-            "A. html พื้นฐาน "
-        );
+        // 3. ฟังก์ชันแสดงหน้าบทเรียน
+        function renderPage(index) {
+            currentIndex = index;
+            const data = sectionsData[index];
+            const contentDiv = document.getElementById('content');
 
-        // === H. Input Type ใน HTML5 (37-40) ===
-        addReviewSection(
-            "37. Input Type: number และ range",
-            "<code>number</code>: สำหรับตัวเลข (มีปุ่มเพิ่ม/ลด). <code>range</code>: ตัวเลื่อนเลือกค่า (Slider).",
-            '<input type="number" min="1" max="10">\n<input type="range" min="0" max="100">',
-            "A. html พื้นฐาน "
-        );
-        addReviewSection(
-            "38. Input Type: email และ url",
-            "บังคับให้ผู้ใช้กรอกรูปแบบอีเมลหรือ URL ที่ถูกต้อง (มีการตรวจสอบเบื้องต้น).",
-            '<input type="email" placeholder="อีเมล">\n<input type="url" placeholder="เว็บไซต์">',
-            "A. html พื้นฐาน "
-        );
-        addReviewSection(
-            "39. Input Type: date และ color",
-            "<code>date</code>: ปฏิทินเลือกวันที่. <code>color</code>: ตัวเลือกสี.",
-            '<label>วันเกิด:</label><input type="date">\n<label>สีโปรด:</label><input type="color">',
-            "A. html พื้นฐาน "
-        );
-        addReviewSection(
-            "40. คุณสมบัติ placeholder และ required",
-            "<code>placeholder</code>: ข้อความตัวอย่างในช่อง. <code>required</code>: บังคับให้กรอกข้อมูลก่อนส่งฟอร์ม.",
-            '<input type="text" placeholder="กรอกชื่อ" required>',
-            "A. html พื้นฐาน "
-        );
+            contentDiv.innerHTML = `
+                <h3>${data.title}</h3>
+                <p><strong>คำอธิบาย:</strong> ${data.description}</p>
+                <div class="code-block"><code>${escapeHTML(data.code)}</code></div>
+                <div class="result-div">
+                    <h4>ผลลัพธ์:</h4>
+                    <div>${data.code}</div>
+                </div>
+            `;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            updateNav();
+        }
 
-        // === I. HTML5 Semantic Elements (41-45) ===
-        addReviewSection(
-            "41. แท็กส่วนหัวของหน้า <header>",
-            "ใช้กำหนดส่วนหัวหรือโลโก้ของเว็บไซต์ (ไม่เหมือน <code>&lt;head&gt;</code>).",
-            "<header>\n <h1>ชื่อเว็บไซต์</h1>\n</header>",
-            "A. html พื้นฐาน "
-        );
-        addReviewSection(
-            "42. แท็กส่วนนำทาง <nav>",
-            "ใช้สำหรับห่อหุ้มลิงก์นำทางหลักของเว็บไซต์ (เช่น เมนู).",
-            "<nav>\n <a href=\"#\">หน้าหลัก</a> | <a href=\"#\">ติดต่อ</a>\n</nav>",
-            "A. html พื้นฐาน "
-        );
-        addReviewSection(
-            "43. แท็กส่วนหลัก <main> และ ส่วนเนื้อหา <section>",
-            "<code>&lt;main&gt;</code>: เนื้อหาหลักที่ไม่ซ้ำกัน. <code>&lt;section&gt;</code>: กลุ่มเนื้อหาที่มีความเกี่ยวข้องกัน.",
-            "<main>\n <section>...</section>\n</main>",
-            "A. html พื้นฐาน "
-        );
-        addReviewSection(
-            "44. แท็กส่วนข้างเคียง <aside>",
-            "ใช้สำหรับเนื้อหาที่เกี่ยวข้องแต่แยกออกมา เช่น Sidebar, โฆษณา, หรือลิงก์ที่เกี่ยวข้อง.",
-            "<aside>\n <h4>ลิงก์ด่วน</h4>\n <ul>...</ul>\n</aside>",
-            "A. html พื้นฐาน "
-        );
-        addReviewSection(
-            "45. แท็กส่วนท้าย <figcaption> และ <footer>",
-            "<code>&lt;figcaption&gt;</code>: คำอธิบายรูปภาพ/สื่อ. <code>&lt;footer&gt;</code>: ข้อมูลลิขสิทธิ์, ผู้เขียน, ลิงก์ท้ายหน้า.",
-            "<footer>\n © 2024 คู่มือ HTML\n</footer>",
-            "v"
-        );
+        // 4. ปุ่มนำทาง
+        function updateNav() {
+            const navDiv = document.getElementById('nav-controls');
+            navDiv.innerHTML = '';
 
-        // ----------------------------------------------------
-        // เริ่มต้นการทำงาน
-        // ----------------------------------------------------
-        renderPage(currentSectionIndex);
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'nav-button';
+            prevBtn.innerText = '⬅️ ย้อนกลับ';
+            prevBtn.disabled = currentIndex === -1;
+            prevBtn.onclick = () => currentIndex === 0 ? renderTOC() : renderPage(currentIndex - 1);
 
+            const homeBtn = document.createElement('button');
+            homeBtn.className = 'nav-button';
+            homeBtn.style.background = '#95a5a6';
+            homeBtn.innerText = '🏠 สารบัญ';
+            homeBtn.onclick = renderTOC;
+
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'nav-button';
+            nextBtn.innerText = 'ถัดไป ➡️';
+            nextBtn.disabled = currentIndex >= sectionsData.length - 1;
+            nextBtn.onclick = () => renderPage(currentIndex + 1);
+
+            navDiv.appendChild(prevBtn);
+            if (currentIndex !== -1) navDiv.appendChild(homeBtn);
+            navDiv.appendChild(nextBtn);
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>"']/g, m => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[m]));
+        }
+
+        // ระบบ Keyboard
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' && currentIndex < sectionsData.length - 1) renderPage(currentIndex + 1);
+            if (e.key === 'ArrowLeft') {
+                if (currentIndex === 0) renderTOC();
+                else if (currentIndex > 0) renderPage(currentIndex - 1);
+            }
+        });
     </script>
 </body>
 
