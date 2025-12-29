@@ -1,20 +1,19 @@
  
-
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Sticky Notes OOP - Multi Pages</title>
+    <title>Sticky Notes Pro - Real-time Sync</title>
     <link
         href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&family=Kanit:wght@400;600&display=swap"
         rel="stylesheet">
     <style>
         :root {
-            --bg: #f0f2f5;
+            --bg: #f8fafc;
             --panel: #ffffff;
             --accent: #4f46e5;
             --text: #1e293b;
             --muted: #64748b;
-            --note-bg: #fffacd;
+            --border: #e2e8f0;
         }
 
         body.dark {
@@ -23,6 +22,7 @@
             --accent: #818cf8;
             --text: #f8fafc;
             --muted: #94a3b8;
+            --border: #334155;
         }
 
         body {
@@ -33,16 +33,17 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
             transition: 0.3s;
         }
 
-        /* --- Header & Toolbar --- */
+        /* --- Header --- */
         header {
             display: flex;
             align-items: center;
-            padding: 0.75rem 1.5rem;
+            padding: 10px 20px;
             background: var(--panel);
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid var(--border);
             z-index: 100;
             gap: 15px;
         }
@@ -57,11 +58,11 @@
         .search {
             padding: 8px 15px;
             border-radius: 20px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border);
             background: var(--bg);
             color: var(--text);
             outline: none;
-            width: 180px;
+            width: 200px;
         }
 
         .toolbar {
@@ -73,16 +74,16 @@
         /* --- Buttons --- */
         .btn {
             background: var(--panel);
-            border: 1px solid #ddd;
-            padding: 8px 12px;
+            border: 1px solid var(--border);
+            padding: 8px 14px;
             border-radius: 8px;
             cursor: pointer;
             color: var(--text);
-            font-size: 0.9rem;
+            font-size: 14px;
             transition: 0.2s;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
         }
 
         .btn:hover {
@@ -102,36 +103,38 @@
             background: var(--panel);
             display: flex;
             align-items: center;
-            padding: 5px 15px;
+            padding: 8px 20px;
             gap: 10px;
-            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            border-top: 1px solid var(--border);
         }
 
         .tab {
-            padding: 6px 15px;
+            padding: 6px 16px;
             background: var(--bg);
+            border: 1px solid var(--border);
             border-radius: 20px;
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 13px;
             display: flex;
             align-items: center;
             gap: 8px;
-            border: 2px solid transparent;
+            transition: 0.2s;
         }
 
         .tab.active {
+            background: var(--accent);
+            color: white;
             border-color: var(--accent);
-            font-weight: 600;
         }
 
         .tab .del-page {
-            opacity: 0.3;
-            font-size: 12px;
+            opacity: 0.5;
+            font-size: 10px;
         }
 
         .tab .del-page:hover {
             opacity: 1;
-            color: red;
+            color: #ff4444;
         }
 
         /* --- Board Area --- */
@@ -146,15 +149,16 @@
         /* --- Note Styling --- */
         .note {
             position: absolute;
-            width: 200px;
-            min-height: 120px;
-            background: var(--note-bg);
-            border-radius: 10px;
-            padding: 10px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            width: 220px;
+            min-height: 130px;
+            background: #fffacd;
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
             cursor: grab;
             display: flex;
             flex-direction: column;
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
 
         .note:active {
@@ -165,55 +169,69 @@
             display: flex;
             justify-content: space-between;
             margin-bottom: 8px;
+            opacity: 0.2;
+            transition: 0.2s;
+        }
+
+        .note:hover .note-header {
+            opacity: 1;
         }
 
         .content {
             flex: 1;
             outline: none;
-            font-size: 0.95rem;
-            color: #333;
+            font-size: 14px;
+            color: #334155;
             min-height: 80px;
+            line-height: 1.5;
         }
 
         .ring-active {
-            box-shadow: 0 0 0 3px var(--accent);
+            box-shadow: 0 0 0 4px var(--accent);
         }
 
         .color-picker {
-            width: 18px;
-            height: 18px;
+            width: 20px;
+            height: 20px;
             border: none;
             border-radius: 50%;
             padding: 0;
             cursor: pointer;
+            background: none;
         }
 
         button.icon-btn {
             background: none;
             border: none;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 16px;
             padding: 2px;
         }
 
         footer {
             font-size: 11px;
-            padding: 5px;
+            padding: 4px;
             text-align: center;
             color: var(--muted);
             background: var(--panel);
+            border-top: 1px solid var(--border);
+        }
+
+        svg {
+            pointer-events: none;
+            z-index: 0;
         }
     </style>
 </head>
 
 <body>
     <header>
-        <div class="logo">NotesFlow</div>
-        <input type="text" id="search" class="search" placeholder="ค้นหาโน้ต...">
+        <div class="logo">StickyCloud 2025</div>
+        <input type="text" id="search" class="search" placeholder="ค้นหาบันทึก...">
         <div class="toolbar">
-            <button class="btn btn-primary" id="addNote"><span>+</span> โน้ตใหม่</button>
-            <button class="btn" id="cloudSyncBtn">☁️ Sync</button>
-            <button class="btn" id="toggleDark">🌙 โหมด</button>
+            <button class="btn btn-primary" id="addNote"><span>+</span> เพิ่มโน้ต</button>
+            <button class="btn" id="syncStatus">☁️ กำลังเตรียมระบบ...</button>
+            <button class="btn" id="toggleDark">🌙</button>
         </div>
     </header>
 
@@ -221,16 +239,16 @@
 
     <div class="page-bar" id="pageBar">
         <button class="btn" id="addPage"
-            style="border-radius: 50%; width: 30px; height: 30px; padding: 0; justify-content: center;">+</button>
+            style="border-radius: 50%; width: 32px; height: 32px; padding: 0; justify-content: center;">+</button>
     </div>
 
-    <footer>ลากย้ายได้ | บันทึกอัตโนมัติ | กด 🔗 เพื่อเชื่อมโยง (คลิกตัวที่ 1 แล้วตามด้วยตัวที่ 2)</footer>
+    <footer>ย้ายโน้ตเพื่อบันทึกอัตโนมัติ | กด 🔗 ที่โน้ตตัวแรกแล้วกดโน้ตตัวที่สองเพื่อเชื่อมโยง</footer>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-        import { getFirestore, setDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+        import { getFirestore, setDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
-        // Firebase Config (คงเดิมของคุณไว้)
+        // --- Firebase Configuration ---
         const firebaseConfig = {
             apiKey: "AIzaSyB3kPHRDHeYd6rjspNjCH11QG7T2bTd7PM",
             authDomain: "stickey-note-6bb95.firebaseapp.com",
@@ -239,22 +257,22 @@
             messagingSenderId: "266704545369",
             appId: "1:266704545369:web:e403d47f324a91234a3348",
         };
-        const fbApp = initializeApp(firebaseConfig);
-        const db = getFirestore(fbApp);
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
         // --- Note Class ---
         class Note {
-            constructor(app, data) {
-                this.app = app;
-                this.id = data.id || Date.now() + Math.random();
+            constructor(parent, data) {
+                this.parent = parent;
+                this.id = data.id || "n_" + Date.now() + Math.floor(Math.random() * 1000);
                 this.text = data.text || '';
                 this.color = data.color || '#fffacd';
                 this.x = data.x || 100;
                 this.y = data.y || 100;
-                this.render();
+                this.createEl();
             }
 
-            render() {
+            createEl() {
                 this.el = document.createElement('div');
                 this.el.className = 'note';
                 this.el.style.backgroundColor = this.color;
@@ -264,8 +282,8 @@
 
                 this.el.innerHTML = `
                     <div class="note-header">
-                        <button class="icon-btn connect-btn">🔗</button>
-                        <div style="display:flex; gap:5px; align-items:center;">
+                        <button class="icon-btn connect-btn" title="เชื่อมโยง">🔗</button>
+                        <div style="display:flex; gap:8px; align-items:center;">
                             <input type="color" class="color-picker" value="${this.color}">
                             <button class="icon-btn delete-btn">🗑️</button>
                         </div>
@@ -273,43 +291,43 @@
                     <div class="content" contenteditable="true">${this.text}</div>
                 `;
 
-                this.el.querySelector('.delete-btn').onclick = () => this.app.deleteNote(this.id);
+                this.el.querySelector('.delete-btn').onclick = () => this.parent.deleteNote(this.id);
                 this.el.querySelector('.color-picker').oninput = (e) => {
                     this.color = e.target.value;
                     this.el.style.backgroundColor = this.color;
-                    this.app.saveAll();
+                    this.parent.autoSave();
                 };
-                this.el.querySelector('.connect-btn').onclick = () => this.app.connectionManager.startConnection(this);
-                this.el.querySelector('.content').onblur = () => {
+                this.el.querySelector('.connect-btn').onclick = () => this.parent.connectionManager.startConnection(this);
+                this.el.querySelector('.content').oninput = () => {
                     this.text = this.el.querySelector('.content').innerText;
-                    this.app.saveAll();
+                    this.parent.autoSave();
                 };
 
-                this.setupDragging();
+                this.makeDraggable();
             }
 
-            setupDragging() {
-                let ox, oy, isDrag = false;
+            makeDraggable() {
+                let ox, oy, dragging = false;
                 this.el.onmousedown = (e) => {
                     if (e.target.closest('button, input, .content')) return;
-                    isDrag = true;
+                    dragging = true;
                     ox = e.clientX - this.el.offsetLeft;
                     oy = e.clientY - this.el.offsetTop;
                     this.el.style.zIndex = 1000;
                 };
                 document.addEventListener('mousemove', (e) => {
-                    if (!isDrag) return;
+                    if (!dragging) return;
                     this.x = e.clientX - ox;
                     this.y = e.clientY - oy;
                     this.el.style.left = this.x + 'px';
                     this.el.style.top = this.y + 'px';
-                    this.app.connectionManager.updateLines(this.id);
+                    this.parent.connectionManager.drawLines();
                 });
                 document.addEventListener('mouseup', () => {
-                    if (isDrag) {
-                        isDrag = false;
+                    if (dragging) {
+                        dragging = false;
                         this.el.style.zIndex = '';
-                        this.app.saveAll();
+                        this.parent.autoSave();
                     }
                 });
             }
@@ -321,24 +339,23 @@
 
         // --- Connection Manager ---
         class ConnectionManager {
-            constructor(app) {
-                this.app = app;
-                this.connections = [];
+            constructor(parent) {
+                this.parent = parent;
+                this.conns = [];
                 this.pending = null;
                 this.initSVG();
             }
 
             initSVG() {
                 this.svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-                Object.assign(this.svg.style, { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' });
-
-                const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
-                defs.innerHTML = `
-                    <marker id="arrow" markerWidth="10" markerHeight="7" refX="22" refY="3.5" orient="auto">
-                        <polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8" />
-                    </marker>`;
-                this.svg.appendChild(defs);
-                this.app.container.appendChild(this.svg);
+                Object.assign(this.svg.style, { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' });
+                this.svg.innerHTML = `
+                    <defs>
+                        <marker id="head" markerWidth="10" markerHeight="7" refX="20" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8" />
+                        </marker>
+                    </defs>`;
+                this.parent.container.prepend(this.svg);
             }
 
             startConnection(note) {
@@ -346,196 +363,207 @@
                     this.pending = note;
                     note.el.classList.add('ring-active');
                 } else {
-                    if (this.pending.id !== note.id) this.addConnection(this.pending.id, note.id);
+                    if (this.pending.id !== note.id) {
+                        this.conns.push({ from: this.pending.id, to: note.id });
+                        this.drawLines();
+                        this.parent.autoSave();
+                    }
                     this.pending.el.classList.remove('ring-active');
                     this.pending = null;
                 }
             }
 
-            addConnection(f, t) {
-                const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                line.setAttribute('stroke', '#94a3b8');
-                line.setAttribute('stroke-width', '2');
-                line.setAttribute('marker-end', 'url(#arrow)');
-                this.svg.appendChild(line);
-                this.connections.push({ from: f, to: t, el: line });
-                this.updateLines();
-                this.app.saveAll();
-            }
+            drawLines() {
+                const oldLines = this.svg.querySelectorAll('line');
+                oldLines.forEach(l => l.remove());
 
-            updateLines(noteId) {
-                this.connections.forEach(c => {
-                    const fromNote = this.app.notes.find(n => n.id === c.from);
-                    const toNote = this.app.notes.find(n => n.id === c.to);
-                    if (fromNote && toNote) {
-                        const p1 = fromNote.getCenter();
-                        const p2 = toNote.getCenter();
-                        c.el.setAttribute('x1', p1.x); c.el.setAttribute('y1', p1.y);
-                        c.el.setAttribute('x2', p2.x); c.el.setAttribute('y2', p2.y);
+                this.conns.forEach(c => {
+                    const n1 = this.parent.notes.find(n => n.id === c.from);
+                    const n2 = this.parent.notes.find(n => n.id === c.to);
+                    if (n1 && n2) {
+                        const p1 = n1.getCenter();
+                        const p2 = n2.getCenter();
+                        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                        line.setAttribute('x1', p1.x); line.setAttribute('y1', p1.y);
+                        line.setAttribute('x2', p2.x); line.setAttribute('y2', p2.y);
+                        line.setAttribute('stroke', '#94a3b8');
+                        line.setAttribute('stroke-width', '2');
+                        line.setAttribute('marker-end', 'url(#head)');
+                        this.svg.appendChild(line);
                     }
                 });
             }
 
-            clear() {
-                this.connections.forEach(c => c.el.remove());
-                this.connections = [];
-            }
+            clear() { this.conns = []; this.drawLines(); }
         }
 
-        // --- Main App ---
+        // --- Main App Controller ---
         class StickyApp {
             constructor() {
                 this.notes = [];
-                this.pages = JSON.parse(localStorage.getItem('pages_list')) || [{ id: 'p1', name: 'หน้าหลัก' }];
-                this.currentPageId = localStorage.getItem('current_page_id') || 'p1';
-
+                this.pages = JSON.parse(localStorage.getItem('notes_pages')) || [{ id: 'main', name: 'หน้าหลัก' }];
+                this.activePageId = localStorage.getItem('notes_active_page') || 'main';
                 this.container = document.getElementById('board');
-                this.pageBar = document.getElementById('pageBar');
+                this.syncEl = document.getElementById('syncStatus');
+
                 this.connectionManager = new ConnectionManager(this);
+                this.isRemoteUpdate = false;
+                this.saveTimeout = null;
+                this.unsubscribe = null;
 
                 this.init();
             }
 
             init() {
                 document.getElementById('addNote').onclick = () => this.addNote();
-                document.getElementById('addPage').onclick = () => this.addNewPage();
-                document.getElementById('cloudSyncBtn').onclick = () => this.syncCloud();
-                document.getElementById('toggleDark').onclick = () => this.toggleTheme();
-                document.getElementById('search').oninput = (e) => this.filterNotes(e.target.value);
+                document.getElementById('addPage').onclick = () => this.createPage();
+                document.getElementById('toggleDark').onclick = () => {
+                    document.body.classList.toggle('dark');
+                    localStorage.theme = document.body.classList.contains('dark') ? 'dark' : 'light';
+                };
+                document.getElementById('search').oninput = (e) => this.filter(e.target.value);
 
-                this.renderPageTabs();
-                this.loadCurrentPage();
                 if (localStorage.theme === 'dark') document.body.classList.add('dark');
+
+                this.renderTabs();
+                this.startRealtimeSync();
             }
 
-            renderPageTabs() {
-                // Clear existing tabs except the add button
-                const oldTabs = this.pageBar.querySelectorAll('.tab');
-                oldTabs.forEach(t => t.remove());
+            // Real-time Sync Logic
+            startRealtimeSync() {
+                if (this.unsubscribe) this.unsubscribe();
+                this.syncEl.innerText = "⏳ กำลังซิงค์...";
+
+                this.unsubscribe = onSnapshot(doc(db, "stickynotes", this.activePageId), (snap) => {
+                    if (snap.exists()) {
+                        const data = snap.data();
+                        // ป้องกันการ Render ทับซ้ำซ้อนถ้าข้อมูลเหมือนกัน
+                        const currentDataStr = JSON.stringify(this.notes.map(n => n.id).sort());
+                        const remoteDataStr = JSON.stringify((data.notes || []).map(n => n.id).sort());
+
+                        if (currentDataStr !== remoteDataStr || !this.isSaving) {
+                            this.renderPage(data);
+                        }
+                    } else {
+                        this.renderPage({ notes: [], conns: [] });
+                    }
+                    this.syncEl.innerText = "✅ ออนไลน์";
+                });
+            }
+
+            autoSave() {
+                this.isSaving = true;
+                this.syncEl.innerText = "⏳ บันทึกอัตโนมัติ...";
+                clearTimeout(this.saveTimeout);
+
+                this.saveTimeout = setTimeout(async () => {
+                    const data = {
+                        notes: this.notes.map(n => ({ id: n.id, text: n.text, color: n.color, x: n.x, y: n.y })),
+                        conns: this.connectionManager.conns,
+                        updatedAt: Date.now()
+                    };
+
+                    localStorage.setItem(`local_page_${this.activePageId}`, JSON.stringify(data));
+                    try {
+                        await setDoc(doc(db, "stickynotes", this.activePageId), data);
+                        this.syncEl.innerText = "✅ บันทึกแล้ว";
+                    } catch (e) {
+                        this.syncEl.innerText = "❌ เซฟพลาด";
+                    } finally {
+                        this.isSaving = false;
+                    }
+                }, 1000); // Debounce 1 second
+            }
+
+            renderPage(data) {
+                this.notes.forEach(n => n.el.remove());
+                this.notes = [];
+                this.connectionManager.clear();
+
+                if (data.notes) {
+                    data.notes.forEach(d => {
+                        const n = new Note(this, d);
+                        this.notes.push(n);
+                        this.container.appendChild(n.el);
+                    });
+                }
+                if (data.conns) {
+                    this.connectionManager.conns = data.conns;
+                    this.connectionManager.drawLines();
+                }
+            }
+
+            // Page Management
+            renderTabs() {
+                const bar = document.getElementById('pageBar');
+                bar.querySelectorAll('.tab').forEach(t => t.remove());
 
                 this.pages.forEach(p => {
                     const tab = document.createElement('div');
-                    tab.className = `tab ${p.id === this.currentPageId ? 'active' : ''}`;
+                    tab.className = `tab ${p.id === this.activePageId ? 'active' : ''}`;
                     tab.innerHTML = `<span>${p.name}</span> <span class="del-page">✕</span>`;
                     tab.onclick = () => this.switchPage(p.id);
                     tab.querySelector('.del-page').onclick = (e) => {
                         e.stopPropagation();
                         this.deletePage(p.id);
                     };
-                    this.pageBar.insertBefore(tab, document.getElementById('addPage'));
+                    bar.insertBefore(tab, document.getElementById('addPage'));
                 });
             }
 
-            addNewPage() {
-                const name = prompt("ชื่อหน้าใหม่:", "หน้า " + (this.pages.length + 1));
+            createPage() {
+                const name = prompt("ชื่อหน้าใหม่:");
                 if (!name) return;
-                const newId = 'p' + Date.now();
-                this.pages.push({ id: newId, name });
-                this.savePagesList();
-                this.switchPage(newId);
+                const id = "p_" + Date.now();
+                this.pages.push({ id, name });
+                localStorage.setItem('notes_pages', JSON.stringify(this.pages));
+                this.switchPage(id);
             }
 
             switchPage(id) {
-                this.currentPageId = id;
-                localStorage.setItem('current_page_id', id);
-                this.renderPageTabs();
-                this.loadCurrentPage();
+                this.activePageId = id;
+                localStorage.setItem('notes_active_page', id);
+                this.renderTabs();
+                this.startRealtimeSync();
             }
 
             deletePage(id) {
-                if (this.pages.length === 1) return alert("ต้องมีอย่างน้อยหนึ่งหน้า");
-                if (!confirm("ลบหน้านี้ข้อมูลจะหายหมด ยืนยันไหม?")) return;
-
+                if (this.pages.length === 1) return;
+                if (!confirm("ลบหน้านี้ข้อมูลจะหายถาวร?")) return;
                 this.pages = this.pages.filter(p => p.id !== id);
-                localStorage.removeItem(`page_data_${id}`);
-                this.savePagesList();
-                if (this.currentPageId === id) this.currentPageId = this.pages[0].id;
-                this.switchPage(this.currentPageId);
+                localStorage.setItem('notes_pages', JSON.stringify(this.pages));
+                if (this.activePageId === id) this.activePageId = this.pages[0].id;
+                this.switchPage(this.activePageId);
             }
 
-            savePagesList() {
-                localStorage.setItem('pages_list', JSON.stringify(this.pages));
-            }
-
+            // Note Actions
             addNote() {
-                const note = new Note(this, { x: 50 + Math.random() * 50, y: 50 + Math.random() * 50 });
-                this.notes.push(note);
-                this.container.appendChild(note.el);
-                this.saveAll();
+                const n = new Note(this, { x: 100 + Math.random() * 100, y: 100 + Math.random() * 100 });
+                this.notes.push(n);
+                this.container.appendChild(n.el);
+                this.autoSave();
             }
 
             deleteNote(id) {
                 this.notes = this.notes.filter(n => n.id !== id);
                 this.container.querySelector(`[data-id="${id}"]`)?.remove();
-                this.connectionManager.connections = this.connectionManager.connections.filter(c => {
-                    if (c.from === id || c.to === id) { c.el.remove(); return false; }
-                    return true;
-                });
-                this.saveAll();
+                this.connectionManager.conns = this.connectionManager.conns.filter(c => c.from !== id && c.to !== id);
+                this.connectionManager.drawLines();
+                this.autoSave();
             }
 
-            async saveAll() {
-                const data = {
-                    notes: this.notes.map(n => ({ id: n.id, text: n.text, color: n.color, x: n.x, y: n.y })),
-                    connections: this.connectionManager.connections.map(c => ({ from: c.from, to: c.to }))
-                };
-                localStorage.setItem(`page_data_${this.currentPageId}`, JSON.stringify(data));
-
-                // Cloud Sync
-                try {
-                    await setDoc(doc(db, "stickynotes", this.currentPageId), data);
-                } catch (e) { console.warn("Cloud save failed", e); }
-            }
-
-            loadCurrentPage() {
-                // Clear Board
-                this.notes.forEach(n => n.el.remove());
-                this.notes = [];
-                this.connectionManager.clear();
-
-                const localData = JSON.parse(localStorage.getItem(`page_data_${this.currentPageId}`) || '{}');
-                if (localData.notes) {
-                    localData.notes.forEach(nData => {
-                        const n = new Note(this, nData);
-                        this.notes.push(n);
-                        this.container.appendChild(n.el);
-                    });
-                    if (localData.connections) {
-                        localData.connections.forEach(c => this.connectionManager.addConnection(c.from, c.to));
-                    }
-                }
-            }
-
-            async syncCloud() {
-                const btn = document.getElementById('cloudSyncBtn');
-                btn.innerText = "⏳ รอ...";
-                try {
-                    const snap = await getDoc(doc(db, "stickynotes", this.currentPageId));
-                    if (snap.exists()) {
-                        localStorage.setItem(`page_data_${this.currentPageId}`, JSON.stringify(snap.data()));
-                        this.loadCurrentPage();
-                        alert("ดึงข้อมูลจาก Cloud สำเร็จ");
-                    } else {
-                        alert("ไม่พบข้อมูลบน Cloud สำหรับหน้านี้");
-                    }
-                } catch (e) { alert("Error: " + e.message); }
-                btn.innerText = "☁️ Sync";
-            }
-
-            filterNotes(term) {
+            filter(term) {
+                const t = term.toLowerCase();
                 this.notes.forEach(n => {
-                    n.el.style.display = n.text.toLowerCase().includes(term.toLowerCase()) ? '' : 'none';
+                    n.el.style.display = n.text.toLowerCase().includes(t) ? '' : 'none';
                 });
-            }
-
-            toggleTheme() {
-                document.body.classList.toggle('dark');
-                localStorage.theme = document.body.classList.contains('dark') ? 'dark' : 'light';
             }
         }
 
-        // Start App
-        new StickyApp();
+        // Run App
+        window.addEventListener('DOMContentLoaded', () => {
+            new StickyApp();
+        });
     </script>
 </body>
 
