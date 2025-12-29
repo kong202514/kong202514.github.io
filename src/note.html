@@ -213,283 +213,334 @@
     <footer>เชื่อมโยงโน้ต: คลิก 🔗 ที่ตัวแรก แล้วตามด้วยตัวที่สอง</footer>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-        import { getFirestore, setDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+    import { getFirestore, setDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyB3kPHRDHeYd6rjspNjCH11QG7T2bTd7PM",
-            authDomain: "stickey-note-6bb95.firebaseapp.com",
-            projectId: "stickey-note-6bb95",
-            storageBucket: "stickey-note-6bb95.firebasestorage.app",
-            messagingSenderId: "266704545369",
-            appId: "1:266704545369:web:e403d47f324a91234a3348",
-        };
+    const firebaseConfig = {
+        apiKey: "AIzaSyB3kPHRDHeYd6rjspNjCH11QG7T2bTd7PM",
+        authDomain: "stickey-note-6bb95.firebaseapp.com",
+        projectId: "stickey-note-6bb95",
+        storageBucket: "stickey-note-6bb95.firebasestorage.app",
+        messagingSenderId: "266704545369",
+        appId: "1:266704545369:web:e403d47f324a91234a3348",
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-        // --- Note Class ---
-        class Note {
-            constructor(parent, data) {
-                this.parent = parent;
-                this.id = data.id || "n_" + Date.now() + Math.random();
-                this.text = data.text || '';
-                this.color = data.color || '#fffacd';
-                this.x = data.x || 100;
-                this.y = data.y || 100;
-                this.createEl();
-            }
-
-            createEl() {
-                this.el = document.createElement('div');
-                this.el.className = 'note';
-                this.el.style.backgroundColor = this.color;
-                this.el.style.left = this.x + 'px';
-                this.el.style.top = this.y + 'px';
-                this.el.dataset.id = this.id;
-                this.el.innerHTML = `
-                    <div class="note-header">
-                        <button class="btn-icon connect-btn" style="background:none; border:none; cursor:pointer;">🔗</button>
-                        <div style="display:flex; gap:5px;">
-                            <input type="color" class="color-picker" value="${this.color}" style="width:18px;height:18px;border:none;cursor:pointer;">
-                            <button class="delete-btn" style="background:none; border:none; cursor:pointer;">🗑️</button>
-                        </div>
-                    </div>
-                    <div class="content" contenteditable="true">${this.text}</div>
-                `;
-                this.el.querySelector('.delete-btn').onclick = () => this.parent.deleteNote(this.id);
-                this.el.querySelector('.connect-btn').onclick = () => this.parent.startConnect(this);
-                this.el.querySelector('.color-picker').oninput = (e) => {
-                    this.color = e.target.value;
-                    this.el.style.backgroundColor = this.color;
-                    this.parent.autoSave();
-                };
-                this.el.querySelector('.content').oninput = () => {
-                    this.text = this.el.querySelector('.content').innerText;
-                    this.parent.autoSave();
-                };
-                this.setupDrag();
-            }
-
-            setupDrag() {
-                let ox, oy, isDragging = false;
-                this.el.onmousedown = (e) => {
-                    if (e.target.closest('button, input, .content')) return;
-                    isDragging = true;
-                    ox = e.clientX - this.el.offsetLeft;
-                    oy = e.clientY - this.el.offsetTop;
-                    this.el.style.zIndex = 1000;
-                };
-                document.addEventListener('mousemove', (e) => {
-                    if (!isDragging) return;
-                    this.x = e.clientX - ox;
-                    this.y = e.clientY - oy;
-                    this.el.style.left = this.x + 'px';
-                    this.el.style.top = this.y + 'px';
-                    this.parent.drawConnections();
-                });
-                document.addEventListener('mouseup', () => {
-                    if (isDragging) {
-                        isDragging = false;
-                        this.el.style.zIndex = '';
-                        this.parent.autoSave();
-                    }
-                });
-            }
+    // --- Note Class ---
+    class Note {
+        constructor(parent, data) {
+            this.parent = parent;
+            this.id = data.id || "n_" + crypto.randomUUID();
+            this.text = data.text || '';
+            this.color = data.color || '#fffacd';
+            this.x = data.x || 100;
+            this.y = data.y || 100;
+            this.createEl();
         }
 
-        // --- App Engine ---
-        class StickyApp {
-            constructor() {
-                this.notes = [];
-                this.connections = [];
-                this.pages = JSON.parse(localStorage.getItem('cloud_pages')) || [{ id: 'default', name: 'หน้าหลัก' }];
-                this.activePageId = localStorage.getItem('cloud_active_page') || 'default';
-                this.container = document.getElementById('board');
-                this.unsubscribe = null;
-                this.isSaving = false;
-                this.saveTimeout = null;
-                this.pendingNote = null;
+        createEl() {
+            this.el = document.createElement('div');
+            this.el.className = 'note';
+            this.el.style.backgroundColor = this.color;
+            this.el.style.left = this.x + 'px';
+            this.el.style.top = this.y + 'px';
+            this.el.dataset.id = this.id;
+            this.el.innerHTML = `
+            <div class="note-header">
+                <button class="btn-icon connect-btn" style="background:none; border:none; cursor:pointer;">🔗</button>
+                <div style="display:flex; gap:5px;">
+                    <input type="color" class="color-picker" value="${this.color}" style="width:18px;height:18px;border:none;cursor:pointer;">
+                    <button class="delete-btn" style="background:none; border:none; cursor:pointer;">🗑️</button>
+                </div>
+            </div>
+            <div class="content" contenteditable="true">${this.text}</div>
+        `;
 
-                this.init();
+            this.el.querySelector('.delete-btn').onclick = () => this.parent.deleteNote(this.id);
+            this.el.querySelector('.connect-btn').onclick = () => this.parent.startConnect(this);
+
+            const colorPicker = this.el.querySelector('.color-picker');
+            colorPicker.oninput = (e) => {
+                this.color = e.target.value;
+                this.el.style.backgroundColor = this.color;
+                this.parent.autoSave();
+            };
+
+            const contentEl = this.el.querySelector('.content');
+            contentEl.oninput = () => {
+                this.text = contentEl.innerText;
+                this.parent.autoSave();
+            };
+
+            this.setupDrag();
+        }
+
+        updateFromRemote(data) {
+            // อัปเดตเฉพาะถ้ามีการเปลี่ยนแปลง และไม่ได้กำลังถูกลากอยู่
+            if (this.text !== data.text) {
+                this.text = data.text;
+                this.el.querySelector('.content').innerText = data.text;
             }
-
-            init() {
-                this.svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-                this.svg.innerHTML = `<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="20" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#94a3b8"/></marker></defs>`;
-                this.container.appendChild(this.svg);
-
-                document.getElementById('addNote').onclick = () => this.addNote();
-                document.getElementById('addPage').onclick = () => this.addPage();
-                document.getElementById('toggleDark').onclick = () => {
-                    document.body.classList.toggle('dark');
-                    localStorage.theme = document.body.classList.contains('dark') ? 'dark' : 'light';
-                };
-                if (localStorage.theme === 'dark') document.body.classList.add('dark');
-
-                this.renderTabs();
-                this.syncCurrentPage();
+            if (this.color !== data.color) {
+                this.color = data.color;
+                this.el.style.backgroundColor = data.color;
+                this.el.querySelector('.color-picker').value = data.color;
             }
+            this.x = data.x;
+            this.y = data.y;
+            this.el.style.left = this.x + 'px';
+            this.el.style.top = this.y + 'px';
+        }
 
-            // --- SYNC CORE ---
-            syncCurrentPage() {
-                if (this.unsubscribe) this.unsubscribe(); // หยุดซิงค์หน้าเก่า
+        setupDrag() {
+            let ox, oy, isDragging = false;
+            this.el.onmousedown = (e) => {
+                if (e.target.closest('button, input, .content')) return;
+                isDragging = true;
+                this.parent.isDraggingAny = true; // บอก App ว่ากำลังลาก ห้าม Re-render ทับ
+                ox = e.clientX - this.el.offsetLeft;
+                oy = e.clientY - this.el.offsetTop;
+                this.el.style.zIndex = 1000;
+            };
 
-                this.updateStatus("⏳ โหลดข้อมูล...", "#f59e0b");
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                this.x = e.clientX - ox;
+                this.y = e.clientY - oy;
+                this.el.style.left = this.x + 'px';
+                this.el.style.top = this.y + 'px';
+                this.parent.drawConnections();
+            });
 
-                this.unsubscribe = onSnapshot(doc(db, "stickynotes", this.activePageId), (snap) => {
-                    if (this.isSaving) return; // ถ้ากำลังบันทึกเอง ไม่ต้องเอาข้อมูล Cloud มาทับ
-
-                    if (snap.exists()) {
-                        const data = snap.data();
-                        this.renderBoard(data);
-                    } else {
-                        this.renderBoard({ notes: [], connections: [] });
-                    }
-                    this.updateStatus("✅ ออนไลน์", "#10b981");
-                });
-            }
-
-            autoSave() {
-                this.isSaving = true;
-                this.updateStatus("⏳ กำลังบันทึก...", "#3b82f6");
-                clearTimeout(this.saveTimeout);
-
-                this.saveTimeout = setTimeout(async () => {
-                    const data = {
-                        notes: this.notes.map(n => ({ id: n.id, text: n.text, color: n.color, x: n.x, y: n.y })),
-                        connections: this.connections,
-                        updatedAt: Date.now()
-                    };
-
-                    try {
-                        await setDoc(doc(db, "stickynotes", this.activePageId), data);
-                        this.updateStatus("✅ บันทึกแล้ว", "#10b981");
-                    } catch (e) {
-                        this.updateStatus("❌ ผิดพลาด", "#ef4444");
-                    } finally {
-                        this.isSaving = false;
-                    }
-                }, 800);
-            }
-
-            renderBoard(data) {
-                // Clear old elements
-                this.notes.forEach(n => n.el.remove());
-                this.notes = [];
-                this.connections = data.connections || [];
-
-                // Render new notes
-                if (data.notes) {
-                    data.notes.forEach(nData => {
-                        const n = new Note(this, nData);
-                        this.notes.push(n);
-                        this.container.appendChild(n.el);
-                    });
+            document.addEventListener('mouseup', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    this.parent.isDraggingAny = false;
+                    this.el.style.zIndex = '';
+                    this.parent.autoSave();
                 }
-                this.drawConnections();
-            }
+            });
+        }
+    }
 
-            // --- Page Management ---
-            renderTabs() {
-                const bar = document.getElementById('pageBar');
-                bar.querySelectorAll('.tab').forEach(t => t.remove());
-                this.pages.forEach(p => {
-                    const tab = document.createElement('div');
-                    tab.className = `tab ${p.id === this.activePageId ? 'active' : ''}`;
-                    tab.innerHTML = `<span>${p.name}</span> <span class="del-page">✕</span>`;
-                    tab.onclick = () => this.switchPage(p.id);
-                    tab.querySelector('.del-page').onclick = (e) => {
-                        e.stopPropagation();
-                        this.deletePage(p.id);
-                    };
-                    bar.insertBefore(tab, document.getElementById('addPage'));
-                });
-            }
+    // --- App Engine ---
+    class StickyApp {
+        constructor() {
+            this.notes = [];
+            this.connections = [];
+            this.pages = JSON.parse(localStorage.getItem('cloud_pages')) || [{ id: 'default', name: 'หน้าหลัก' }];
+            this.activePageId = localStorage.getItem('cloud_active_page') || 'default';
+            this.container = document.getElementById('board');
+            this.unsubscribe = null;
+            this.isSaving = false;
+            this.isDraggingAny = false;
+            this.saveTimeout = null;
+            this.pendingNote = null;
+            this.lastRemoteUpdate = 0; // เก็บ Timestamp ล่าสุด
 
-            switchPage(id) {
-                if (this.activePageId === id) return;
-                this.activePageId = id;
-                localStorage.setItem('cloud_active_page', id);
-                this.renderTabs();
-                this.syncCurrentPage();
-            }
+            this.init();
+        }
 
-            addPage() {
-                const name = prompt("ชื่อหน้าใหม่:");
-                if (!name) return;
-                const id = "pg_" + Date.now();
-                this.pages.push({ id, name });
-                localStorage.setItem('cloud_pages', JSON.stringify(this.pages));
-                this.switchPage(id);
-            }
+        init() {
+            this.svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            this.svg.innerHTML = `<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="20" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#94a3b8"/></marker></defs>`;
+            this.container.appendChild(this.svg);
 
-            deletePage(id) {
-                if (this.pages.length === 1) return;
-                if (!confirm("ลบหน้านี้ถาวร?")) return;
-                this.pages = this.pages.filter(p => p.id !== id);
-                localStorage.setItem('cloud_pages', JSON.stringify(this.pages));
-                if (this.activePageId === id) this.activePageId = this.pages[0].id;
-                this.switchPage(this.activePageId);
-            }
+            document.getElementById('addNote').onclick = () => this.addNote();
+            document.getElementById('addPage').onclick = () => this.addPage();
+            document.getElementById('toggleDark').onclick = () => {
+                document.body.classList.toggle('dark');
+                localStorage.theme = document.body.classList.contains('dark') ? 'dark' : 'light';
+            };
+            if (localStorage.theme === 'dark') document.body.classList.add('dark');
 
-            // --- Logic ---
-            addNote() {
-                const n = new Note(this, { x: 50 + Math.random() * 100, y: 50 + Math.random() * 100 });
-                this.notes.push(n);
-                this.container.appendChild(n.el);
-                this.autoSave();
-            }
+            this.renderTabs();
+            this.syncCurrentPage();
+        }
 
-            deleteNote(id) {
-                this.notes = this.notes.filter(n => n.id !== id);
-                this.container.querySelector(`[data-id="${id}"]`)?.remove();
-                this.connections = this.connections.filter(c => c.from !== id && c.to !== id);
-                this.drawConnections();
-                this.autoSave();
-            }
+        syncCurrentPage() {
+            if (this.unsubscribe) this.unsubscribe();
+            this.updateStatus("⏳ โหลดข้อมูล...", "#f59e0b");
 
-            startConnect(note) {
-                if (!this.pendingNote) {
-                    this.pendingNote = note;
-                    note.el.classList.add('ring-active');
+            this.unsubscribe = onSnapshot(doc(db, "stickynotes", this.activePageId), (snap) => {
+                // ข้ามการอัปเดตถ้าเราเป็นคนเซฟเอง หรือกำลังลากโน้ตอยู่
+                if (this.isSaving || this.isDraggingAny) return;
+
+                if (snap.exists()) {
+                    const data = snap.data();
+                    // เช็ค Timestamp เพื่อป้องกันข้อมูลเก่าไหลกลับมาทับ
+                    if (data.updatedAt && data.updatedAt <= this.lastRemoteUpdate) return;
+                    this.lastRemoteUpdate = data.updatedAt;
+
+                    this.renderBoard(data);
                 } else {
-                    if (this.pendingNote.id !== note.id) {
+                    this.renderBoard({ notes: [], connections: [] });
+                }
+                this.updateStatus("✅ ออนไลน์", "#10b981");
+            });
+        }
+
+        autoSave() {
+            this.isSaving = true;
+            this.updateStatus("⏳ กำลังบันทึก...", "#3b82f6");
+            clearTimeout(this.saveTimeout);
+
+            this.saveTimeout = setTimeout(async () => {
+                const data = {
+                    notes: this.notes.map(n => ({ id: n.id, text: n.text, color: n.color, x: n.x, y: n.y })),
+                    connections: this.connections,
+                    updatedAt: Date.now()
+                };
+
+                try {
+                    await setDoc(doc(db, "stickynotes", this.activePageId), data);
+                    this.lastRemoteUpdate = data.updatedAt;
+                    this.updateStatus("✅ บันทึกแล้ว", "#10b981");
+                } catch (e) {
+                    console.error(e);
+                    this.updateStatus("❌ ผิดพลาด", "#ef4444");
+                } finally {
+                    this.isSaving = false;
+                }
+            }, 500); // ลด Delay ลงเพื่อให้รู้สึกไวขึ้น
+        }
+
+        renderBoard(data) {
+            const remoteNotes = data.notes || [];
+            this.connections = data.connections || [];
+
+            // 1. ลบโน้ตที่ไม่มีอยู่ใน Remote ออกจากจอ
+            this.notes = this.notes.filter(localNote => {
+                if (!remoteNotes.find(rn => rn.id === localNote.id)) {
+                    localNote.el.remove();
+                    return false;
+                }
+                return true;
+            });
+
+            // 2. อัปเดตโน้ตเดิม หรือสร้างโน้ตใหม่
+            remoteNotes.forEach(rn => {
+                const existing = this.notes.find(ln => ln.id === rn.id);
+                if (existing) {
+                    existing.updateFromRemote(rn);
+                } else {
+                    const n = new Note(this, rn);
+                    this.notes.push(n);
+                    this.container.appendChild(n.el);
+                }
+            });
+
+            this.drawConnections();
+        }
+
+        // --- ส่วน Page Management เหมือนเดิม ---
+        renderTabs() {
+            const bar = document.getElementById('pageBar');
+            bar.querySelectorAll('.tab').forEach(t => t.remove());
+            this.pages.forEach(p => {
+                const tab = document.createElement('div');
+                tab.className = `tab ${p.id === this.activePageId ? 'active' : ''}`;
+                tab.innerHTML = `<span>${p.name}</span> <span class="del-page">✕</span>`;
+                tab.onclick = () => this.switchPage(p.id);
+                tab.querySelector('.del-page').onclick = (e) => {
+                    e.stopPropagation();
+                    this.deletePage(p.id);
+                };
+                bar.insertBefore(tab, document.getElementById('addPage'));
+            });
+        }
+
+        switchPage(id) {
+            if (this.activePageId === id) return;
+            this.activePageId = id;
+            localStorage.setItem('cloud_active_page', id);
+            this.renderTabs();
+            this.syncCurrentPage();
+        }
+
+        addPage() {
+            const name = prompt("ชื่อหน้าใหม่:");
+            if (!name) return;
+            const id = "pg_" + Date.now();
+            this.pages.push({ id, name });
+            localStorage.setItem('cloud_pages', JSON.stringify(this.pages));
+            this.switchPage(id);
+        }
+
+        deletePage(id) {
+            if (this.pages.length === 1) return;
+            if (!confirm("ลบหน้านี้ถาวร?")) return;
+            this.pages = this.pages.filter(p => p.id !== id);
+            localStorage.setItem('cloud_pages', JSON.stringify(this.pages));
+            if (this.activePageId === id) this.activePageId = this.pages[0].id;
+            this.switchPage(this.activePageId);
+        }
+
+        addNote() {
+            const n = new Note(this, { x: 50 + Math.random() * 100, y: 50 + Math.random() * 100 });
+            this.notes.push(n);
+            this.container.appendChild(n.el);
+            this.autoSave();
+        }
+
+        deleteNote(id) {
+            this.notes = this.notes.filter(n => n.id !== id);
+            this.container.querySelector(`[data-id="${id}"]`)?.remove();
+            this.connections = this.connections.filter(c => c.from !== id && c.to !== id);
+            this.drawConnections();
+            this.autoSave();
+        }
+
+        startConnect(note) {
+            if (!this.pendingNote) {
+                this.pendingNote = note;
+                note.el.classList.add('ring-active');
+            } else {
+                if (this.pendingNote.id !== note.id) {
+                    // ป้องกันเส้นเชื่อมซ้ำ
+                    const exists = this.connections.some(c =>
+                        (c.from === this.pendingNote.id && c.to === note.id)
+                    );
+                    if (!exists) {
                         this.connections.push({ from: this.pendingNote.id, to: note.id });
                         this.drawConnections();
                         this.autoSave();
                     }
-                    this.pendingNote.el.classList.remove('ring-active');
-                    this.pendingNote = null;
                 }
-            }
-
-            drawConnections() {
-                this.svg.querySelectorAll('line').forEach(l => l.remove());
-                this.connections.forEach(c => {
-                    const n1 = this.notes.find(n => n.id === c.from);
-                    const n2 = this.notes.find(n => n.id === c.to);
-                    if (n1 && n2) {
-                        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                        const p1 = { x: n1.x + 110, y: n1.y + 60 };
-                        const p2 = { x: n2.x + 110, y: n2.y + 60 };
-                        line.setAttribute('x1', p1.x); line.setAttribute('y1', p1.y);
-                        line.setAttribute('x2', p2.x); line.setAttribute('y2', p2.y);
-                        line.setAttribute('stroke', '#94a3b8');
-                        line.setAttribute('stroke-width', '2');
-                        line.setAttribute('marker-end', 'url(#arrow)');
-                        this.svg.appendChild(line);
-                    }
-                });
-            }
-
-            updateStatus(txt, color) {
-                document.getElementById('syncText').innerText = txt;
-                document.getElementById('syncDot').style.background = color;
+                this.pendingNote.el.classList.remove('ring-active');
+                this.pendingNote = null;
             }
         }
 
-        window.onload = () => new StickyApp();
+        drawConnections() {
+            this.svg.querySelectorAll('line').forEach(l => l.remove());
+            this.connections.forEach(c => {
+                const n1 = this.notes.find(n => n.id === c.from);
+                const n2 = this.notes.find(n => n.id === c.to);
+                if (n1 && n2) {
+                    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                    // ปรับจุดกึ่งกลางให้แม่นยำขึ้น (กว้าง 220, สูงประมาณ 120)
+                    const p1 = { x: n1.x + 110, y: n1.y + 60 };
+                    const p2 = { x: n2.x + 110, y: n2.y + 60 };
+                    line.setAttribute('x1', p1.x); line.setAttribute('y1', p1.y);
+                    line.setAttribute('x2', p2.x); line.setAttribute('y2', p2.y);
+                    line.setAttribute('stroke', '#94a3b8');
+                    line.setAttribute('stroke-width', '2');
+                    line.setAttribute('marker-end', 'url(#arrow)');
+                    this.svg.appendChild(line);
+                }
+            });
+        }
+
+        updateStatus(txt, color) {
+            document.getElementById('syncText').innerText = txt;
+            document.getElementById('syncDot').style.background = color;
+        }
+    }
+
+    window.onload = () => new StickyApp();
     </script>
 </body>
 
