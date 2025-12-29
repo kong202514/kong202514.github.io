@@ -212,9 +212,9 @@
 
     <footer>เชื่อมโยงโน้ต: คลิก 🔗 ที่ตัวแรก แล้วตามด้วยตัวที่สอง</footer>
 
-    <script type="module">
- import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-    import { getFirestore, setDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+    import { getFirestore, setDoc, doc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyB3kPHRDHeYd6rjspNjCH11QG7T2bTd7PM",
@@ -248,50 +248,33 @@
             this.el.style.top = this.y + 'px';
             this.el.dataset.id = this.id;
             this.el.innerHTML = `
-            <div class="note-header">
-                <button class="btn-icon connect-btn" style="background:none; border:none; cursor:pointer;">🔗</button>
-                <div style="display:flex; gap:5px;">
-                    <input type="color" class="color-picker" value="${this.color}" style="width:18px;height:18px;border:none;cursor:pointer;">
-                    <button class="delete-btn" style="background:none; border:none; cursor:pointer;">🗑️</button>
+                <div class="note-header">
+                    <button class="btn-icon connect-btn" title="เชื่อมโยง">🔗</button>
+                    <div style="display:flex; gap:5px;">
+                        <input type="color" class="color-picker" value="${this.color}">
+                        <button class="delete-btn" title="ลบ">🗑️</button>
+                    </div>
                 </div>
-            </div>
-            <div class="content" contenteditable="true">${this.text}</div>
-        `;
-
-            this.el.querySelector('.delete-btn').onclick = () => this.parent.deleteNote(this.id);
-            this.el.querySelector('.connect-btn').onclick = () => this.parent.startConnect(this);
-
-            const colorPicker = this.el.querySelector('.color-picker');
-            colorPicker.oninput = (e) => {
-                this.color = e.target.value;
-                this.el.style.backgroundColor = this.color;
-                this.parent.autoSave();
-            };
+                <div class="content" contenteditable="true">${this.text}</div>
+            `;
 
             const contentEl = this.el.querySelector('.content');
+
+            // ตรวจจับการพิมพ์และบันทึก
             contentEl.oninput = () => {
                 this.text = contentEl.innerText;
                 this.parent.autoSave();
             };
 
-            this.setupDrag();
-        }
+            this.el.querySelector('.delete-btn').onclick = () => this.parent.deleteNote(this.id);
+            this.el.querySelector('.connect-btn').onclick = () => this.parent.startConnect(this);
+            this.el.querySelector('.color-picker').oninput = (e) => {
+                this.color = e.target.value;
+                this.el.style.backgroundColor = this.color;
+                this.parent.autoSave();
+            };
 
-        updateFromRemote(data) {
-            // อัปเดตเฉพาะถ้ามีการเปลี่ยนแปลง และไม่ได้กำลังถูกลากอยู่
-            if (this.text !== data.text) {
-                this.text = data.text;
-                this.el.querySelector('.content').innerText = data.text;
-            }
-            if (this.color !== data.color) {
-                this.color = data.color;
-                this.el.style.backgroundColor = data.color;
-                this.el.querySelector('.color-picker').value = data.color;
-            }
-            this.x = data.x;
-            this.y = data.y;
-            this.el.style.left = this.x + 'px';
-            this.el.style.top = this.y + 'px';
+            this.setupDrag();
         }
 
         setupDrag() {
@@ -299,7 +282,7 @@
             this.el.onmousedown = (e) => {
                 if (e.target.closest('button, input, .content')) return;
                 isDragging = true;
-                this.parent.isDraggingAny = true; // บอก App ว่ากำลังลาก ห้าม Re-render ทับ
+                this.parent.isDraggingAny = true;
                 ox = e.clientX - this.el.offsetLeft;
                 oy = e.clientY - this.el.offsetTop;
                 this.el.style.zIndex = 1000;
@@ -334,11 +317,9 @@
             this.activePageId = localStorage.getItem('cloud_active_page') || 'default';
             this.container = document.getElementById('board');
             this.unsubscribe = null;
-            this.isSaving = false;
-            this.isDraggingAny = false;
             this.saveTimeout = null;
-            this.pendingNote = null;
-            this.lastRemoteUpdate = 0; // เก็บ Timestamp ล่าสุด
+            this.isDraggingAny = false;
+            this.lastLocalUpdate = 0; // เวลาที่เครื่องนี้อัปเดตล่าสุด
 
             this.init();
         }
@@ -362,69 +343,65 @@
 
         syncCurrentPage() {
             if (this.unsubscribe) this.unsubscribe();
-            this.updateStatus("⏳ โหลดข้อมูล...", "#f59e0b");
+            this.updateStatus("⏳ กำลังเชื่อมต่อ...", "#f59e0b");
 
+            // ดึงข้อมูลแบบ Real-time
             this.unsubscribe = onSnapshot(doc(db, "stickynotes", this.activePageId), (snap) => {
-                // ข้ามการอัปเดตถ้าเราเป็นคนเซฟเอง หรือกำลังลากโน้ตอยู่
-                if (this.isSaving || this.isDraggingAny) return;
-
-                if (snap.exists()) {
-                    const data = snap.data();
-                    // เช็ค Timestamp เพื่อป้องกันข้อมูลเก่าไหลกลับมาทับ
-                    if (data.updatedAt && data.updatedAt <= this.lastRemoteUpdate) return;
-                    this.lastRemoteUpdate = data.updatedAt;
-
-                    this.renderBoard(data);
-                } else {
+                if (!snap.exists()) {
                     this.renderBoard({ notes: [], connections: [] });
+                    this.updateStatus("✅ ออนไลน์", "#10b981");
+                    return;
                 }
+
+                const data = snap.data();
+                const remoteTime = data.lastChanged || 0;
+
+                // ถ้าข้อมูลใน Cloud เก่ากว่าที่เราเพิ่งเซฟไป (จากเครื่องนี้) ให้ข้ามการ Render
+                if (remoteTime <= this.lastLocalUpdate && this.lastLocalUpdate !== 0) {
+                    return;
+                }
+
+                // ถ้ากำลังลากโน้ตอยู่ ห้าม Render ทับ (ป้องกันโน้ตกระตุกกลับที่เดิม)
+                if (this.isDraggingAny) return;
+
+                this.renderBoard(data);
                 this.updateStatus("✅ ออนไลน์", "#10b981");
             });
-        }
-
-        autoSave() {
-            this.isSaving = true;
-            this.updateStatus("⏳ กำลังบันทึก...", "#3b82f6");
-            clearTimeout(this.saveTimeout);
-
-            this.saveTimeout = setTimeout(async () => {
-                const data = {
-                    notes: this.notes.map(n => ({ id: n.id, text: n.text, color: n.color, x: n.x, y: n.y })),
-                    connections: this.connections,
-                    updatedAt: Date.now()
-                };
-
-                try {
-                    await setDoc(doc(db, "stickynotes", this.activePageId), data);
-                    this.lastRemoteUpdate = data.updatedAt;
-                    this.updateStatus("✅ บันทึกแล้ว", "#10b981");
-                } catch (e) {
-                    console.error(e);
-                    this.updateStatus("❌ ผิดพลาด", "#ef4444");
-                } finally {
-                    this.isSaving = false;
-                }
-            }, 500); // ลด Delay ลงเพื่อให้รู้สึกไวขึ้น
         }
 
         renderBoard(data) {
             const remoteNotes = data.notes || [];
             this.connections = data.connections || [];
 
-            // 1. ลบโน้ตที่ไม่มีอยู่ใน Remote ออกจากจอ
+            // 1. จัดการโน้ต: ลบโน้ตที่ไม่มีใน Cloud
+            const remoteIds = remoteNotes.map(rn => rn.id);
             this.notes = this.notes.filter(localNote => {
-                if (!remoteNotes.find(rn => rn.id === localNote.id)) {
+                if (!remoteIds.includes(localNote.id)) {
                     localNote.el.remove();
                     return false;
                 }
                 return true;
             });
 
-            // 2. อัปเดตโน้ตเดิม หรือสร้างโน้ตใหม่
+            // 2. อัปเดตหรือเพิ่มโน้ตใหม่
             remoteNotes.forEach(rn => {
                 const existing = this.notes.find(ln => ln.id === rn.id);
                 if (existing) {
-                    existing.updateFromRemote(rn);
+                    // อัปเดตเฉพาะจุดที่เปลี่ยน เพื่อไม่ให้ Cursor หลุด
+                    if (existing.text !== rn.text && document.activeElement !== existing.el.querySelector('.content')) {
+                        existing.el.querySelector('.content').innerText = rn.text;
+                        existing.text = rn.text;
+                    }
+                    if (existing.color !== rn.color) {
+                        existing.el.style.backgroundColor = rn.color;
+                        existing.el.querySelector('.color-picker').value = rn.color;
+                        existing.color = rn.color;
+                    }
+                    // อัปเดตตำแหน่ง (ถ้าไม่ได้กำลังลากอยู่)
+                    existing.x = rn.x;
+                    existing.y = rn.y;
+                    existing.el.style.left = rn.x + 'px';
+                    existing.el.style.top = rn.y + 'px';
                 } else {
                     const n = new Note(this, rn);
                     this.notes.push(n);
@@ -435,7 +412,31 @@
             this.drawConnections();
         }
 
-        // --- ส่วน Page Management เหมือนเดิม ---
+        autoSave() {
+            clearTimeout(this.saveTimeout);
+            this.updateStatus("⏳ กำลังบันทึก...", "#3b82f6");
+
+            this.saveTimeout = setTimeout(async () => {
+                const now = Date.now();
+                this.lastLocalUpdate = now;
+
+                const data = {
+                    notes: this.notes.map(n => ({ id: n.id, text: n.text, color: n.color, x: n.x, y: n.y })),
+                    connections: this.connections,
+                    lastChanged: now // ใช้ timestamp เพื่อบอกว่าใครใหม่กว่า
+                };
+
+                try {
+                    await setDoc(doc(db, "stickynotes", this.activePageId), data);
+                    this.updateStatus("✅ บันทึกแล้ว", "#10b981");
+                } catch (e) {
+                    console.error("Save Error:", e);
+                    this.updateStatus("❌ ผิดพลาด", "#ef4444");
+                }
+            }, 600); // หน่วงเวลาเล็กน้อยเพื่อรอให้พิมพ์เสร็จ
+        }
+
+        // --- ระบบ Page Management ---
         renderTabs() {
             const bar = document.getElementById('pageBar');
             bar.querySelectorAll('.tab').forEach(t => t.remove());
@@ -456,6 +457,7 @@
             if (this.activePageId === id) return;
             this.activePageId = id;
             localStorage.setItem('cloud_active_page', id);
+            this.lastLocalUpdate = 0; // Reset เพื่อโหลดข้อมูลใหม่จากหน้าอื่น
             this.renderTabs();
             this.syncCurrentPage();
         }
@@ -499,10 +501,7 @@
                 note.el.classList.add('ring-active');
             } else {
                 if (this.pendingNote.id !== note.id) {
-                    // ป้องกันเส้นเชื่อมซ้ำ
-                    const exists = this.connections.some(c =>
-                        (c.from === this.pendingNote.id && c.to === note.id)
-                    );
+                    const exists = this.connections.some(c => (c.from === this.pendingNote.id && c.to === note.id));
                     if (!exists) {
                         this.connections.push({ from: this.pendingNote.id, to: note.id });
                         this.drawConnections();
@@ -521,7 +520,6 @@
                 const n2 = this.notes.find(n => n.id === c.to);
                 if (n1 && n2) {
                     const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                    // ปรับจุดกึ่งกลางให้แม่นยำขึ้น (กว้าง 220, สูงประมาณ 120)
                     const p1 = { x: n1.x + 110, y: n1.y + 60 };
                     const p2 = { x: n2.x + 110, y: n2.y + 60 };
                     line.setAttribute('x1', p1.x); line.setAttribute('y1', p1.y);
@@ -541,7 +539,7 @@
     }
 
     window.onload = () => new StickyApp();
-    </script>
+</script>
 </body>
 
 </html>
