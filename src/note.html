@@ -1,0 +1,542 @@
+ 
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Sticky Notes OOP - Multi Pages</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&family=Kanit:wght@400;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f0f2f5;
+            --panel: #ffffff;
+            --accent: #4f46e5;
+            --text: #1e293b;
+            --muted: #64748b;
+            --note-bg: #fffacd;
+        }
+
+        body.dark {
+            --bg: #0f172a;
+            --panel: #1e293b;
+            --accent: #818cf8;
+            --text: #f8fafc;
+            --muted: #94a3b8;
+        }
+
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: 0.3s;
+        }
+
+        /* --- Header & Toolbar --- */
+        header {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            background: var(--panel);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+            gap: 15px;
+        }
+
+        .logo {
+            font-family: 'Kanit';
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: var(--accent);
+        }
+
+        .search {
+            padding: 8px 15px;
+            border-radius: 20px;
+            border: 1px solid #ddd;
+            background: var(--bg);
+            color: var(--text);
+            outline: none;
+            width: 180px;
+        }
+
+        .toolbar {
+            margin-left: auto;
+            display: flex;
+            gap: 8px;
+        }
+
+        /* --- Buttons --- */
+        .btn {
+            background: var(--panel);
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: var(--text);
+            font-size: 0.9rem;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn:hover {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+            border: none;
+        }
+
+        /* --- Page Tabs --- */
+        .page-bar {
+            background: var(--panel);
+            display: flex;
+            align-items: center;
+            padding: 5px 15px;
+            gap: 10px;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .tab {
+            padding: 6px 15px;
+            background: var(--bg);
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 2px solid transparent;
+        }
+
+        .tab.active {
+            border-color: var(--accent);
+            font-weight: 600;
+        }
+
+        .tab .del-page {
+            opacity: 0.3;
+            font-size: 12px;
+        }
+
+        .tab .del-page:hover {
+            opacity: 1;
+            color: red;
+        }
+
+        /* --- Board Area --- */
+        .board {
+            flex: 1;
+            position: relative;
+            overflow: auto;
+            background-image: radial-gradient(var(--muted) 0.5px, transparent 0.5px);
+            background-size: 30px 30px;
+        }
+
+        /* --- Note Styling --- */
+        .note {
+            position: absolute;
+            width: 200px;
+            min-height: 120px;
+            background: var(--note-bg);
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            cursor: grab;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .note:active {
+            cursor: grabbing;
+        }
+
+        .note-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .content {
+            flex: 1;
+            outline: none;
+            font-size: 0.95rem;
+            color: #333;
+            min-height: 80px;
+        }
+
+        .ring-active {
+            box-shadow: 0 0 0 3px var(--accent);
+        }
+
+        .color-picker {
+            width: 18px;
+            height: 18px;
+            border: none;
+            border-radius: 50%;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        button.icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 2px;
+        }
+
+        footer {
+            font-size: 11px;
+            padding: 5px;
+            text-align: center;
+            color: var(--muted);
+            background: var(--panel);
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="logo">NotesFlow</div>
+        <input type="text" id="search" class="search" placeholder="ค้นหาโน้ต...">
+        <div class="toolbar">
+            <button class="btn btn-primary" id="addNote"><span>+</span> โน้ตใหม่</button>
+            <button class="btn" id="cloudSyncBtn">☁️ Sync</button>
+            <button class="btn" id="toggleDark">🌙 โหมด</button>
+        </div>
+    </header>
+
+    <main id="board" class="board"></main>
+
+    <div class="page-bar" id="pageBar">
+        <button class="btn" id="addPage"
+            style="border-radius: 50%; width: 30px; height: 30px; padding: 0; justify-content: center;">+</button>
+    </div>
+
+    <footer>ลากย้ายได้ | บันทึกอัตโนมัติ | กด 🔗 เพื่อเชื่อมโยง (คลิกตัวที่ 1 แล้วตามด้วยตัวที่ 2)</footer>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+        import { getFirestore, setDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+
+        // Firebase Config (คงเดิมของคุณไว้)
+        const firebaseConfig = {
+            apiKey: "AIzaSyB3kPHRDHeYd6rjspNjCH11QG7T2bTd7PM",
+            authDomain: "stickey-note-6bb95.firebaseapp.com",
+            projectId: "stickey-note-6bb95",
+            storageBucket: "stickey-note-6bb95.firebasestorage.app",
+            messagingSenderId: "266704545369",
+            appId: "1:266704545369:web:e403d47f324a91234a3348",
+        };
+        const fbApp = initializeApp(firebaseConfig);
+        const db = getFirestore(fbApp);
+
+        // --- Note Class ---
+        class Note {
+            constructor(app, data) {
+                this.app = app;
+                this.id = data.id || Date.now() + Math.random();
+                this.text = data.text || '';
+                this.color = data.color || '#fffacd';
+                this.x = data.x || 100;
+                this.y = data.y || 100;
+                this.render();
+            }
+
+            render() {
+                this.el = document.createElement('div');
+                this.el.className = 'note';
+                this.el.style.backgroundColor = this.color;
+                this.el.style.left = this.x + 'px';
+                this.el.style.top = this.y + 'px';
+                this.el.dataset.id = this.id;
+
+                this.el.innerHTML = `
+                    <div class="note-header">
+                        <button class="icon-btn connect-btn">🔗</button>
+                        <div style="display:flex; gap:5px; align-items:center;">
+                            <input type="color" class="color-picker" value="${this.color}">
+                            <button class="icon-btn delete-btn">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="content" contenteditable="true">${this.text}</div>
+                `;
+
+                this.el.querySelector('.delete-btn').onclick = () => this.app.deleteNote(this.id);
+                this.el.querySelector('.color-picker').oninput = (e) => {
+                    this.color = e.target.value;
+                    this.el.style.backgroundColor = this.color;
+                    this.app.saveAll();
+                };
+                this.el.querySelector('.connect-btn').onclick = () => this.app.connectionManager.startConnection(this);
+                this.el.querySelector('.content').onblur = () => {
+                    this.text = this.el.querySelector('.content').innerText;
+                    this.app.saveAll();
+                };
+
+                this.setupDragging();
+            }
+
+            setupDragging() {
+                let ox, oy, isDrag = false;
+                this.el.onmousedown = (e) => {
+                    if (e.target.closest('button, input, .content')) return;
+                    isDrag = true;
+                    ox = e.clientX - this.el.offsetLeft;
+                    oy = e.clientY - this.el.offsetTop;
+                    this.el.style.zIndex = 1000;
+                };
+                document.addEventListener('mousemove', (e) => {
+                    if (!isDrag) return;
+                    this.x = e.clientX - ox;
+                    this.y = e.clientY - oy;
+                    this.el.style.left = this.x + 'px';
+                    this.el.style.top = this.y + 'px';
+                    this.app.connectionManager.updateLines(this.id);
+                });
+                document.addEventListener('mouseup', () => {
+                    if (isDrag) {
+                        isDrag = false;
+                        this.el.style.zIndex = '';
+                        this.app.saveAll();
+                    }
+                });
+            }
+
+            getCenter() {
+                return { x: this.x + this.el.offsetWidth / 2, y: this.y + this.el.offsetHeight / 2 };
+            }
+        }
+
+        // --- Connection Manager ---
+        class ConnectionManager {
+            constructor(app) {
+                this.app = app;
+                this.connections = [];
+                this.pending = null;
+                this.initSVG();
+            }
+
+            initSVG() {
+                this.svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                Object.assign(this.svg.style, { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' });
+
+                const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+                defs.innerHTML = `
+                    <marker id="arrow" markerWidth="10" markerHeight="7" refX="22" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8" />
+                    </marker>`;
+                this.svg.appendChild(defs);
+                this.app.container.appendChild(this.svg);
+            }
+
+            startConnection(note) {
+                if (!this.pending) {
+                    this.pending = note;
+                    note.el.classList.add('ring-active');
+                } else {
+                    if (this.pending.id !== note.id) this.addConnection(this.pending.id, note.id);
+                    this.pending.el.classList.remove('ring-active');
+                    this.pending = null;
+                }
+            }
+
+            addConnection(f, t) {
+                const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                line.setAttribute('stroke', '#94a3b8');
+                line.setAttribute('stroke-width', '2');
+                line.setAttribute('marker-end', 'url(#arrow)');
+                this.svg.appendChild(line);
+                this.connections.push({ from: f, to: t, el: line });
+                this.updateLines();
+                this.app.saveAll();
+            }
+
+            updateLines(noteId) {
+                this.connections.forEach(c => {
+                    const fromNote = this.app.notes.find(n => n.id === c.from);
+                    const toNote = this.app.notes.find(n => n.id === c.to);
+                    if (fromNote && toNote) {
+                        const p1 = fromNote.getCenter();
+                        const p2 = toNote.getCenter();
+                        c.el.setAttribute('x1', p1.x); c.el.setAttribute('y1', p1.y);
+                        c.el.setAttribute('x2', p2.x); c.el.setAttribute('y2', p2.y);
+                    }
+                });
+            }
+
+            clear() {
+                this.connections.forEach(c => c.el.remove());
+                this.connections = [];
+            }
+        }
+
+        // --- Main App ---
+        class StickyApp {
+            constructor() {
+                this.notes = [];
+                this.pages = JSON.parse(localStorage.getItem('pages_list')) || [{ id: 'p1', name: 'หน้าหลัก' }];
+                this.currentPageId = localStorage.getItem('current_page_id') || 'p1';
+
+                this.container = document.getElementById('board');
+                this.pageBar = document.getElementById('pageBar');
+                this.connectionManager = new ConnectionManager(this);
+
+                this.init();
+            }
+
+            init() {
+                document.getElementById('addNote').onclick = () => this.addNote();
+                document.getElementById('addPage').onclick = () => this.addNewPage();
+                document.getElementById('cloudSyncBtn').onclick = () => this.syncCloud();
+                document.getElementById('toggleDark').onclick = () => this.toggleTheme();
+                document.getElementById('search').oninput = (e) => this.filterNotes(e.target.value);
+
+                this.renderPageTabs();
+                this.loadCurrentPage();
+                if (localStorage.theme === 'dark') document.body.classList.add('dark');
+            }
+
+            renderPageTabs() {
+                // Clear existing tabs except the add button
+                const oldTabs = this.pageBar.querySelectorAll('.tab');
+                oldTabs.forEach(t => t.remove());
+
+                this.pages.forEach(p => {
+                    const tab = document.createElement('div');
+                    tab.className = `tab ${p.id === this.currentPageId ? 'active' : ''}`;
+                    tab.innerHTML = `<span>${p.name}</span> <span class="del-page">✕</span>`;
+                    tab.onclick = () => this.switchPage(p.id);
+                    tab.querySelector('.del-page').onclick = (e) => {
+                        e.stopPropagation();
+                        this.deletePage(p.id);
+                    };
+                    this.pageBar.insertBefore(tab, document.getElementById('addPage'));
+                });
+            }
+
+            addNewPage() {
+                const name = prompt("ชื่อหน้าใหม่:", "หน้า " + (this.pages.length + 1));
+                if (!name) return;
+                const newId = 'p' + Date.now();
+                this.pages.push({ id: newId, name });
+                this.savePagesList();
+                this.switchPage(newId);
+            }
+
+            switchPage(id) {
+                this.currentPageId = id;
+                localStorage.setItem('current_page_id', id);
+                this.renderPageTabs();
+                this.loadCurrentPage();
+            }
+
+            deletePage(id) {
+                if (this.pages.length === 1) return alert("ต้องมีอย่างน้อยหนึ่งหน้า");
+                if (!confirm("ลบหน้านี้ข้อมูลจะหายหมด ยืนยันไหม?")) return;
+
+                this.pages = this.pages.filter(p => p.id !== id);
+                localStorage.removeItem(`page_data_${id}`);
+                this.savePagesList();
+                if (this.currentPageId === id) this.currentPageId = this.pages[0].id;
+                this.switchPage(this.currentPageId);
+            }
+
+            savePagesList() {
+                localStorage.setItem('pages_list', JSON.stringify(this.pages));
+            }
+
+            addNote() {
+                const note = new Note(this, { x: 50 + Math.random() * 50, y: 50 + Math.random() * 50 });
+                this.notes.push(note);
+                this.container.appendChild(note.el);
+                this.saveAll();
+            }
+
+            deleteNote(id) {
+                this.notes = this.notes.filter(n => n.id !== id);
+                this.container.querySelector(`[data-id="${id}"]`)?.remove();
+                this.connectionManager.connections = this.connectionManager.connections.filter(c => {
+                    if (c.from === id || c.to === id) { c.el.remove(); return false; }
+                    return true;
+                });
+                this.saveAll();
+            }
+
+            async saveAll() {
+                const data = {
+                    notes: this.notes.map(n => ({ id: n.id, text: n.text, color: n.color, x: n.x, y: n.y })),
+                    connections: this.connectionManager.connections.map(c => ({ from: c.from, to: c.to }))
+                };
+                localStorage.setItem(`page_data_${this.currentPageId}`, JSON.stringify(data));
+
+                // Cloud Sync
+                try {
+                    await setDoc(doc(db, "stickynotes", this.currentPageId), data);
+                } catch (e) { console.warn("Cloud save failed", e); }
+            }
+
+            loadCurrentPage() {
+                // Clear Board
+                this.notes.forEach(n => n.el.remove());
+                this.notes = [];
+                this.connectionManager.clear();
+
+                const localData = JSON.parse(localStorage.getItem(`page_data_${this.currentPageId}`) || '{}');
+                if (localData.notes) {
+                    localData.notes.forEach(nData => {
+                        const n = new Note(this, nData);
+                        this.notes.push(n);
+                        this.container.appendChild(n.el);
+                    });
+                    if (localData.connections) {
+                        localData.connections.forEach(c => this.connectionManager.addConnection(c.from, c.to));
+                    }
+                }
+            }
+
+            async syncCloud() {
+                const btn = document.getElementById('cloudSyncBtn');
+                btn.innerText = "⏳ รอ...";
+                try {
+                    const snap = await getDoc(doc(db, "stickynotes", this.currentPageId));
+                    if (snap.exists()) {
+                        localStorage.setItem(`page_data_${this.currentPageId}`, JSON.stringify(snap.data()));
+                        this.loadCurrentPage();
+                        alert("ดึงข้อมูลจาก Cloud สำเร็จ");
+                    } else {
+                        alert("ไม่พบข้อมูลบน Cloud สำหรับหน้านี้");
+                    }
+                } catch (e) { alert("Error: " + e.message); }
+                btn.innerText = "☁️ Sync";
+            }
+
+            filterNotes(term) {
+                this.notes.forEach(n => {
+                    n.el.style.display = n.text.toLowerCase().includes(term.toLowerCase()) ? '' : 'none';
+                });
+            }
+
+            toggleTheme() {
+                document.body.classList.toggle('dark');
+                localStorage.theme = document.body.classList.contains('dark') ? 'dark' : 'light';
+            }
+        }
+
+        // Start App
+        new StickyApp();
+    </script>
+</body>
+
+</html>
