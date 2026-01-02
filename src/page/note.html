@@ -1,0 +1,486 @@
+ 
+<html lang="th">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>StickyCloud Pro - Fixed Typing & Resize</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&family=Kanit:wght@400;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f1f5f9;
+            --panel: #ffffff;
+            --accent: #4f46e5;
+            --text: #0f172a;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --grid-size: 30px;
+        }
+
+        body.dark {
+            --bg: #0f172a;
+            --panel: #1e293b;
+            --accent: #818cf8;
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --border: #334155;
+        }
+
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            background: var(--panel);
+            border-bottom: 1px solid var(--border);
+            z-index: 100;
+            gap: 15px;
+        }
+
+        .logo {
+            font-family: 'Kanit';
+            font-weight: 600;
+            font-size: 1.3rem;
+            color: var(--accent);
+        }
+
+        .toolbar {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: var(--text);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        .board {
+            flex: 1;
+            position: relative;
+            overflow: auto;
+            background-image: radial-gradient(var(--muted) 0.5px, transparent 0.5px);
+            background-size: var(--grid-size) var(--grid-size);
+        }
+
+        .board.panning {
+            cursor: grabbing !important;
+        }
+
+        svg#connection-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5000px;
+            height: 5000px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .note {
+            position: absolute;
+            width: 210px;
+            min-height: 120px;
+            background: #cdeeff;
+            border-radius: 8px;
+            padding: 0;
+            /* เปลี่ยนเป็น 0 เพื่อให้พื้นที่ลากชัดเจน */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            box-sizing: border-box;
+            resize: both;
+            overflow: hidden;
+            min-width: 150px;
+            min-height: 100px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        /* ส่วนหัวโน้ตสำหรับลาก */
+        .note-drag-handle {
+            padding: 8px 12px 4px 12px;
+            cursor: grab;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.03);
+        }
+
+        .note-drag-handle:active {
+            cursor: grabbing;
+        }
+
+        .content {
+            flex: 1;
+            outline: none;
+            font-size: 14px;
+            color: #334155;
+            padding: 8px 12px 12px 12px;
+            cursor: text;
+            /* ให้รู้ว่าพิมพ์ได้ */
+            overflow-y: auto;
+            word-break: break-word;
+        }
+
+        /* ปรับสีพื้นหลัง Content ใน Dark Mode */
+        body.dark .content {
+            color: #f8fafc;
+        }
+
+        .page-bar {
+            background: var(--panel);
+            display: flex;
+            align-items: center;
+            padding: 8px 20px;
+            gap: 12px;
+            border-top: 1px solid var(--border);
+            z-index: 100;
+        }
+
+        .tab {
+            padding: 6px 18px;
+            background: var(--bg);
+            border: 2px solid transparent;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tab.active {
+            border-color: var(--accent);
+            background: var(--panel);
+            font-weight: 600;
+        }
+
+        footer {
+            font-size: 11px;
+            padding: 6px;
+            text-align: center;
+            color: var(--muted);
+            background: var(--panel);
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">StickyCloud Pro</div>
+        <div class="toolbar">
+            <div style="display:flex; align-items:center; gap:8px; font-size:13px;">
+                <input type="checkbox" id="snapToggle" checked> <label for="snapToggle" style="cursor:pointer">Snap
+                    Grid</label>
+            </div>
+            <button class="btn" style="background:var(--accent); color:white; border:none;" id="addNote">+
+                โน้ตใหม่</button>
+            <div id="syncIndicator" style="display:flex; align-items:center; gap:8px;">
+                <span id="syncDot" style="width:10px; height:10px; background:#10b981; border-radius:50%;"></span>
+                <span id="syncText" style="font-size:12px; font-weight:600;">ออนไลน์</span>
+            </div>
+            <button class="btn" id="toggleDark">🌙</button>
+        </div>
+    </header>
+
+    <main id="board" class="board">
+        <svg id="connection-layer">
+            <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+                    <path d="M0,0 L10,5 L0,10 Z" fill="var(--muted)" />
+                </marker>
+            </defs>
+        </svg>
+    </main>
+
+    <div class="page-bar" id="pageBar">
+        <button class="btn" id="addPage"
+            style="border-radius:50%; width:32px; height:32px; padding:0; justify-content:center;">+</button>
+    </div>
+
+    <footer>คลิกขวาค้างเพื่อเลื่อนหน้าจอ | คลิก 🔗 เพื่อเชื่อม | พิมพ์ที่ตัวโน้ตได้ทันที | ดึงมุมขวาล่างเพื่อขยาย
+    </footer>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+        import { getFirestore, setDoc, doc, onSnapshot, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB3kPHRDHeYd6rjspNjCH11QG7T2bTd7PM",
+            authDomain: "stickey-note-6bb95.firebaseapp.com",
+            projectId: "stickey-note-6bb95",
+            storageBucket: "stickey-note-6bb95.firebasestorage.app",
+            messagingSenderId: "266704545369",
+            appId: "1:266704545369:web:e403d47f324a91234a3348",
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        class Note {
+            constructor(parent, data) {
+                this.parent = parent;
+                this.id = data.id || "n_" + crypto.randomUUID();
+                this.text = data.text || '';
+                this.color = data.color || 'rgb(49 56 94 )';
+                this.x = data.x || 30; this.y = data.y || 30;
+                this.w = data.w || 210; this.h = data.h || 120;
+                this.createEl();
+            }
+            createEl() {
+                this.el = document.createElement('div');
+                this.el.className = 'note';
+                this.el.style.backgroundColor = this.color;
+                this.el.style.left = this.x + 'px'; this.el.style.top = this.y + 'px';
+                this.el.style.width = this.w + 'px'; this.el.style.height = this.h + 'px';
+                this.el.dataset.id = this.id;
+
+                this.el.innerHTML = `
+                <div class="note-drag-handle">
+                    <button class="connect-btn" style="background:none;border:none;cursor:pointer;font-size:14px;">🔗</button>
+                    <div style="display:flex; gap:5px; align-items:center;">
+                        <input type="color" class="color-picker" value="${this.rgbToHex(this.color)}" style="width:20px; height:20px; padding:0; border:none; cursor:pointer; background:none;" />
+                        <button class="delete-btn" style="background:none;border:none;cursor:pointer;font-size:14px;">🗑️</button>
+                    </div>
+                </div>
+                <div class="content" contenteditable="true" spellcheck="false">${this.text}</div>
+            `;
+                const contentEl = this.el.querySelector('.content');
+
+                // การพิมพ์: อัปเดตข้อความเมื่อมีการพิมพ์
+                contentEl.oninput = () => {
+                    this.text = contentEl.innerText;
+                    this.parent.autoSave();
+                };
+
+                // ป้องกันการลากขณะกำลังพิมพ์
+                contentEl.onmousedown = (e) => e.stopPropagation();
+
+                this.el.querySelector('.delete-btn').onclick = () => this.parent.deleteNote(this.id);
+                this.el.querySelector('.connect-btn').onclick = () => this.parent.startConnect(this);
+                this.el.querySelector('.color-picker').oninput = (e) => {
+                    this.color = e.target.value;
+                    this.el.style.backgroundColor = this.color;
+                    this.parent.autoSave();
+                };
+
+                // ระบบ Resize
+                const ro = new ResizeObserver(entries => {
+                    for (let entry of entries) {
+                        this.w = this.el.offsetWidth;
+                        this.h = this.el.offsetHeight;
+                        this.parent.drawConnections();
+                        this.parent.autoSave();
+                    }
+                });
+                ro.observe(this.el);
+
+                this.setupDrag();
+            }
+
+            rgbToHex(rgb) {
+                if (rgb.startsWith('#')) return rgb;
+                const match = rgb.match(/\d+/g);
+                if (!match) return '#cdeeff';
+                return "#" + match.slice(0, 3).map(x => parseInt(x).toString(16).padStart(2, '0')).join('');
+            }
+
+            setupDrag() {
+                let ox, oy, isDragging = false;
+                // ให้ลากได้เฉพาะส่วน Handle ด้านบน
+                const handle = this.el.querySelector('.note-drag-handle');
+
+                handle.onmousedown = (e) => {
+                    if (e.button !== 0) return;
+                    isDragging = true;
+                    this.parent.isDraggingAny = true;
+                    ox = e.clientX - this.el.offsetLeft;
+                    oy = e.clientY - this.el.offsetTop;
+                    this.el.style.zIndex = 1000;
+                };
+
+                document.addEventListener('mousemove', (e) => {
+                    if (!isDragging) return;
+                    let nx = e.clientX - ox, ny = e.clientY - oy;
+                    if (document.getElementById('snapToggle').checked) {
+                        nx = Math.round(nx / 30) * 30; ny = Math.round(ny / 30) * 30;
+                    }
+                    this.x = nx; this.y = ny;
+                    this.el.style.left = nx + 'px'; this.el.style.top = ny + 'px';
+                    this.parent.drawConnections();
+                });
+
+                document.addEventListener('mouseup', () => {
+                    if (isDragging) {
+                        isDragging = false;
+                        this.parent.isDraggingAny = false;
+                        this.el.style.zIndex = '';
+                        this.parent.autoSave();
+                    }
+                });
+            }
+        }
+
+        class StickyApp {
+            constructor() {
+                this.notes = []; this.connections = []; this.pages = [];
+                this.activePageId = localStorage.getItem('cloud_active_page') || 'default';
+                this.container = document.getElementById('board');
+                this.svg = document.getElementById('connection-layer');
+                this.lastLocalUpdate = 0;
+                this.init();
+            }
+            init() {
+                document.getElementById('addNote').onclick = () => this.addNote();
+                document.getElementById('addPage').onclick = () => this.addPage();
+                document.getElementById('toggleDark').onclick = () => {
+                    document.body.classList.toggle('dark');
+                    localStorage.theme = document.body.classList.contains('dark') ? 'dark' : 'light';
+                };
+                if (localStorage.theme === 'dark') document.body.classList.add('dark');
+                this.setupPanning();
+                this.syncPagesList();
+                this.syncCurrentPageNotes();
+            }
+
+            setupPanning() {
+                let isPanning = false, startX, startY, sL, sT;
+                this.container.oncontextmenu = (e) => { if (e.target.id === 'board' || e.target.id === 'connection-layer') e.preventDefault(); };
+                this.container.addEventListener('mousedown', (e) => {
+                    if (e.button === 2) {
+                        isPanning = true; this.container.classList.add('panning');
+                        startX = e.pageX; startY = e.pageY;
+                        sL = this.container.scrollLeft; sT = this.container.scrollTop;
+                    }
+                });
+                document.addEventListener('mousemove', (e) => {
+                    if (!isPanning) return;
+                    this.container.scrollLeft = sL - (e.pageX - startX);
+                    this.container.scrollTop = sT - (e.pageY - startY);
+                });
+                document.addEventListener('mouseup', () => { isPanning = false; this.container.classList.remove('panning'); });
+            }
+
+            syncPagesList() {
+                onSnapshot(doc(db, "stickynotes", "_metadata"), (snap) => {
+                    this.pages = snap.exists() ? snap.data().list : [{ id: 'default', name: 'หน้าหลัก' }];
+                    this.renderTabs();
+                });
+            }
+
+            syncCurrentPageNotes() {
+                if (this.unsubscribeNotes) this.unsubscribeNotes();
+                this.unsubscribeNotes = onSnapshot(doc(db, "stickynotes", this.activePageId), (snap) => {
+                    if (this.isDraggingAny) return;
+                    const data = snap.exists() ? snap.data() : { notes: [], connections: [] };
+                    if (data.lastChanged > this.lastLocalUpdate || !this.lastLocalUpdate) this.renderBoard(data);
+                    this.updateStatus("✅ ออนไลน์", "#10b981");
+                });
+            }
+
+            renderBoard(data) {
+                const remoteNotes = data.notes || []; this.connections = data.connections || [];
+                const remoteIds = remoteNotes.map(rn => rn.id);
+                this.notes = this.notes.filter(ln => { if (!remoteIds.includes(ln.id)) { ln.el.remove(); return false; } return true; });
+                remoteNotes.forEach(rn => {
+                    const ex = this.notes.find(ln => ln.id === rn.id);
+                    if (ex) {
+                        const content = ex.el.querySelector('.content');
+                        if (document.activeElement !== content) { content.innerText = rn.text; ex.text = rn.text; }
+                        ex.color = rn.color; ex.el.style.backgroundColor = rn.color;
+                        ex.x = rn.x; ex.y = rn.y; ex.w = rn.w || 210; ex.h = rn.h || 120;
+                        ex.el.style.left = rn.x + 'px'; ex.el.style.top = rn.y + 'px';
+                        ex.el.style.width = ex.w + 'px'; ex.el.style.height = ex.h + 'px';
+                    } else { const n = new Note(this, rn); this.notes.push(n); this.container.appendChild(n.el); }
+                });
+                this.drawConnections();
+            }
+
+            autoSave() {
+                clearTimeout(this.saveTimeout);
+                this.updateStatus("⏳ กำลังบันทึก...", "#3b82f6");
+                this.saveTimeout = setTimeout(async () => {
+                    this.lastLocalUpdate = Date.now();
+                    await setDoc(doc(db, "stickynotes", this.activePageId), {
+                        notes: this.notes.map(n => ({ id: n.id, text: n.text, color: n.color, x: n.x, y: n.y, w: n.w, h: n.h })),
+                        connections: this.connections,
+                        lastChanged: this.lastLocalUpdate
+                    });
+                    this.updateStatus("✅ บันทึกแล้ว", "#10b981");
+                }, 800);
+            }
+
+            renderTabs() {
+                const bar = document.getElementById('pageBar');
+                bar.querySelectorAll('.tab').forEach(t => t.remove());
+                this.pages.forEach(p => {
+                    const tab = document.createElement('div'); tab.className = `tab ${p.id === this.activePageId ? 'active' : ''}`;
+                    tab.innerHTML = `<span>${p.name}</span> <span class="del-page" style="margin-left:8px">✕</span>`;
+                    tab.onclick = () => this.switchPage(p.id);
+                    tab.querySelector('.del-page').onclick = (e) => { e.stopPropagation(); this.deletePage(p); };
+                    bar.insertBefore(tab, document.getElementById('addPage'));
+                });
+            }
+
+            switchPage(id) { this.activePageId = id; localStorage.setItem('cloud_active_page', id); this.lastLocalUpdate = 0; this.syncCurrentPageNotes(); this.renderTabs(); }
+            async addPage() { const name = prompt("ชื่อหน้าใหม่:"); if (!name) return; await updateDoc(doc(db, "stickynotes", "_metadata"), { list: arrayUnion({ id: "pg_" + Date.now(), name }) }); }
+            async deletePage(p) { if (this.pages.length === 1 || !confirm(`ลบหน้า "${p.name}"?`)) return; await updateDoc(doc(db, "stickynotes", "_metadata"), { list: arrayRemove(p) }); }
+            addNote() { const n = new Note(this, { x: 60, y: 60 }); this.notes.push(n); this.container.appendChild(n.el); this.autoSave(); }
+            deleteNote(id) { this.notes = this.notes.filter(n => n.id !== id); this.container.querySelector(`[data-id="${id}"]`)?.remove(); this.connections = this.connections.filter(c => c.from !== id && c.to !== id); this.drawConnections(); this.autoSave(); }
+            startConnect(note) {
+                if (!this.pendingNote) { this.pendingNote = note; note.el.style.boxShadow = "0 0 0 3px var(--accent)"; }
+                else {
+                    if (this.pendingNote.id !== note.id && !this.connections.some(c => c.from === this.pendingNote.id && c.to === note.id)) { this.connections.push({ from: this.pendingNote.id, to: note.id }); this.drawConnections(); this.autoSave(); }
+                    this.pendingNote.el.style.boxShadow = ""; this.pendingNote = null;
+                }
+            }
+            drawConnections() {
+                this.svg.querySelectorAll('line').forEach(l => l.remove());
+                this.connections.forEach(c => {
+                    const n1 = this.notes.find(n => n.id === c.from), n2 = this.notes.find(n => n.id === c.to);
+                    if (n1 && n2) {
+                        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                        line.setAttribute('x1', n1.x + (n1.w / 2)); line.setAttribute('y1', n1.y + (n1.h / 2));
+                        line.setAttribute('x2', n2.x + (n2.w / 2)); line.setAttribute('y2', n2.y + (n2.h / 2));
+                        line.setAttribute('stroke', 'var(--muted)'); line.setAttribute('stroke-width', '2');
+                        line.setAttribute('stroke-dasharray', '4'); line.setAttribute('marker-end', 'url(#arrow)');
+                        this.svg.appendChild(line);
+                    }
+                });
+            }
+            updateStatus(txt, color) { document.getElementById('syncText').innerText = txt; document.getElementById('syncDot').style.background = color; }
+        }
+        window.onload = () => new StickyApp();
+    </script>
+</body>
+
+</html>
