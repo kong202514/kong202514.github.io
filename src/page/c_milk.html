@@ -1,27 +1,18 @@
-!DOCTYPE html>
-<html lang="th">
-
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>เครื่องมือคำนวณจำนวนนม</title>
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
 	<style>
+		/* จัดวางเลย์เอาท์หลักของหน้าจอ */
 		.container {
 			max-width: 600px;
 			margin-top: 15px;
 			padding: 0 10px;
 		}
 
-		h3 {
-			font-size: 1.5rem;
-			font-weight: 600;
-		}
-
-		h5 {
-			font-size: 1.25rem;
-		}
-
+		/* ตกแต่งกล่องแสดงผลลัพธ์รวม (ตัวเลขใหญ่ๆ) */
 		.output-box {
 			font-size: 3rem;
 			padding: 20px;
@@ -31,14 +22,17 @@
 			border: 2px solid #007bff;
 		}
 
+		/* จัดระเบียบปุ่มเลือกประเภทนมให้ดูง่ายบนมือถือ */
 		.btn-group-milk-format .btn {
 			width: 100%;
 			margin: 5px 0;
 			white-space: normal;
+			/* ป้องกันข้อความล้นปุ่ม */
 			padding: 10px 5px;
 			font-size: 0.9rem;
 		}
 
+		/* ตกแต่งปุ่มเพิ่ม/ลดจำนวน */
 		.btn-count-modifier .btn {
 			flex-grow: 1;
 			margin: 5px;
@@ -46,11 +40,13 @@
 			font-size: 1rem;
 		}
 
+		/* เน้นตัวเลขปัจจุบันที่เป็นสีเขียว */
 		.current-value {
 			font-weight: bold;
 			color: #28a745;
 		}
 
+		/* สไตล์สำหรับปุ่มที่กำลังถูกเลือก */
 		.btn-milk-format.active {
 			background-color: #007bff;
 			color: white;
@@ -64,19 +60,22 @@
 	<div class="container text-center">
 		<h3 class="mt-3 mb-3">เครื่องมือคำนวณจำนวนนม</h3>
 
-		<div class="output-box t_output">0</div>
+		<div class="output-box total-result-display">0</div>
 
 		<div class="mb-4">
-			<p class="mb-1">รูปแบบนมที่เลือก: <span id="mD" class="current-value">0</span></p>
-			<p class="mb-1">จำนวนถาดปัจจุบัน: <span id="tD" class="current-value">0</span></p>
-			<p class="mb-1">จำนวนเศษปัจจุบัน: <span id="eD" class="current-value">0</span></p>
+			<p class="mb-1">รูปแบบนมที่เลือก: <span id="displayMilkValue" class="current-value">0</span></p>
+			<p class="mb-1">จำนวนถาดปัจจุบัน: <span id="displayTrayCount" class="current-value">0</span></p>
+			<p class="mb-1">จำนวนเศษปัจจุบัน: <span id="displayExtraCount" class="current-value">0</span></p>
 		</div>
 
 		<hr>
-		<h5 class="mt-4">รูปแบบนมต่อถาด (จำนวนตั้งต้น)</h5>
+		<h5 class="mt-4"> เลือกรูปแบบนม </h5>
 		<div class="row btn-group-milk-format">
 			<script>
-				// ข้อมูลปุ่ม: [จำนวน, ข้อความบนปุ่ม]
+				/**
+				 * ข้อมูลปุ่มเลือกประเภทนม 
+				 * รูปแบบ: [จำนวนขวดต่อถาด, "ข้อความที่แสดงบนปุ่ม"]
+				 */
 				const milkData = [
 					[120, "นม 85 ml 120 ขวด"],
 					[90, "นม 140 ml 90 ขวด"],
@@ -85,72 +84,107 @@
 					[25, "นม 400 ml 25 ขวด"],
 					[30, "นม 300 ml 30 ขวด"],
 					[16, "นม 700 ml 16 ขวด"],
-					[10, "เฉาก๊วย 1 ถุง 10 หลอด"],	
 					[24, "โยเกิร์ต 1 ถาด 24 ถ้วย"]
 				];
-				milkData.forEach(([val, txt]) => {
+
+				// วนลูปสร้างปุ่มตามข้อมูลใน milkData
+				milkData.forEach(([value, text]) => {
 					document.write(`
                         <div class="col-6 col-sm-4">
-                            <button class="btn btn-outline-primary btn-milk-format" onclick="setMilk(${val}, this)">${txt}</button>
+                            <button class="btn btn-outline-primary btn-milk-format" 
+                                    onclick="setMilkFormat(${value}, this)">
+                                ${text}
+                            </button>
                         </div>`);
 				});
 			</script>
 		</div>
 
 		<hr>
-		<h5 class="mt-4">จำนวนถาด</h5>
+		<h5 class="mt-4"> จำนวนถาด</h5>
 		<div class="d-flex flex-wrap justify-content-center btn-count-modifier mb-4">
-			<button class="btn btn-success" onclick="upd('t',1)">+1</button>
-			<button class="btn btn-success" onclick="upd('t',5)">+5</button>
-			<button class="btn btn-success" onclick="upd('t',10)">+10</button>
-			<button class="btn btn-danger" onclick="upd('t',-1)">-1</button>
-			<button class="btn btn-danger" onclick="upd('t',-5)">-5</button>
-			<button class="btn btn-danger" onclick="upd('t',-10)">-10</button>
-			<button class="btn btn-secondary" onclick="upd('t',0)">รีเซ็ต</button>
+			<button class="btn btn-success" onclick="adjustValue('tray', 1)">+1</button>
+			<button class="btn btn-success" onclick="adjustValue('tray', 5)">+5</button>
+			<button class="btn btn-success" onclick="adjustValue('tray', 10)">+10</button>
+			<button class="btn btn-danger" onclick="adjustValue('tray', -1)">-1</button>
+			<button class="btn btn-danger" onclick="adjustValue('tray', -5)">-5</button>
+			<button class="btn btn-danger" onclick="adjustValue('tray', -10)">-10</button>
+			<button class="btn btn-secondary" onclick="adjustValue('tray', 0)">รีเซ็ตถาด</button>
 		</div>
 
 		<hr>
-		<h5 class="mt-4">จำนวนเศษ</h5>
+		<h5 class="mt-4"> จำนวนเศษ </h5>
 		<div class="d-flex flex-wrap justify-content-center btn-count-modifier mb-4">
-			<button class="btn btn-success" onclick="upd('e',1)">+1</button>
-			<button class="btn btn-success" onclick="upd('e',5)">+5</button>
-			<button class="btn btn-success" onclick="upd('e',10)">+10</button>
-			<button class="btn btn-danger" onclick="upd('e',-1)">-1</button>
-			<button class="btn btn-danger" onclick="upd('e',-5)">-5</button>
-			<button class="btn btn-danger" onclick="upd('e',-10)">-10</button>
-			<button class="btn btn-secondary" onclick="upd('e',0)">รีเซ็ต</button>
+			<button class="btn btn-success" onclick="adjustValue('extra', 1)">+1</button>
+			<button class="btn btn-success" onclick="adjustValue('extra', 5)">+5</button>
+			<button class="btn btn-success" onclick="adjustValue('extra', 10)">+10</button>
+			<button class="btn btn-danger" onclick="adjustValue('extra', -1)">-1</button>
+			<button class="btn btn-danger" onclick="adjustValue('extra', -5)">-5</button>
+			<button class="btn btn-danger" onclick="adjustValue('extra', -10)">-10</button>
+			<button class="btn btn-secondary" onclick="adjustValue('extra', 0)">รีเซ็ตรีเซ็ตเศษ</button>
 		</div>
 	</div>
 
 	<script>
-		let milk = 0, tray = 0, extra = 0;
+		// --- ส่วนของตัวแปรเก็บข้อมูล (State) ---
+		let milkPerTray = 0; // จำนวนหน่วยต่อ 1 ถาด
+		let trayCount = 0;   // จำนวนถาดที่นับได้
+		let extraItems = 0;  // จำนวนเศษที่เหลือ
 
-		// ฟังก์ชันแสดงผล
-		function render() {
-			document.querySelector('.t_output').innerText = (milk * tray) + extra;
-			document.getElementById('mD').innerText = milk;
-			document.getElementById('tD').innerText = tray;
-			document.getElementById('eD').innerText = extra;
+		/**
+		 * ฟังก์ชัน: อัปเดตการแสดงผลบนหน้าจอ
+		 * ทำหน้าที่คำนวณผลรวมและนำไปแสดงผลในตำแหน่งต่างๆ
+		 */
+		function updateDisplay() {
+			// คำนวณยอดรวม: (จำนวนต่อถาด * จำนวนถาด) + เศษ
+			const total = (milkPerTray * trayCount) + extraItems;
+
+			// แสดงผลยอดรวมในกล่องสีฟ้าด้านบน
+			document.querySelector('.total-result-display').innerText = total;
+
+			// อัปเดตตัวเลขแสดงสถานะปัจจุบัน
+			document.getElementById('displayMilkValue').innerText = milkPerTray;
+			document.getElementById('displayTrayCount').innerText = trayCount;
+			document.getElementById('displayExtraCount').innerText = extraItems;
 		}
 
-		// ฟังก์ชันเลือกรูปแบบนม
-		function setMilk(val, btn) {
-			milk = val;
-			document.querySelectorAll('.btn-milk-format').forEach(b => b.classList.remove('active'));
-			btn.classList.add('active');
-			render();
-			document.querySelector('.t_output').innerText = 0 ;
+		/**
+		 * ฟังก์ชัน: เลือกประเภทนม
+		 * @param {number} value - จำนวนต่อถาดที่เลือก
+		 * @param {HTMLElement} buttonElement - ปุ่มที่ถูกคลิกเพื่อเปลี่ยนสี Highlight
+		 */
+		function setMilkFormat(value, buttonElement) {
+			milkPerTray = value;
+
+			// ลบคลาส 'active' ออกจากทุกปุ่มก่อน แล้วค่อยเติมให้ปุ่มที่ถูกกด
+			document.querySelectorAll('.btn-milk-format').forEach(btn => btn.classList.remove('active'));
+			buttonElement.classList.add('active');
+
+			updateDisplay();
+			document.querySelector('.total-result-display').innerText = 0
+			document.getElementById('displayTrayCount').innerText = 0;
+			document.getElementById('displayExtraCount').innerText = 0;
 		}
 
-		// ฟังก์ชันอัปเดตค่า ถาด (t) และ เศษ (e)
-		function upd(type, val) {
-			if (type === 't') tray = (val === 0) ? 0 : Math.max(0, tray + val);
-			else extra = (val === 0) ? 0 : Math.max(0, extra + val);
-			render();
+		/**
+		 * ฟังก์ชัน: ปรับปรุงค่าจำนวนถาดหรือเศษ
+		 * @param {string} type - 'tray' (ถาด) หรือ 'extra' (เศษ)
+		 * @param {number} amount - จำนวนที่ต้องการเพิ่ม/ลด (ถ้าเป็น 0 คือการ Reset)
+		 */
+		function adjustValue(type, amount) {
+			if (type === 'tray') {
+				// ถ้า amount เป็น 0 ให้เซ็ตเป็น 0, ถ้าไม่ใช่ให้บวกเพิ่มแต่ห้ามต่ำกว่า 0
+				trayCount = (amount === 0) ? 0 : Math.max(0, trayCount + amount);
+			} else if (type === 'extra') {
+				extraItems = (amount === 0) ? 0 : Math.max(0, extraItems + amount);
+			}
+
+			// อัปเดตหน้าจอทุกครั้งที่มีการเปลี่ยนค่า
+			updateDisplay();
 		}
 
-		// เรียกใช้งานครั้งแรก
-		window.onload = render;
+		// เรียกใช้งานครั้งแรกเพื่อให้ตัวเลขเริ่มต้น (0) แสดงผลถูกต้อง
+		window.onload = updateDisplay;
 	</script>
 
 </body>

@@ -83,8 +83,7 @@ async function setupRealtimeNotesListener() {
         return;
     }
     try {
-        // Define the collection path for public data (no authentication needed)
-        // Data is now stored directly under artifacts/{appId}/notes
+
         const notesCollectionRef = collection(db, `artifacts/${appId}/notes`);
         // Use onSnapshot to get real-time updates.
         onSnapshot(notesCollectionRef, (snapshot) => {
