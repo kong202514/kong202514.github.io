@@ -1,132 +1,338 @@
-<!DOCTYPE html>
-<html lang="en">
+!DOCTYPE html>
+<html lang="th">
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Document</title>
-        <!-- css bootstrap 5  -->
-        <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-            rel="stylesheet"
-            integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
-            crossorigin="anonymous">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Web Dev Master Summary</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&family=JetBrains+Mono&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0f172a;
+            --accent: #3b82f6;
+            --html-color: #f06529;
+            --css-color: #2965f1;
+            --js-color: #f7df1e;
+            --code-bg: #1e1e1e;
+            --section-bg: #ffffff;
+        }
 
-        <!-- js bootstrap 5  -->
-        <script
-            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
-            crossorigin="anonymous"></script>
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: #f1f5f9;
+            color: #334155;
+            margin: 0;
+            line-height: 1.7;
+        }
 
-        <!-- css in project -->
-        <link rel="stylesheet" href="index.css">
-    </head>
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 3rem 1rem;
+            text-align: center;
+        }
 
-    <body>
+        .container {
+            max-width: 1200px;
+            margin: -50px auto 50px;
+            padding: 0 20px;
+        }
 
-        <!-- header  -->
-        <div w3-include-html="../component/header.html"></div>
+        .nav-pills {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            position: sticky;
+            top: 20px;
+            z-index: 1000;
+        }
 
-        <div class="row" style="margin-left: 1%; margin-top:2%;">
+        .nav-pills button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 30px;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
 
-            <div class="col-sm-6 mb-3 mb-sm-0"
-                style="width: 99%; height: auto;">
-                <div class="card">
+        .nav-pills button:hover {
+            transform: translateY(-2px);
+        }
 
-                    <div class="card-body">
+        .active-html {
+            border-bottom: 4px solid var(--html-color) !important;
+        }
 
-                        <div class="btn-group btn-group-lg" role="group"
-                            aria-label="Large button group">
+        .active-css {
+            border-bottom: 4px solid var(--css-color) !important;
+        }
 
-                            <a target="_blank"
-                                href="https://dspace.bru.ac.th/xmlui/bitstream/handle/123456789/6326/%E0%B8%A3%E0%B8%A7%E0%B8%A1%E0%B9%80%E0%B8%A5%E0%B9%88%E0%B8%A1.pdf?sequence=1&isAllowed=y">
-                                <button type="button"
-                                    class="btn btn-outline-primary">อ้างอิงวิจัย
-                                    ลำดับ ที่ 1 </button>
-                            </a>
+        .active-js {
+            border-bottom: 4px solid var(--js-color) !important;
+        }
 
-                            <a
-                                href="https://nuir.lib.nu.ac.th/dspace/bitstream/123456789/5917/1/63070130.pdf"
-                                target="_blank">
-                                <button type="button"
-                                    class="btn btn-outline-primary">อ้างอิงวิจัย
-                                    ลำดับ ที่ 2 </button>
-                            </a>
+        .content-card {
+            background: var(--section-bg);
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            margin-bottom: 40px;
+        }
 
-                            <a
-                                href="https://www.commsci.psu.ac.th/uploads/spd_files/549_ICP11_2552.pdf"
-                                target="_blank">
-                                <button type="button"
-                                    class="btn btn-outline-primary">อ้างอิงวิจัย
-                                    ลำดับ ที่ 3 </button>
-                            </a>
+        h2 {
+            border-left: 5px solid var(--accent);
+            padding-left: 15px;
+            margin-bottom: 30px;
+        }
 
-                            <a target="_blank"
-                                href="https://ms.udru.ac.th/bc/assets/research_uploads/43a9c5f36d5d23025f6ab2a6544d07c2.pdf">
-                                <button type="button"
-                                    class="btn btn-outline-primary">อ้างอิงวิจัย
-                                    ลำดับ ที่ 4</button>
-                            </a>
+        h3 {
+            color: var(--accent);
+            margin-top: 40px;
+        }
 
-                            <a target="_blank"
-                                href="https://ms.udru.ac.th/bc/assets/project_uploads/0f774bb798c394b15c67025839fecafe.pdf">
-                                <button type="button"
-                                    class="btn btn-outline-primary">อ้างอิงวิจัย
-                                    ลำดับ ที่ 5 </button>
-                            </a>
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
 
-                        </div>
-                        <div class="a">
-                            <br><br><br><br><br>
-                        </div>
+        pre {
+            background: var(--code-bg);
+            color: #dcdcdc;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            border-left: 4px solid #555;
+        }
 
-                        <div class="btn-group btn-group-lg" role="group"
-                            aria-label="Large button group">
+        .tag {
+            display: inline-block;
+            padding: 2px 10px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-right: 5px;
+        }
 
-                            <a target="_blank"
-                                href="https://www.atc.ac.th/FileATC/%E0%B9%82%E0%B8%84%E0%B8%A3%E0%B8%87%E0%B8%87%E0%B8%B2%E0%B8%99-%E0%B9%82%E0%B8%84%E0%B8%A3%E0%B8%87%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%99%E0%B8%B1%E0%B8%81%E0%B8%A8%E0%B8%B6%E0%B8%81%E0%B8%A9%E0%B8%B2%E0%B8%9B%E0%B8%B52561/3.3%E0%B9%82%E0%B8%84%E0%B8%A3%E0%B8%87%E0%B8%87%E0%B8%B2%E0%B8%99%20%E0%B8%AA%E0%B8%B2%E0%B8%82%E0%B8%B2%E0%B8%A7%E0%B8%B4%E0%B8%8A%E0%B8%B2%E0%B8%84%E0%B8%AD%E0%B8%A1%E0%B8%9E%E0%B8%B4%E0%B8%A7%E0%B9%80%E0%B8%95%E0%B8%AD%E0%B8%A3%E0%B9%8C%E0%B8%98%E0%B8%B8%E0%B8%A3%E0%B8%81%E0%B8%B4%E0%B8%88%20%E0%B8%9B%E0%B8%A7%E0%B8%AA.2/%E0%B8%A3%E0%B8%B0%E0%B8%9A%E0%B8%9A%E0%B8%82%E0%B8%B2%E0%B8%A2%E0%B8%AA%E0%B8%B4%E0%B8%99%E0%B8%84%E0%B9%89%E0%B8%B2%E0%B8%AD%E0%B8%AD%E0%B8%99%E0%B9%84%E0%B8%A5%E0%B8%99%E0%B9%8C%20%E0%B8%81%E0%B8%A3%E0%B8%B0%E0%B9%80%E0%B8%9B%E0%B9%8B%E0%B8%B2%E0%B8%9C%E0%B9%89%E0%B8%B2%20Handmade.pdf">
-                                <button type="button"
-                                    class="btn btn-outline-primary">อ้างอิงวิจัย
-                                    ลำดับ ที่ 6 </button>
-                            </a>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
 
-                            <a target="_blank"
-                                href="https://www.atc.ac.th/FileATC/%E0%B9%82%E0%B8%84%E0%B8%A3%E0%B8%87%E0%B8%87%E0%B8%B2%E0%B8%99-%E0%B9%82%E0%B8%84%E0%B8%A3%E0%B8%87%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%99%E0%B8%B1%E0%B8%81%E0%B8%A8%E0%B8%B6%E0%B8%81%E0%B8%A9%E0%B8%B2%E0%B8%9B%E0%B8%B52561/3.3%E0%B9%82%E0%B8%84%E0%B8%A3%E0%B8%87%E0%B8%87%E0%B8%B2%E0%B8%99%20%E0%B8%AA%E0%B8%B2%E0%B8%82%E0%B8%B2%E0%B8%A7%E0%B8%B4%E0%B8%8A%E0%B8%B2%E0%B8%84%E0%B8%AD%E0%B8%A1%E0%B8%9E%E0%B8%B4%E0%B8%A7%E0%B9%80%E0%B8%95%E0%B8%AD%E0%B8%A3%E0%B9%8C%E0%B8%98%E0%B8%B8%E0%B8%A3%E0%B8%81%E0%B8%B4%E0%B8%88%20%E0%B8%9B%E0%B8%A7%E0%B8%AA.2/%E0%B9%80%E0%B8%A7%E0%B9%87%E0%B8%9A%E0%B9%84%E0%B8%8B%E0%B8%95%E0%B9%8C%E0%B8%A3%E0%B8%B0%E0%B8%9A%E0%B8%9A%E0%B8%82%E0%B8%B2%E0%B8%A2%E0%B8%AA%E0%B8%B4%E0%B8%99%E0%B8%84%E0%B9%89%E0%B8%B2%E0%B8%AD%E0%B8%AD%E0%B8%99%E0%B9%84%E0%B8%A5%E0%B8%99%E0%B9%8C%20%E0%B8%9B%E0%B8%A3%E0%B8%B0%E0%B9%80%E0%B8%A0%E0%B8%97%E0%B9%80%E0%B8%84%E0%B8%A3%E0%B8%B7%E0%B9%88%E0%B8%AD%E0%B8%87%E0%B8%9B%E0%B8%A3%E0%B8%B0%E0%B8%94%E0%B8%B1%E0%B8%9A.pdf">
-                                <button type="button"
-                                    class="btn btn-outline-primary">อ้างอิงวิจัย
-                                    ลำดับ ที่ 7 </button>
-                            </a>
+        th,
+        td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
 
-                            <a target="_blank"
-                                href="https://libdoc.dpu.ac.th/thesis/Watchara.Rit.pdf">
-                                <button type="button"
-                                    class="btn btn-outline-primary">อ้างอิงวิจัย
-                                    ลำดับ ที่ 8 </button>
-                            </a>
+        th {
+            background: #f8fafc;
+        }
 
-                            <a target="_blank"
-                                href="https://dspace.bru.ac.th/xmlui/bitstream/handle/123456789/6331/%E0%B8%A3%E0%B8%B0%E0%B8%9A%E0%B8%9A%E0%B8%9A%E0%B8%A3%E0%B8%B4%E0%B8%AB%E0%B8%B2%E0%B8%A3%E0%B8%88%E0%B8%B1%E0%B8%94%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%A3%E0%B9%89%E0%B8%B2%E0%B8%99%E0%B8%84%E0%B9%89%E0%B8%B2%E0%B8%AD%E0%B8%AD%E0%B8%99%E0%B9%84%E0%B8%A5%E0%B8%99%E0%B9%8C%E0%B8%81%E0%B8%A3%E0%B8%93%E0%B8%B5%E0%B8%A8%E0%B8%B6%E0%B8%81%E0%B8%A9%E0%B8%B2%E0%B8%A5%E0%B8%B9%E0%B8%81%E0%B9%80%E0%B8%95%E0%B9%8B%E0%B8%B2.pdf?sequence=1&isAllowed=y">
-                                <button type="button"
-                                    class="btn btn-outline-primary">อ้างอิงวิจัย
-                                    ลำดับ ที่ 9 </button>
-                            </a>
+        .pro-tip {
+            background: #f0fdf4;
+            border-left: 5px solid #22c55e;
+            padding: 15px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
 
-                            <a target="_blank"
-                                href="http://journal.nmc.ac.th/th/admin/Journal/2564Vol13No1_74.pdf">
-                                <button type="button"
-                                    class="btn btn-outline-primary">อ้างอิงวิจัย
-                                    ลำดับ ที่ 10 </button>
-                            </a>
+<body>
 
-                        </div>
+    <header>
+        <h1>The Ultimate Web Dev Guide</h1>
+        <p>คู่มือสรุปฉบับเจาะลึก HTML5, CSS3 และ Modern JavaScript</p>
+    </header>
 
-                    </div>
+    <div class="container">
+        <div class="nav-pills">
+            <button onclick="scrollToId('html-sec')">HTML5 Deep Dive</button>
+            <button onclick="scrollToId('css-sec')">CSS3 Master</button>
+            <button onclick="scrollToId('js-sec')">Modern JS (ES6+)</button>
+        </div>
+
+        <div id="html-sec" class="content-card">
+            <h2>1. HTML5 - โครงสร้างและเซแมนติก</h2>
+
+            <p>HTML ไม่ใช่ภาษาโปรแกรม แต่เป็นภาษา Markup ที่บอก Browser ว่าข้อมูลไหนคืออะไร</p>
+
+            <h3>พื้นฐานที่ต้องแม่น (Basics)</h3>
+            <pre>&lt;!-- โครงสร้างพื้นฐาน --&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html lang="th"&gt;
+  &lt;head&gt;
+    &lt;title&gt;ชื่อเว็บ&lt;/title&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;h1&gt;หัวข้อหลัก&lt;/h1&gt;
+    &lt;p&gt;ย่อหน้า&lt;/p&gt;
+    &lt;a href="url"&gt;ลิงก์&lt;/a&gt;
+    &lt;img src="image.jpg" alt="คำอธิบายภาพ"&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</pre>
+
+            <h3>ระดับกลาง: Semantic HTML (สำคัญต่อ SEO มาก)</h3>
+            <p>แทนที่จะใช้ <code>&lt;div&gt;</code> ทั้งเว็บ ควรใช้ Tag ที่มีความหมาย:</p>
+            <ul>
+                <li><code>&lt;header&gt;</code>: ส่วนหัวของหน้าหรือบทความ</li>
+                <li><code>&lt;nav&gt;</code>: ส่วนเมนูนำทาง</li>
+                <li><code>&lt;main&gt;</code>: เนื้อหาหลัก (มีได้เพียง 1 เดียวในหน้านั้น)</li>
+                <li><code>&lt;article&gt;</code>: เนื้อหาที่แยกชิ้นได้เอง (เช่น โพสต์บล็อก)</li>
+                <li><code>&lt;section&gt;</code>: กลุ่มเนื้อหาที่เกี่ยวข้องกัน</li>
+                <li><code>&lt;footer&gt;</code>: ส่วนท้ายของหน้า</li>
+            </ul>
+
+            <div class="pro-tip">
+                <strong>Pro Tip:</strong> การใช้ Semantic HTML ช่วยให้ Search Engine (Google)
+                เข้าใจโครงสร้างเว็บคุณได้ดีขึ้น และช่วยให้เครื่องอ่านหน้าจอ (Screen Reader) ทำงานได้ถูกต้อง
+            </div>
+
+            <h3>ระดับสูง: Forms & Meta</h3>
+            <pre>&lt;!-- Advanced Form --&gt;
+&lt;form action="/submit" method="POST"&gt;
+  &lt;label for="email"&gt;อีเมล:&lt;/label&gt;
+  &lt;input type="email" id="email" required placeholder="example@test.com"&gt;
+  
+  &lt;label&gt;ทักษะ:&lt;/label&gt;
+  &lt;input type="checkbox" name="skill" value="html"&gt; HTML
+  
+  &lt;button type="submit"&gt;ส่งข้อมูล&lt;/button&gt;
+&lt;/form&gt;</pre>
+        </div>
+
+        <div id="css-sec" class="content-card">
+            <h2>2. CSS3 - การออกแบบและเลย์เอาต์</h2>
+
+            <h3>The Box Model (หัวใจของ CSS)</h3>
+            <p>ทุก Element คือกล่องที่ประกอบด้วย:</p>
+            <table>
+                <tr>
+                    <th>ชั้น</th>
+                    <th>คำอธิบาย</th>
+                </tr>
+                <tr>
+                    <td><strong>Content</strong></td>
+                    <td>เนื้อหาข้างใน (ข้อความ/รูป)</td>
+                </tr>
+                <tr>
+                    <td><strong>Padding</strong></td>
+                    <td>ระยะห่างจากเนื้อหาถึงขอบกล่อง (ด้านใน)</td>
+                </tr>
+                <tr>
+                    <td><strong>Border</strong></td>
+                    <td>เส้นขอบ</td>
+                </tr>
+                <tr>
+                    <td><strong>Margin</strong></td>
+                    <td>ระยะห่างระหว่างกล่องนี้กับกล่องอื่น (ด้านนอก)</td>
+                </tr>
+            </table>
+
+            <h3>Modern Layout: Flexbox vs Grid</h3>
+            <div class="grid">
+                <div>
+                    <span class="tag">Flexbox (1 มิติ)</span>
+                    <pre>.container {
+  display: flex;
+  justify-content: center; /* แนวนอน */
+  align-items: center;    /* แนวตั้ง */
+  flex-direction: row;
+}</pre>
+                </div>
+                <div>
+                    <span class="tag">Grid (2 มิติ)</span>
+                    <pre>.container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20px;
+}</pre>
                 </div>
             </div>
 
+            <h3>Advanced CSS: Variables & Animations</h3>
+            <pre>/* การใช้ตัวแปร */
+:root {
+  --main-blue: #007bff;
+}
+
+.button {
+  background-color: var(--main-blue);
+  transition: all 0.3s ease;
+}
+
+.button:hover {
+  transform: scale(1.1);
+  filter: brightness(1.2);
+}</pre>
         </div>
 
-    </body>
-    <script src="../js/server.js"></script>
+        <div id="js-sec" class="content-card">
+            <h2>3. Modern JavaScript (ES6+)</h2>
+
+            <h3>Variables & Logic</h3>
+            <pre>// เลิกใช้ var ให้ใช้ let และ const
+const pi = 3.14; 
+let score = 0;
+
+// Arrow Function (เขียนสั้นลง)
+const welcome = (name) => `สวัสดีคุณ ${name}`;
+
+// Template Literals
+console.log(`ค่าพายคือ ${pi}`);</pre>
+
+            <h3>การจัดการ DOM (ทำให้เว็บมีชีวิต)</h3>
+            <pre>// การเลือกและเปลี่ยนเนื้อหา
+const btn = document.querySelector('#myBtn');
+const title = document.querySelector('h1');
+
+btn.addEventListener('click', () => {
+  title.innerText = 'ถูกคลิกแล้ว!';
+  title.style.color = 'red';
+});</pre>
+
+            <h3>ระดับสูง: Asynchronous & API</h3>
+            <p>ใช้ <code>async/await</code> เพื่อดึงข้อมูลจาก Server โดยไม่ต้องรอหน้าเว็บโหลดใหม่</p>
+            <pre>async function getUserData() {
+  try {
+    const response = await fetch('https://api.example.com/user');
+    const data = await response.json();
+    console.log(data);
+  } catch (error) {
+    console.error("เกิดข้อผิดพลาด:", error);
+  }
+}
+
+// เรียกใช้งาน
+getUserData();</pre>
+
+            <div class="pro-tip">
+                <strong>Roadmap ไปต่อ:</strong> เมื่อแม่น 3 อย่างนี้แล้ว แนะนำให้ศึกษา <strong>React.js</strong> หรือ
+                <strong>Next.js</strong> ต่อเพื่อทำงานระดับมืออาชีพครับ
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p style="text-align: center; color: #94a3b8; padding-bottom: 50px;">Created for Web Dev Learning - 2026</p>
+    </footer>
+
+    <script>
+        function scrollToId(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+
+</body>
 
 </html>
