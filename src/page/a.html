@@ -1,0 +1,181 @@
+ !DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Sheets CRUD - Local Stable</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-container {
+            margin-top: 25px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h2 class="text-center mb-4">ระบบจัดการข้อมูล Google Sheets</h2>
+
+        <div class="row g-2 mb-4 p-3 bg-light rounded">
+            <div class="col-md-5">
+                <input type="text" id="name" class="form-control" placeholder="ชื่อ-นามสกุล">
+            </div>
+            <div class="col-md-5">
+                <input type="email" id="email" class="form-control" placeholder="อีเมล">
+            </div>
+            <div class="col-md-2">
+                <button onclick="submitForm()" class="btn btn-primary w-100">เพิ่มข้อมูล</button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>ชื่อ</th>
+                        <th>อีเมล</th>
+                        <th style="width: 160px;">จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    <tr>
+                        <td colspan="4" class="text-center">กำลังโหลดข้อมูล...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">แก้ไขข้อมูล</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="edit-id">
+                    <div class="mb-3">
+                        <label class="form-label">ชื่อ:</label>
+                        <input type="text" id="edit-name" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">อีเมล:</label>
+                        <input type="email" id="edit-email" class="form-control">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                    <button type="button" class="btn btn-success" onclick="updateData()">บันทึกการแก้ไข</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz-GumB_PJApti8-dmXvYT9H57OWWldoA0jcgx7QQQ_1AcTXrKvHHLYf96m7g6JxYFr/exec";
+        let editModal;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            editModal = new bootstrap.Modal(document.getElementById('editModal'));
+            loadData();
+        });
+
+        // 1. ดึงข้อมูล (Read)
+        function loadData() {
+            fetch(WEB_APP_URL)
+                .then(res => res.json())
+                .then(data => {
+                    let html = "";
+                    data.forEach(row => {
+                        html += `<tr>
+                        <td><small class="text-muted">${row[0]}</small></td>
+                        <td>${row[1]}</td>
+                        <td>${row[2]}</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" onclick="openEditModal('${row[0]}','${row[1]}','${row[2]}')">แก้ไข</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteData('${row[0]}')">ลบ</button>
+                        </td>
+                    </tr>`;
+                    }
+                
+                );
+                    document.getElementById("table-body").innerHTML = html || '<tr><td colspan="4" class="text-center">ไม่มีข้อมูล</td></tr>';
+                });
+        }
+
+        // ฟังก์ชันส่งข้อมูล POST (แก้ไขให้เสถียร 100%)
+        async function sendPost(params) {
+            const formData = new URLSearchParams();
+            for (const key in params) {
+                formData.append(key, params[key]);
+            }
+
+            await fetch(WEB_APP_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: formData.toString()
+            });
+
+            // รอ 1.5 วินาทีเพื่อให้ฝั่ง Google อัปเดตเสร็จแล้วค่อยรีโหลดตาราง
+            setTimeout(loadData, 1500);
+        }
+
+        // 2. เพิ่มข้อมูล
+        function submitForm() {
+            const name = document.getElementById("name").value;
+            const email = document.getElementById("email").value;
+            if (!name || !email) return alert("กรุณากรอกข้อมูลให้ครบ");
+
+            sendPost({ action: "add", name: name, email: email });
+            document.getElementById("name").value = "";
+            document.getElementById("email").value = "";
+        }
+
+        // 3. เตรียมแก้ไข (เปิด Modal)
+        function openEditModal(id, name, email) {
+            document.getElementById('edit-id').value = id;
+            document.getElementById('edit-name').value = name;
+            document.getElementById('edit-email').value = email;
+            editModal.show();
+        }
+
+        // 4. บันทึกแก้ไข (Update)
+        function updateData() {
+            const id = document.getElementById('edit-id').value;
+            const name = document.getElementById('edit-name').value;
+            const email = document.getElementById('edit-email').value;
+
+            sendPost({ action: "update", id: id, name: name, email: email });
+            editModal.hide();
+        }
+
+        // 5. ลบข้อมูล (Delete)
+        function deleteData(id) {
+            if (!confirm("คุณต้องการลบข้อมูล ID: " + id + " ใช่หรือไม่?")) return;
+            sendPost({ action: "delete", id: id });
+        }
+    </script>
+
+</body>
+
+</html>
