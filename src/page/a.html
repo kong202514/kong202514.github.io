@@ -1,27 +1,56 @@
- 
+ !DOCTYPE html>
 <html lang="th">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google Sheets CRUD - Local Stable</title>
+    <title>Google Sheets CRUD with Search & Upload</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            background-color: #f8f9fa;
+            background-color: #f0f2f5;
             padding: 40px 20px;
+            font-family: 'Sarabun', sans-serif;
         }
 
         .container {
-            max-width: 900px;
+            max-width: 1100px;
             background: white;
             padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
         }
 
-        .table-container {
-            margin-top: 25px;
+        .img-preview {
+            width: 45px;
+            height: 45px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .loading {
+            display: none;
+            margin-left: 10px;
+            font-weight: bold;
+        }
+
+        .avatar-placeholder {
+            width: 45px;
+            height: 45px;
+            background: #6c757d;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-weight: bold;
+        }
+
+        .table thead {
+            background-color: #495057;
+            color: white;
         }
     </style>
 </head>
@@ -29,33 +58,36 @@
 <body>
 
     <div class="container">
-        <h2 class="text-center mb-4">ระบบจัดการข้อมูล Google Sheets</h2>
+        <h2 class="text-center mb-4">🚀 ระบบจัดการข้อมูลและรูปภาพ</h2>
 
-        <div class="row g-2 mb-4 p-3 bg-light rounded">
-            <div class="col-md-5">
-                <input type="text" id="name" class="form-control" placeholder="ชื่อ-นามสกุล">
-            </div>
-            <div class="col-md-5">
-                <input type="email" id="email" class="form-control" placeholder="อีเมล">
-            </div>
-            <div class="col-md-2">
-                <button onclick="submitForm()" class="btn btn-primary w-100">เพิ่มข้อมูล</button>
-            </div>
+        <div class="row g-2 mb-4 p-4 bg-light rounded border shadow-sm">
+            <div class="col-md-3"><input type="text" id="name" class="form-control" placeholder="ชื่อ-นามสกุล"></div>
+            <div class="col-md-3"><input type="email" id="email" class="form-control" placeholder="อีเมล"></div>
+            <div class="col-md-4"><input type="file" id="fileInput" class="form-control" accept="image/*"></div>
+            <div class="col-md-2"><button onclick="submitForm()" id="btnAdd"
+                    class="btn btn-primary w-100">เพิ่มข้อมูล</button></div>
+            <div id="loader" class="text-primary mt-2 small loading">⚙️ กำลังดำเนินการ... กรุณารอสักครู่</div>
         </div>
 
-        <div class="table-container">
-            <table class="table table-hover align-middle">
-                <thead class="table-dark">
+        <div class="mb-3">
+            <input type="text" id="searchInput" class="form-control" placeholder="🔍 ค้นหาตามชื่อหรืออีเมล..."
+                onkeyup="filterTable()">
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle" id="mainTable">
+                <thead>
                     <tr>
                         <th>ID</th>
+                        <th>รูปภาพ</th>
                         <th>ชื่อ</th>
                         <th>อีเมล</th>
-                        <th style="width: 160px;">จัดการ</th>
+                        <th class="text-center">จัดการ</th>
                     </tr>
                 </thead>
                 <tbody id="table-body">
                     <tr>
-                        <td colspan="4" class="text-center">กำลังโหลดข้อมูล...</td>
+                        <td colspan="5" class="text-center">กำลังโหลดข้อมูล...</td>
                     </tr>
                 </tbody>
             </table>
@@ -66,11 +98,12 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">แก้ไขข้อมูล</h5>
+                    <h5 class="modal-title">📝 แก้ไขข้อมูล</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="edit-id">
+                    <div class="mb-3 text-center" id="edit-img-container"></div>
                     <div class="mb-3">
                         <label class="form-label">ชื่อ:</label>
                         <input type="text" id="edit-name" class="form-control">
@@ -79,10 +112,15 @@
                         <label class="form-label">อีเมล:</label>
                         <input type="email" id="edit-email" class="form-control">
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label">เปลี่ยนรูปภาพ (ถ้ามี):</label>
+                        <input type="file" id="edit-fileInput" class="form-control" accept="image/*">
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                    <button type="button" class="btn btn-success" onclick="updateData()">บันทึกการแก้ไข</button>
+                    <button type="button" id="btnUpdate" class="btn btn-success"
+                        onclick="updateData()">บันทึกการแก้ไข</button>
                 </div>
             </div>
         </div>
@@ -91,7 +129,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz-GumB_PJApti8-dmXvYT9H57OWWldoA0jcgx7QQQ_1AcTXrKvHHLYf96m7g6JxYFr/exec";
+        // *** วาง URL ของ Web App ที่คุณ Deploy จาก Apps Script ตรงนี้ ***
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwDCu09iEjAU2f2NUPxitN_-G4uNW4dtbkmlF6QVEdNXOJoLUbIIpHe1SYE_H3l7UP4/exec";
         let editModal;
 
         document.addEventListener("DOMContentLoaded", () => {
@@ -99,83 +138,141 @@
             loadData();
         });
 
-        // 1. ดึงข้อมูล (Read)
         function loadData() {
             fetch(WEB_APP_URL)
                 .then(res => res.json())
                 .then(data => {
                     let html = "";
                     data.forEach(row => {
+                        // เช็คว่า row[3] มีข้อมูลหรือไม่ และไม่ใช่ค่าว่างหรือ "undefined"
+                        const hasImg = row[3] && row[3] !== "" && row[3] !== "undefined";
+                        const imgTag = hasImg
+                            ? `<img src="${row[3]}" class="img-preview" onerror="this.src='https://via.placeholder.com/50'">`
+                            : `<div class="avatar-placeholder">${row[1] ? row[1].charAt(0).toUpperCase() : '?'}</div>`;
+
                         html += `<tr>
-                        <td><small class="text-muted">${row[0]}</small></td>
-                        <td>${row[1]}</td>
-                        <td>${row[2]}</td>
-                        <td>
-                            <button class="btn btn-warning btn-sm" onclick="openEditModal('${row[0]}','${row[1]}','${row[2]}')">แก้ไข</button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteData('${row[0]}')">ลบ</button>
-                        </td>
-                    </tr>`;
-                    }
-                
-                );
-                    document.getElementById("table-body").innerHTML = html || '<tr><td colspan="4" class="text-center">ไม่มีข้อมูล</td></tr>';
+                            <td><small class="text-muted">${row[0]}</small></td>
+                            <td>${imgTag}</td>
+                            <td>${row[1]}</td>
+                            <td>${row[2]}</td>
+                            <td class="text-center">
+                                <button class="btn btn-outline-warning btn-sm" onclick="openEditModal('${row[0]}','${row[1]}','${row[2]}','${row[3]}')">แก้ไข</button>
+                                <button class="btn btn-outline-danger btn-sm" onclick="deleteData('${row[0]}')">ลบ</button>
+                            </td>
+                        </tr>`;
+                    });
+                    document.getElementById("table-body").innerHTML = html || '<tr><td colspan="5" class="text-center">ไม่มีข้อมูล</td></tr>';
                 });
         }
 
-        // ฟังก์ชันส่งข้อมูล POST (แก้ไขให้เสถียร 100%)
         async function sendPost(params) {
+            document.getElementById('loader').style.display = 'block';
+            document.getElementById('btnAdd').disabled = true;
+
             const formData = new URLSearchParams();
-            for (const key in params) {
-                formData.append(key, params[key]);
+            for (const key in params) { formData.append(key, params[key]); }
+
+            try {
+                // ใช้ fetch แบบปกติ (Google Apps Script จะตอบกลับ 200 ถึงแม้จะติด CORS ในบางกรณี)
+                await fetch(WEB_APP_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: formData.toString()
+                });
+
+                // รอสักครู่เพื่อให้ Script ฝั่ง Google ทำงานเสร็จ
+                setTimeout(() => {
+                    document.getElementById('loader').style.display = 'none';
+                    document.getElementById('btnAdd').disabled = false;
+                    loadData();
+                }, 2000);
+            } catch (e) {
+                console.error(e);
+                alert("เกิดข้อผิดพลาดในการส่งข้อมูล");
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('btnAdd').disabled = false;
             }
-
-            await fetch(WEB_APP_URL, {
-                method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: formData.toString()
-            });
-
-            // รอ 1.5 วินาทีเพื่อให้ฝั่ง Google อัปเดตเสร็จแล้วค่อยรีโหลดตาราง
-            setTimeout(loadData, 1500);
         }
 
-        // 2. เพิ่มข้อมูล
         function submitForm() {
             const name = document.getElementById("name").value;
             const email = document.getElementById("email").value;
+            const fileInput = document.getElementById("fileInput");
             if (!name || !email) return alert("กรุณากรอกข้อมูลให้ครบ");
 
-            sendPost({ action: "add", name: name, email: email });
-            document.getElementById("name").value = "";
-            document.getElementById("email").value = "";
+            let payload = { action: "add", name: name, email: email };
+            if (fileInput.files.length > 0) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    payload.fileData = e.target.result.split(",")[1];
+                    payload.fileType = fileInput.files[0].type;
+                    sendPost(payload);
+                    clearForm();
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                sendPost(payload);
+                clearForm();
+            }
         }
 
-        // 3. เตรียมแก้ไข (เปิด Modal)
-        function openEditModal(id, name, email) {
+        function clearForm() {
+            document.getElementById("name").value = "";
+            document.getElementById("email").value = "";
+            document.getElementById("fileInput").value = "";
+        }
+
+        function openEditModal(id, name, email, img) {
             document.getElementById('edit-id').value = id;
             document.getElementById('edit-name').value = name;
             document.getElementById('edit-email').value = email;
+            const imgDisplay = (img && img !== "undefined") ? `<img src="${img}" class="img-preview mb-2" style="width:80px; height:80px;">` : "";
+            document.getElementById('edit-img-container').innerHTML = imgDisplay;
             editModal.show();
         }
 
-        // 4. บันทึกแก้ไข (Update)
         function updateData() {
             const id = document.getElementById('edit-id').value;
             const name = document.getElementById('edit-name').value;
             const email = document.getElementById('edit-email').value;
+            const fileInput = document.getElementById('edit-fileInput');
 
-            sendPost({ action: "update", id: id, name: name, email: email });
-            editModal.hide();
+            let payload = { action: "update", id, name, email };
+            if (fileInput.files.length > 0) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    payload.fileData = e.target.result.split(",")[1];
+                    payload.fileType = fileInput.files[0].type;
+                    sendPost(payload);
+                    fileInput.value = "";
+                    editModal.hide();
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                sendPost(payload);
+                editModal.hide();
+            }
         }
 
-        // 5. ลบข้อมูล (Delete)
         function deleteData(id) {
-            if (!confirm("คุณต้องการลบข้อมูล ID: " + id + " ใช่หรือไม่?")) return;
+            if (!confirm("ยืนยันการลบข้อมูลนี้?")) return;
             sendPost({ action: "delete", id: id });
         }
-    </script>
 
+        function filterTable() {
+            const input = document.getElementById("searchInput").value.toUpperCase();
+            const tr = document.getElementById("table-body").getElementsByTagName("tr");
+            for (let i = 0; i < tr.length; i++) {
+                const tdName = tr[i].getElementsByTagName("td")[2];
+                const tdEmail = tr[i].getElementsByTagName("td")[3];
+                if (tdName || tdEmail) {
+                    const txtValue = (tdName.textContent || tdName.innerText) + (tdEmail.textContent || tdEmail.innerText);
+                    tr[i].style.display = txtValue.toUpperCase().indexOf(input) > -1 ? "" : "none";
+                }
+            }
+        }
+    </script>
 </body>
 
 </html>
