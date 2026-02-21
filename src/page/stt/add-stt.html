@@ -1,0 +1,396 @@
+ !DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เติมสต็อกสินค้า - Premium</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #3498db;
+            --primary-hover: #2980b9;
+            --bg: #f4f7f6;
+            --text: #2d3436;
+            --card-bg: #ffffff;
+            --border: #dfe6e9;
+            --accent: #9b59b6;
+        }
+
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* --- Navigation Bar --- */
+        .nav-container {
+            width: 100%;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 10px 0;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #636e72;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+        }
+
+        .nav-link:hover {
+            background: #f8f9fa;
+            color: var(--primary);
+        }
+
+        .nav-link.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* --- Main Card --- */
+        .card {
+            background: var(--card-bg);
+            width: 90%;
+            max-width: 500px;
+            padding: 35px;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 40px;
+        }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #2c3e50;
+            font-size: 22px;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #636e72;
+        }
+
+        select,
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s;
+            outline: none;
+            box-sizing: border-box;
+            background-color: #fcfcfc;
+        }
+
+        select:focus,
+        input:focus {
+            border-color: var(--primary);
+            background-color: #fff;
+            box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1);
+        }
+
+        /* --- Info Display Box --- */
+        .info-display {
+            background: #f8fbfe;
+            border-radius: 15px;
+            padding: 18px;
+            margin-bottom: 20px;
+            border: 1px solid #e1e8ed;
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+            border-bottom: 1px dashed #eee;
+            padding-bottom: 4px;
+        }
+
+        .info-row:last-child {
+            border: none;
+        }
+
+        .info-label {
+            color: #7f8c8d;
+        }
+
+        .info-value {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        /* --- Buttons --- */
+        .btn-submit {
+            width: 100%;
+            padding: 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.2);
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover:not(:disabled) {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(52, 152, 219, 0.25);
+        }
+
+        .btn-submit:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        #status {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .loader {
+            width: 18px;
+            height: 18px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav-container {
+                padding: 5px;
+            }
+
+            .nav-link {
+                font-size: 12px;
+                padding: 6px 10px;
+            }
+
+            .card {
+                padding: 25px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="nav-container">
+        <a href="dashboard.html" class="nav-link">📊 แดชบอร์ด</a>
+        <a href="add-stt.html" class="nav-link active">📥 เติมสต็อกสินค้า</a>
+        <a href="a.html" class="nav-link">✨ เพิ่มสินค้าใหม่</a>
+        <a href="e.html" class="nav-link">✏️ แก้ไขสินค้า</a>
+        <a href="out.html" class="nav-link">📤 ตัดสต็อกออก</a>
+    </nav>
+
+    <div class="card">
+        <h2>📥 เติมสต็อกสินค้าเดิม</h2>
+
+        <div id="loadingView" style="text-align: center; padding: 20px;">
+            <div class="loader"></div> กำลังดึงรายการจากคลัง...
+        </div>
+
+        <form id="restockForm" style="display:none;">
+            <div class="form-group">
+                <label>ค้นหาและเลือกสินค้า</label>
+                <select id="skuSelect" required onchange="showProductInfo()">
+                    <option value="">-- เลือก SKU สินค้า --</option>
+                </select>
+            </div>
+
+            <div id="productInfo" class="info-display">
+                <div class="info-row">
+                    <span class="info-label">ชื่อสินค้า:</span>
+                    <span id="displayDesc" class="info-value">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">หมวดหมู่:</span>
+                    <span id="displayCat" class="info-value">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">ราคาทุนปัจจุบัน:</span>
+                    <span id="displayPrice" class="info-value">-</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>จำนวนที่รับเข้าเพิ่ม</label>
+                <input type="number" id="quantity" min="1" placeholder="ระบุจำนวนตัวเลข" required>
+            </div>
+
+            <div class="form-group">
+                <label>ราคาต้นทุนต่อหน่วย (ระบุเมื่อมีการเปลี่ยนแปลง)</label>
+                <input type="number" id="newPrice" step="0.01" placeholder="ปล่อยว่างหากราคาเดิม">
+            </div>
+
+            <div class="form-group">
+                <label>พนักงานผู้บันทึก</label>
+                <input type="text" id="userName" placeholder="ระบุชื่อของคุณ" required>
+            </div>
+
+            <button type="submit" id="submitBtn" class="btn-submit">ยืนยันการเพิ่มสต็อก</button>
+        </form>
+
+        <div id="status"></div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbziUDlptL6Mp1gFv0a8MoQSzgcbvh1AjJ0HN6ns6GCLWze-uiy-z64Tp-fE_uGWyPh2/exec";
+        let inventoryData = {};
+
+        window.onload = async () => {
+            try {
+                const res = await fetch(SCRIPT_URL);
+                const data = await res.json();
+                const rows = data.fullData || data;
+
+                rows.forEach(row => {
+                    inventoryData[row[1]] = {
+                        sku: row[1],
+                        cat: row[3],
+                        desc: row[4],
+                        price: row[6]
+                    };
+                });
+
+                const select = document.getElementById('skuSelect');
+                for (let sku in inventoryData) {
+                    let opt = document.createElement('option');
+                    opt.value = sku;
+                    opt.text = `[${sku}] ${inventoryData[sku].desc}`;
+                    select.appendChild(opt);
+                }
+
+                document.getElementById('loadingView').style.display = 'none';
+                document.getElementById('restockForm').style.display = 'block';
+            } catch (e) {
+                document.getElementById('status').innerText = "❌ เกิดข้อผิดพลาดในการโหลดข้อมูล";
+            }
+        };
+
+        function showProductInfo() {
+            const sku = document.getElementById('skuSelect').value;
+            const infoDiv = document.getElementById('productInfo');
+            if (sku && inventoryData[sku]) {
+                document.getElementById('displayDesc').innerText = inventoryData[sku].desc;
+                document.getElementById('displayCat').innerText = inventoryData[sku].cat;
+                document.getElementById('displayPrice').innerText = "฿" + Number(inventoryData[sku].price).toLocaleString();
+                document.getElementById('newPrice').placeholder = inventoryData[sku].price;
+                infoDiv.style.display = 'block';
+            } else {
+                infoDiv.style.display = 'none';
+            }
+        }
+
+        document.getElementById('restockForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const status = document.getElementById('status');
+            const sku = document.getElementById('skuSelect').value;
+
+            btn.disabled = true;
+            status.innerHTML = `<div class="loader"></div> กำลังบันทึกข้อมูล...`;
+
+            const finalPrice = document.getElementById('newPrice').value || inventoryData[sku].price;
+
+            const formData = new URLSearchParams();
+            formData.append('type', 'IN');
+            formData.append('sku', sku);
+            formData.append('description', inventoryData[sku].desc);
+            formData.append('category', inventoryData[sku].cat);
+            formData.append('quantity', document.getElementById('quantity').value);
+            formData.append('price', finalPrice);
+            formData.append('userName', document.getElementById('userName').value);
+
+            fetch(SCRIPT_URL, { method: 'POST', body: formData, mode: 'no-cors' })
+                .then(() => {
+                    status.style.color = "#27ae60";
+                    status.innerText = "✅ บันทึกรายการเติมสต็อกเรียบร้อย!";
+                    document.getElementById('restockForm').reset();
+                    document.getElementById('productInfo').style.display = 'none';
+                    btn.disabled = false;
+                })
+                .catch(() => {
+                    status.style.color = "#e74c3c";
+                    status.innerText = "❌ ล้มเหลว: โปรดตรวจสอบการเชื่อมต่อ";
+                    btn.disabled = false;
+                });
+        });
+    </script>
+</body>
+
+</html>

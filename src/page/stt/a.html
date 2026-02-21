@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>บันทึกสต็อกสินค้าใหม่ - Premium</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #27ae60;
@@ -13,29 +14,73 @@
             --text: #2d3436;
             --card-bg: #ffffff;
             --border: #dfe6e9;
+            --accent: #3498db;
         }
 
         body {
-            font-family: 'Prompt', 'Segoe UI', sans-serif;
+            font-family: 'Prompt', sans-serif;
             background-color: var(--bg);
             color: var(--text);
+            margin: 0;
+            padding: 0;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
             min-height: 100vh;
-            margin: 0;
-            padding: 20px;
         }
 
+        /* --- Navigation Bar --- */
+        .nav-container {
+            width: 100%;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 10px 0;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #636e72;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-link:hover {
+            background: #f8f9fa;
+            color: var(--accent);
+            border-color: var(--border);
+        }
+
+        .nav-link.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* --- Main Card --- */
         .card {
             background: var(--card-bg);
-            width: 100%;
+            width: 90%;
             max-width: 500px;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+            padding: 35px;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
             position: relative;
             overflow: hidden;
+            margin-bottom: 40px;
         }
 
         .card::before {
@@ -45,22 +90,19 @@
             left: 0;
             width: 100%;
             height: 6px;
-            background: linear-gradient(90deg, var(--primary), #3498db);
+            background: linear-gradient(90deg, var(--primary), var(--accent));
         }
 
         h2 {
             margin-top: 0;
             color: #2c3e50;
-            font-size: 24px;
+            font-size: 22px;
             text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
+            margin-bottom: 25px;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
 
         .flex-row {
@@ -70,7 +112,7 @@
 
         label {
             display: block;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
             margin-bottom: 8px;
             color: #636e72;
@@ -79,30 +121,32 @@
         input,
         select {
             width: 100%;
-            padding: 12px;
+            padding: 12px 15px;
             border: 2px solid var(--border);
-            border-radius: 10px;
+            border-radius: 12px;
             font-size: 15px;
             transition: all 0.3s;
             outline: none;
             box-sizing: border-box;
+            background-color: #fcfcfc;
         }
 
         input:focus,
         select:focus {
             border-color: var(--primary);
+            background-color: #fff;
             box-shadow: 0 0 0 4px rgba(39, 174, 96, 0.1);
         }
 
-        /* Image Preview Area */
+        /* --- Upload Area --- */
         .upload-area {
             border: 2px dashed var(--border);
-            border-radius: 12px;
-            padding: 20px;
+            border-radius: 15px;
+            padding: 25px;
             text-align: center;
             cursor: pointer;
             transition: 0.3s;
-            position: relative;
+            background: #fafafa;
         }
 
         .upload-area:hover {
@@ -112,33 +156,36 @@
 
         #previewImg {
             max-width: 100%;
-            max-height: 200px;
-            border-radius: 8px;
+            max-height: 180px;
+            border-radius: 10px;
             display: none;
-            margin-top: 10px;
+            margin: 10px auto 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
 
-        button {
+        /* --- Buttons --- */
+        .btn-submit {
             width: 100%;
             padding: 16px;
             background: var(--primary);
             color: white;
             border: none;
-            border-radius: 12px;
+            border-radius: 14px;
             font-size: 16px;
-            font-weight: bold;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.2);
+            box-shadow: 0 8px 20px rgba(39, 174, 96, 0.2);
             margin-top: 10px;
         }
 
-        button:hover:not(:disabled) {
+        .btn-submit:hover:not(:disabled) {
             background: var(--primary-hover);
             transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(39, 174, 96, 0.25);
         }
 
-        button:disabled {
+        .btn-submit:disabled {
             background: #bdc3c7;
             cursor: not-allowed;
         }
@@ -147,7 +194,7 @@
             text-align: center;
             margin-top: 20px;
             font-size: 14px;
-            font-weight: bold;
+            font-weight: 600;
         }
 
         .loader {
@@ -171,13 +218,36 @@
                 transform: rotate(360deg);
             }
         }
+
+        @media (max-width: 480px) {
+            .nav-container {
+                padding: 5px;
+            }
+
+            .nav-link {
+                font-size: 12px;
+                padding: 6px 10px;
+            }
+
+            .card {
+                padding: 25px;
+            }
+        }
     </style>
 </head>
 
 <body>
 
+    <nav class="nav-container">
+        <a href="dashboard.html" class="nav-link">📊 แดชบอร์ด</a>
+        <a href="add-stt.html" class="nav-link">📥 เติมสต็อกสินค้า</a>
+        <a href="a.html" class="nav-link active">✨ เพิ่มสินค้าใหม่</a>
+        <a href="e.html" class="nav-link">✏️ แก้ไขสินค้า</a>
+        <a href="out.html" class="nav-link">📤 ตัดสต็อกออก</a>
+    </nav>
+
     <div class="card">
-        <h2>📦 บันทึกสต็อกสินค้าใหม่</h2>
+        <h2>📦 บันทึกสินค้าเข้าคลังใหม่</h2>
 
         <form id="stockForm">
             <div class="form-group">
@@ -203,7 +273,7 @@
 
             <div class="flex-row">
                 <div class="form-group" style="flex: 1;">
-                    <label>จำนวนรับเข้า</label>
+                    <label>จำนวนเริ่มต้น</label>
                     <input type="number" id="quantity" value="1" min="1" required>
                 </div>
                 <div class="form-group" style="flex: 1;">
@@ -218,16 +288,16 @@
             </div>
 
             <div class="form-group">
-                <label>อัปโหลดรูปภาพสินค้า</label>
+                <label>รูปภาพสินค้า</label>
                 <div class="upload-area" onclick="document.getElementById('myFile').click()">
-                    <span id="uploadLabel">📸 คลิกเพื่อเลือกรูปภาพ</span>
+                    <span id="uploadLabel">📸 คลิกเพื่อเลือกรูปภาพสินค้า</span>
                     <input type="file" id="myFile" accept="image/*" style="display: none;" required
                         onchange="previewFile()">
                     <img id="previewImg" src="" alt="Preview">
                 </div>
             </div>
 
-            <button type="submit" id="submitBtn">บันทึกข้อมูลเข้าคลัง</button>
+            <button type="submit" id="submitBtn" class="btn-submit">บันทึกข้อมูลลงระบบ</button>
         </form>
 
         <div id="status"></div>
@@ -236,7 +306,6 @@
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbziUDlptL6Mp1gFv0a8MoQSzgcbvh1AjJ0HN6ns6GCLWze-uiy-z64Tp-fE_uGWyPh2/exec";
 
-        // ฟังก์ชัน Preview รูปภาพ
         function previewFile() {
             const preview = document.getElementById('previewImg');
             const file = document.getElementById('myFile').files[0];
@@ -249,9 +318,8 @@
                 label.style.display = "none";
             }
 
-            if (file) {
-                reader.readAsDataURL(file);
-            } else {
+            if (file) { reader.readAsDataURL(file); }
+            else {
                 preview.src = "";
                 preview.style.display = "none";
                 label.style.display = "block";
@@ -266,7 +334,7 @@
 
             btn.disabled = true;
             status.style.color = "#2980b9";
-            status.innerHTML = `<div class="loader"></div> กำลังอัปโหลดข้อมูลและรูปภาพ...`;
+            status.innerHTML = `<div class="loader"></div> กำลังเชื่อมต่อฐานข้อมูล...`;
 
             const reader = new FileReader();
             reader.onload = function () {
@@ -282,7 +350,7 @@
                 formData.append('quantity', document.getElementById('quantity').value);
                 formData.append('price', document.getElementById('price').value);
                 formData.append('userName', document.getElementById('userName').value);
-                formData.append('type', 'IN'); // ระบุว่าเป็นขาเข้า
+                formData.append('type', 'IN');
 
                 fetch(SCRIPT_URL, {
                     method: 'POST',
@@ -291,7 +359,7 @@
                 })
                     .then(() => {
                         status.style.color = "#27ae60";
-                        status.innerHTML = "✅ บันทึกสต็อกสินค้าเรียบร้อยแล้ว!";
+                        status.innerHTML = "✅ ข้อมูลถูกบันทึกลง Google Sheet แล้ว!";
                         document.getElementById('stockForm').reset();
                         document.getElementById('previewImg').style.display = "none";
                         document.getElementById('uploadLabel').style.display = "block";
