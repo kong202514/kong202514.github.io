@@ -4,274 +4,307 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google Sheets CRUD with Search & Upload</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>บันทึกสต็อกสินค้าใหม่ - Premium</title>
     <style>
+        :root {
+            --primary: #27ae60;
+            --primary-hover: #219150;
+            --bg: #f4f7f6;
+            --text: #2d3436;
+            --card-bg: #ffffff;
+            --border: #dfe6e9;
+        }
+
         body {
-            background-color: #f0f2f5;
-            padding: 40px 20px;
-            font-family: 'Sarabun', sans-serif;
+            font-family: 'Prompt', 'Segoe UI', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
         }
 
-        .container {
-            max-width: 1100px;
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        .card {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 500px;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
         }
 
-        .img-preview {
-            width: 45px;
-            height: 45px;
-            object-fit: cover;
-            border-radius: 50%;
-            border: 2px solid #fff;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        .card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary), #3498db);
         }
 
-        .loading {
-            display: none;
-            margin-left: 10px;
-            font-weight: bold;
-        }
-
-        .avatar-placeholder {
-            width: 45px;
-            height: 45px;
-            background: #6c757d;
-            color: white;
+        h2 {
+            margin-top: 0;
+            color: #2c3e50;
+            font-size: 24px;
+            text-align: center;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 50%;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .flex-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #636e72;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(39, 174, 96, 0.1);
+        }
+
+        /* Image Preview Area */
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: #f0fff4;
+        }
+
+        #previewImg {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            display: none;
+            margin-top: 10px;
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.2);
+            margin-top: 10px;
+        }
+
+        button:hover:not(:disabled) {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        #status {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
             font-weight: bold;
         }
 
-        .table thead {
-            background-color: #495057;
-            color: white;
+        .loader {
+            width: 18px;
+            height: 18px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
     </style>
 </head>
 
 <body>
 
-    <div class="container">
-        <h2 class="text-center mb-4">🚀 ระบบจัดการข้อมูลและรูปภาพ</h2>
+    <div class="card">
+        <h2>📦 บันทึกสต็อกสินค้าใหม่</h2>
 
-        <div class="row g-2 mb-4 p-4 bg-light rounded border shadow-sm">
-            <div class="col-md-3"><input type="text" id="name" class="form-control" placeholder="ชื่อ-นามสกุล"></div>
-            <div class="col-md-3"><input type="email" id="email" class="form-control" placeholder="อีเมล"></div>
-            <div class="col-md-4"><input type="file" id="fileInput" class="form-control" accept="image/*"></div>
-            <div class="col-md-2"><button onclick="submitForm()" id="btnAdd"
-                    class="btn btn-primary w-100">เพิ่มข้อมูล</button></div>
-            <div id="loader" class="text-primary mt-2 small loading">⚙️ กำลังดำเนินการ... กรุณารอสักครู่</div>
-        </div>
+        <form id="stockForm">
+            <div class="form-group">
+                <label>รหัสสินค้า (SKU)</label>
+                <input type="text" id="sku" placeholder="เช่น ABC-001" required>
+            </div>
 
-        <div class="mb-3">
-            <input type="text" id="searchInput" class="form-control" placeholder="🔍 ค้นหาตามชื่อหรืออีเมล..."
-                onkeyup="filterTable()">
-        </div>
+            <div class="form-group">
+                <label>ชื่อสินค้า / รายละเอียด</label>
+                <input type="text" id="description" placeholder="ระบุชื่อสินค้าเต็ม" required>
+            </div>
 
-        <div class="table-responsive">
-            <table class="table table-hover align-middle" id="mainTable">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>รูปภาพ</th>
-                        <th>ชื่อ</th>
-                        <th>อีเมล</th>
-                        <th class="text-center">จัดการ</th>
-                    </tr>
-                </thead>
-                <tbody id="table-body">
-                    <tr>
-                        <td colspan="5" class="text-center">กำลังโหลดข้อมูล...</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
+            <div class="form-group">
+                <label>หมวดหมู่</label>
+                <select id="category" required>
+                    <option value="">-- เลือกหมวดหมู่ --</option>
+                    <option value="เครื่องใช้ไฟฟ้า">เครื่องใช้ไฟฟ้า</option>
+                    <option value="ของใช้ในบ้าน">ของใช้ในบ้าน</option>
+                    <option value="อาหาร/เครื่องดื่ม">อาหาร/เครื่องดื่ม</option>
+                    <option value="อุปกรณ์สำนักงาน">อุปกรณ์สำนักงาน</option>
+                </select>
+            </div>
 
-    <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">📝 แก้ไขข้อมูล</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <div class="flex-row">
+                <div class="form-group" style="flex: 1;">
+                    <label>จำนวนรับเข้า</label>
+                    <input type="number" id="quantity" value="1" min="1" required>
                 </div>
-                <div class="modal-body">
-                    <input type="hidden" id="edit-id">
-                    <div class="mb-3 text-center" id="edit-img-container"></div>
-                    <div class="mb-3">
-                        <label class="form-label">ชื่อ:</label>
-                        <input type="text" id="edit-name" class="form-control">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">อีเมล:</label>
-                        <input type="email" id="edit-email" class="form-control">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">เปลี่ยนรูปภาพ (ถ้ามี):</label>
-                        <input type="file" id="edit-fileInput" class="form-control" accept="image/*">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
-                    <button type="button" id="btnUpdate" class="btn btn-success"
-                        onclick="updateData()">บันทึกการแก้ไข</button>
+                <div class="form-group" style="flex: 1;">
+                    <label>ราคาทุน (บาท)</label>
+                    <input type="number" id="price" placeholder="0.00" step="0.01" required>
                 </div>
             </div>
-        </div>
+
+            <div class="form-group">
+                <label>ชื่อผู้บันทึกข้อมูล</label>
+                <input type="text" id="userName" placeholder="ระบุชื่อพนักงาน" required>
+            </div>
+
+            <div class="form-group">
+                <label>อัปโหลดรูปภาพสินค้า</label>
+                <div class="upload-area" onclick="document.getElementById('myFile').click()">
+                    <span id="uploadLabel">📸 คลิกเพื่อเลือกรูปภาพ</span>
+                    <input type="file" id="myFile" accept="image/*" style="display: none;" required
+                        onchange="previewFile()">
+                    <img id="previewImg" src="" alt="Preview">
+                </div>
+            </div>
+
+            <button type="submit" id="submitBtn">บันทึกข้อมูลเข้าคลัง</button>
+        </form>
+
+        <div id="status"></div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
     <script>
-        // *** วาง URL ของ Web App ที่คุณ Deploy จาก Apps Script ตรงนี้ ***
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwDCu09iEjAU2f2NUPxitN_-G4uNW4dtbkmlF6QVEdNXOJoLUbIIpHe1SYE_H3l7UP4/exec";
-        let editModal;
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbziUDlptL6Mp1gFv0a8MoQSzgcbvh1AjJ0HN6ns6GCLWze-uiy-z64Tp-fE_uGWyPh2/exec";
 
-        document.addEventListener("DOMContentLoaded", () => {
-            editModal = new bootstrap.Modal(document.getElementById('editModal'));
-            loadData();
-        });
+        // ฟังก์ชัน Preview รูปภาพ
+        function previewFile() {
+            const preview = document.getElementById('previewImg');
+            const file = document.getElementById('myFile').files[0];
+            const label = document.getElementById('uploadLabel');
+            const reader = new FileReader();
 
-        function loadData() {
-            fetch(WEB_APP_URL)
-                .then(res => res.json())
-                .then(data => {
-                    let html = "";
-                    data.forEach(row => {
-                        // เช็คว่า row[3] มีข้อมูลหรือไม่ และไม่ใช่ค่าว่างหรือ "undefined"
-                        const hasImg = row[3] && row[3] !== "" && row[3] !== "undefined";
-                        const imgTag = hasImg
-                            ? `<img src="${row[3]}" class="img-preview" onerror="this.src='https://via.placeholder.com/50'">`
-                            : `<div class="avatar-placeholder">${row[1] ? row[1].charAt(0).toUpperCase() : '?'}</div>`;
+            reader.onloadend = function () {
+                preview.src = reader.result;
+                preview.style.display = "block";
+                label.style.display = "none";
+            }
 
-                        html += `<tr>
-                            <td><small class="text-muted">${row[0]}</small></td>
-                            <td>${imgTag}</td>
-                            <td>${row[1]}</td>
-                            <td>${row[2]}</td>
-                            <td class="text-center">
-                                <button class="btn btn-outline-warning btn-sm" onclick="openEditModal('${row[0]}','${row[1]}','${row[2]}','${row[3]}')">แก้ไข</button>
-                                <button class="btn btn-outline-danger btn-sm" onclick="deleteData('${row[0]}')">ลบ</button>
-                            </td>
-                        </tr>`;
+            if (file) {
+                reader.readAsDataURL(file);
+            } else {
+                preview.src = "";
+                preview.style.display = "none";
+                label.style.display = "block";
+            }
+        }
+
+        document.getElementById('stockForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const status = document.getElementById('status');
+            const file = document.getElementById('myFile').files[0];
+
+            btn.disabled = true;
+            status.style.color = "#2980b9";
+            status.innerHTML = `<div class="loader"></div> กำลังอัปโหลดข้อมูลและรูปภาพ...`;
+
+            const reader = new FileReader();
+            reader.onload = function () {
+                const base64Data = reader.result.split(',')[1];
+                const formData = new URLSearchParams();
+
+                formData.append('fileBase64', base64Data);
+                formData.append('fileName', file.name);
+                formData.append('mimeType', file.type);
+                formData.append('sku', document.getElementById('sku').value);
+                formData.append('description', document.getElementById('description').value);
+                formData.append('category', document.getElementById('category').value);
+                formData.append('quantity', document.getElementById('quantity').value);
+                formData.append('price', document.getElementById('price').value);
+                formData.append('userName', document.getElementById('userName').value);
+                formData.append('type', 'IN'); // ระบุว่าเป็นขาเข้า
+
+                fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: formData,
+                    mode: 'no-cors'
+                })
+                    .then(() => {
+                        status.style.color = "#27ae60";
+                        status.innerHTML = "✅ บันทึกสต็อกสินค้าเรียบร้อยแล้ว!";
+                        document.getElementById('stockForm').reset();
+                        document.getElementById('previewImg').style.display = "none";
+                        document.getElementById('uploadLabel').style.display = "block";
+                        btn.disabled = false;
+                    })
+                    .catch(error => {
+                        status.style.color = "#e74c3c";
+                        status.innerText = "❌ เกิดข้อผิดพลาด: " + error.message;
+                        btn.disabled = false;
                     });
-                    document.getElementById("table-body").innerHTML = html || '<tr><td colspan="5" class="text-center">ไม่มีข้อมูล</td></tr>';
-                });
-        }
-
-        async function sendPost(params) {
-            document.getElementById('loader').style.display = 'block';
-            document.getElementById('btnAdd').disabled = true;
-
-            const formData = new URLSearchParams();
-            for (const key in params) { formData.append(key, params[key]); }
-
-            try {
-                // ใช้ fetch แบบปกติ (Google Apps Script จะตอบกลับ 200 ถึงแม้จะติด CORS ในบางกรณี)
-                await fetch(WEB_APP_URL, {
-                    method: "POST",
-                    mode: "no-cors",
-                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                    body: formData.toString()
-                });
-
-                // รอสักครู่เพื่อให้ Script ฝั่ง Google ทำงานเสร็จ
-                setTimeout(() => {
-                    document.getElementById('loader').style.display = 'none';
-                    document.getElementById('btnAdd').disabled = false;
-                    loadData();
-                }, 2000);
-            } catch (e) {
-                console.error(e);
-                alert("เกิดข้อผิดพลาดในการส่งข้อมูล");
-                document.getElementById('loader').style.display = 'none';
-                document.getElementById('btnAdd').disabled = false;
-            }
-        }
-
-        function submitForm() {
-            const name = document.getElementById("name").value;
-            const email = document.getElementById("email").value;
-            const fileInput = document.getElementById("fileInput");
-            if (!name || !email) return alert("กรุณากรอกข้อมูลให้ครบ");
-
-            let payload = { action: "add", name: name, email: email };
-            if (fileInput.files.length > 0) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    payload.fileData = e.target.result.split(",")[1];
-                    payload.fileType = fileInput.files[0].type;
-                    sendPost(payload);
-                    clearForm();
-                };
-                reader.readAsDataURL(fileInput.files[0]);
-            } else {
-                sendPost(payload);
-                clearForm();
-            }
-        }
-
-        function clearForm() {
-            document.getElementById("name").value = "";
-            document.getElementById("email").value = "";
-            document.getElementById("fileInput").value = "";
-        }
-
-        function openEditModal(id, name, email, img) {
-            document.getElementById('edit-id').value = id;
-            document.getElementById('edit-name').value = name;
-            document.getElementById('edit-email').value = email;
-            const imgDisplay = (img && img !== "undefined") ? `<img src="${img}" class="img-preview mb-2" style="width:80px; height:80px;">` : "";
-            document.getElementById('edit-img-container').innerHTML = imgDisplay;
-            editModal.show();
-        }
-
-        function updateData() {
-            const id = document.getElementById('edit-id').value;
-            const name = document.getElementById('edit-name').value;
-            const email = document.getElementById('edit-email').value;
-            const fileInput = document.getElementById('edit-fileInput');
-
-            let payload = { action: "update", id, name, email };
-            if (fileInput.files.length > 0) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    payload.fileData = e.target.result.split(",")[1];
-                    payload.fileType = fileInput.files[0].type;
-                    sendPost(payload);
-                    fileInput.value = "";
-                    editModal.hide();
-                };
-                reader.readAsDataURL(fileInput.files[0]);
-            } else {
-                sendPost(payload);
-                editModal.hide();
-            }
-        }
-
-        function deleteData(id) {
-            if (!confirm("ยืนยันการลบข้อมูลนี้?")) return;
-            sendPost({ action: "delete", id: id });
-        }
-
-        function filterTable() {
-            const input = document.getElementById("searchInput").value.toUpperCase();
-            const tr = document.getElementById("table-body").getElementsByTagName("tr");
-            for (let i = 0; i < tr.length; i++) {
-                const tdName = tr[i].getElementsByTagName("td")[2];
-                const tdEmail = tr[i].getElementsByTagName("td")[3];
-                if (tdName || tdEmail) {
-                    const txtValue = (tdName.textContent || tdName.innerText) + (tdEmail.textContent || tdEmail.innerText);
-                    tr[i].style.display = txtValue.toUpperCase().indexOf(input) > -1 ? "" : "none";
-                }
-            }
-        }
+            };
+            reader.readAsDataURL(file);
+        });
     </script>
 </body>
 

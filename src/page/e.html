@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แก้ไขข้อมูลสินค้า - Premium</title>
+    <style>
+        :root {
+            --primary: #f39c12;
+            /* สีส้มสำหรับงานแก้ไข */
+            --primary-hover: #e67e22;
+            --bg: #f4f7f6;
+            --text: #2d3436;
+            --card-bg: #ffffff;
+            --border: #dfe6e9;
+        }
+
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 500px;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+            position: relative;
+        }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary), #e67e22);
+        }
+
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #636e72;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 15px;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        select:focus,
+        input:focus {
+            border-color: var(--primary);
+        }
+
+        .warning-box {
+            background: #fff9f0;
+            border-left: 4px solid var(--primary);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover:not(:disabled) {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background: #bdc3c7;
+        }
+
+        #status {
+            text-align: center;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        .loader {
+            width: 18px;
+            height: 18px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="card">
+        <h2>✏️ แก้ไขข้อมูลสินค้า</h2>
+
+        <div id="loadingView" style="text-align: center;">
+            <div class="loader"></div> กำลังโหลดข้อมูล...
+        </div>
+
+        <form id="editForm" style="display:none;">
+            <div class="form-group">
+                <label>เลือกสินค้าที่ต้องการแก้ไข</label>
+                <select id="skuSelect" required onchange="loadProductDetails()">
+                    <option value="">-- เลือก SKU --</option>
+                </select>
+            </div>
+
+            <div class="warning-box">
+                การแก้ไขนี้จะบันทึกข้อมูลใหม่ลงในระบบเพื่ออัปเดตรายละเอียดสินค้า
+            </div>
+
+            <div class="form-group">
+                <label>ชื่อสินค้า / รายละเอียดใหม่</label>
+                <input type="text" id="description" required>
+            </div>
+
+            <div class="form-group">
+                <label>หมวดหมู่</label>
+                <select id="category" required>
+                    <option value="เครื่องใช้ไฟฟ้า">เครื่องใช้ไฟฟ้า</option>
+                    <option value="ของใช้ในบ้าน">ของใช้ในบ้าน</option>
+                    <option value="อาหาร/เครื่องดื่ม">อาหาร/เครื่องดื่ม</option>
+                    <option value="อุปกรณ์สำนักงาน">อุปกรณ์สำนักงาน</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>ราคาทุนใหม่ (บาท)</label>
+                <input type="number" id="price" step="0.01" required>
+            </div>
+
+            <div class="form-group">
+                <label>ชื่อผู้แก้ไขข้อมูล</label>
+                <input type="text" id="userName" placeholder="ระบุชื่อของคุณ" required>
+            </div>
+
+            <button type="submit" id="submitBtn">บันทึกการเปลี่ยนแปลง</button>
+        </form>
+
+        <div id="status"></div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbziUDlptL6Mp1gFv0a8MoQSzgcbvh1AjJ0HN6ns6GCLWze-uiy-z64Tp-fE_uGWyPh2/exec";
+        let productMaster = {};
+
+        window.onload = async () => {
+            try {
+                const res = await fetch(SCRIPT_URL);
+                const data = await res.json();
+                const rows = data.fullData || data;
+
+                // เก็บข้อมูลล่าสุดของแต่ละ SKU
+                rows.forEach(row => {
+                    productMaster[row[1]] = {
+                        desc: row[4],
+                        cat: row[3],
+                        price: row[6]
+                    };
+                });
+
+                const select = document.getElementById('skuSelect');
+                for (let sku in productMaster) {
+                    let opt = document.createElement('option');
+                    opt.value = sku;
+                    opt.text = `[${sku}] ${productMaster[sku].desc}`;
+                    select.appendChild(opt);
+                }
+
+                document.getElementById('loadingView').style.display = 'none';
+                document.getElementById('editForm').style.display = 'block';
+            } catch (e) {
+                document.getElementById('status').innerText = "❌ โหลดข้อมูลไม่สำเร็จ";
+            }
+        };
+
+        function loadProductDetails() {
+            const sku = document.getElementById('skuSelect').value;
+            if (sku && productMaster[sku]) {
+                document.getElementById('description').value = productMaster[sku].desc;
+                document.getElementById('category').value = productMaster[sku].cat;
+                document.getElementById('price').value = productMaster[sku].price;
+            }
+        }
+
+        document.getElementById('editForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const status = document.getElementById('status');
+            btn.disabled = true;
+            status.innerHTML = `<div class="loader"></div> กำลังอัปเดต...`;
+
+            const formData = new URLSearchParams();
+            formData.append('type', 'EDIT'); // ส่ง Tag ไปบอกว่าเป็นงานแก้ไข
+            formData.append('sku', document.getElementById('skuSelect').value);
+            formData.append('description', document.getElementById('description').value);
+            formData.append('category', document.getElementById('category').value);
+            formData.append('price', document.getElementById('price').value);
+            formData.append('userName', document.getElementById('userName').value);
+            formData.append('quantity', 0); // การแก้ไขข้อมูลไม่ให้กระทบจำนวนสต็อก
+
+            fetch(SCRIPT_URL, { method: 'POST', body: formData, mode: 'no-cors' })
+                .then(() => {
+                    status.style.color = "#27ae60";
+                    status.innerText = "✅ อัปเดตข้อมูลสำเร็จ!";
+                    setTimeout(() => location.reload(), 2000);
+                })
+                .catch(() => {
+                    status.innerText = "❌ เกิดข้อผิดพลาด";
+                    btn.disabled = false;
+                });
+        });
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,329 @@
+ 
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Out System - Premium</title>
+    <style>
+        :root {
+            --primary: #e74c3c;
+            --primary-hover: #c0392b;
+            --bg: #f8f9fa;
+            --text: #2d3436;
+            --card-bg: #ffffff;
+            --border: #dfe6e9;
+            --success: #27ae60;
+        }
+
+        body {
+            font-family: 'Prompt', 'Segoe UI', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 450px;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary), #f39c12);
+        }
+
+        h2 {
+            margin-top: 0;
+            color: var(--text);
+            font-size: 24px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #636e72;
+        }
+
+        select,
+        input {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        select:focus,
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.1);
+        }
+
+        .info-box {
+            background: #fff8f7;
+            border: 1px dashed var(--primary);
+            padding: 15px;
+            border-radius: 12px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .stock-count {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+        }
+
+        button:hover:not(:disabled) {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+        }
+
+        button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        #status {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            min-height: 20px;
+        }
+
+        /* Loading Spinner */
+        .loader {
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="card">
+        <h2>📦 ตัดสต็อกสินค้า</h2>
+
+        <div id="loadingView" style="text-align: center; padding: 20px;">
+            <div class="loader"></div> กำลังดึงข้อมูลสต็อก...
+        </div>
+
+        <form id="outForm" class="hidden">
+            <div class="form-group">
+                <label>เลือกรายการสินค้า</label>
+                <select id="skuSelect" required onchange="onProductChange()">
+                    <option value="">-- ค้นหาหรือเลือกสินค้า --</option>
+                </select>
+            </div>
+
+            <div id="infoBox" class="info-box">
+                <div style="font-size: 13px; color: #7f8c8d;">รายละเอียดสินค้า:</div>
+                <div id="itemName" style="font-weight: 600; margin-bottom: 5px;">-</div>
+                <div style="font-size: 13px; color: #7f8c8d;">คงเหลือปัจจุบัน:</div>
+                <div id="stockVal" class="stock-count">0</div>
+            </div>
+
+            <div class="form-group">
+                <label>จำนวนที่ต้องการเบิก</label>
+                <input type="number" id="quantity" min="1" placeholder="0" required oninput="validateStock()">
+            </div>
+
+            <div class="form-group">
+                <label>ชื่อผู้เบิกสินค้า</label>
+                <input type="text" id="userName" placeholder="ระบุชื่อของคุณ" required>
+            </div>
+
+            <button type="submit" id="submitBtn">ยืนยันการเบิกสินค้า</button>
+        </form>
+
+        <p id="status"></p>
+    </div>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbziUDlptL6Mp1gFv0a8MoQSzgcbvh1AjJ0HN6ns6GCLWze-uiy-z64Tp-fE_uGWyPh2/exec";
+
+        let masterInventory = {};
+
+        // 1. โหลดข้อมูลสต็อกทั้งหมด
+        window.onload = async () => {
+            try {
+                const response = await fetch(SCRIPT_URL);
+                const data = await response.json();
+
+                // คำนวณยอดคงเหลือสุทธิ (รวมบวกและลบ)
+                const stockSummary = {};
+                const rows = data.fullData || data; // รองรับทั้งรูปแบบเก่าและใหม่
+
+                rows.forEach(row => {
+                    const sku = row[1];
+                    const qty = Number(row[5]) || 0;
+                    const desc = row[4];
+                    if (!stockSummary[sku]) {
+                        stockSummary[sku] = { balance: 0, description: desc };
+                    }
+                    stockSummary[sku].balance += qty;
+                });
+
+                masterInventory = stockSummary;
+                const select = document.getElementById('skuSelect');
+
+                // เติม Dropdown เฉพาะที่มีของในสต็อก (หรือแสดงทั้งหมด)
+                for (let sku in masterInventory) {
+                    const option = document.createElement('option');
+                    option.value = sku;
+                    option.text = `[${sku}] ${masterInventory[sku].description}`;
+                    select.appendChild(option);
+                }
+
+                document.getElementById('loadingView').classList.add('hidden');
+                document.getElementById('outForm').classList.remove('hidden');
+            } catch (err) {
+                document.getElementById('loadingView').innerHTML = "❌ โหลดข้อมูลไม่สำเร็จ กรุณาลองใหม่";
+            }
+        };
+
+        // 2. เมื่อเลือกสินค้า
+        function onProductChange() {
+            const sku = document.getElementById('skuSelect').value;
+            const infoBox = document.getElementById('infoBox');
+
+            if (sku && masterInventory[sku]) {
+                document.getElementById('itemName').innerText = masterInventory[sku].description;
+                document.getElementById('stockVal').innerText = masterInventory[sku].balance + " ชิ้น";
+                infoBox.style.display = 'block';
+                document.getElementById('quantity').value = ""; // รีเซ็ตจำนวน
+            } else {
+                infoBox.style.display = 'none';
+            }
+            validateStock();
+        }
+
+        // 3. ตรวจสอบว่าเบิกเกินสต็อกไหม
+        function validateStock() {
+            const sku = document.getElementById('skuSelect').value;
+            const inputQty = Number(document.getElementById('quantity').value);
+            const submitBtn = document.getElementById('submitBtn');
+            const status = document.getElementById('status');
+
+            if (sku && masterInventory[sku]) {
+                const currentBalance = masterInventory[sku].balance;
+
+                if (inputQty > currentBalance) {
+                    status.innerText = "❌ จำนวนที่เบิกเกินสต็อกที่มีอยู่!";
+                    status.style.color = "#e74c3c";
+                    submitBtn.disabled = true;
+                } else if (inputQty <= 0 && inputQty !== "") {
+                    submitBtn.disabled = true;
+                } else {
+                    status.innerText = "";
+                    submitBtn.disabled = false;
+                }
+            }
+        }
+
+        // 4. ส่งข้อมูล
+        document.getElementById('outForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const status = document.getElementById('status');
+
+            btn.disabled = true;
+            btn.innerHTML = `<div class="loader" style="border-top-color:white"></div> กำลังบันทึก...`;
+
+            const formData = new URLSearchParams();
+            formData.append('type', 'OUT');
+            formData.append('sku', document.getElementById('skuSelect').value);
+            formData.append('description', masterInventory[document.getElementById('skuSelect').value].description);
+            formData.append('quantity', document.getElementById('quantity').value);
+            formData.append('userName', document.getElementById('userName').value);
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: formData,
+                mode: 'no-cors'
+            })
+                .then(() => {
+                    status.innerText = "✅ บันทึกการเบิกสำเร็จ!";
+                    status.style.color = "#27ae60";
+                    document.getElementById('outForm').reset();
+                    document.getElementById('infoBox').style.display = 'none';
+                    setTimeout(() => location.reload(), 2000); // รีโหลดเพื่ออัปเดตยอดคงเหลือล่าสุด
+                })
+                .catch(err => {
+                    status.innerText = "❌ เกิดข้อผิดพลาด กรุณาลองใหม่";
+                    status.style.color = "#e74c3c";
+                    btn.disabled = false;
+                    btn.innerText = "ยืนยันการเบิกสินค้า";
+                });
+        });
+    </script>
+</body>
+
+</html>

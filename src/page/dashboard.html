@@ -1,0 +1,259 @@
+ !DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Stock Dashboard Pro</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            padding: 30px;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        h1 {
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* สรุปภาพรวม */
+        .summary-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .summary-card {
+            flex: 1;
+            min-width: 200px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border-bottom: 5px solid #3498db;
+        }
+
+        .summary-card h3 {
+            margin: 0;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        .summary-card p {
+            margin: 10px 0 0;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        /* ตัวกรองและค้นหา */
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .controls input,
+        .controls select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            flex: 1;
+        }
+
+        /* ตาราง */
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background-color: #3498db;
+            color: white;
+            padding: 15px;
+            text-align: left;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        tr:hover {
+            background-color: #f1f4f6;
+        }
+
+        .product-img {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 6px;
+            background: #eee;
+        }
+
+        .badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        .low-stock {
+            background: #ff7675;
+            color: white;
+        }
+
+        .in-stock {
+            background: #55efc4;
+            color: #00b894;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>📊 ระบบบริหารคลังสินค้าภาพรวม</h1>
+
+    <div id="summaryCards" class="summary-container">
+        <div class="summary-card">
+            <h3>รายการสินค้า</h3>
+            <p id="totalSkus">0</p>
+        </div>
+        <div class="summary-card">
+            <h3>จำนวนชิ้นรวม</h3>
+            <p id="totalQty">0</p>
+        </div>
+        <div class="summary-card" style="border-bottom-color: #27ae60;">
+            <h3>มูลค่าสต็อกรวม</h3>
+            <p id="totalValue">฿0</p>
+        </div>
+    </div>
+
+    <div class="controls">
+        <input type="text" id="searchInput" placeholder="🔍 ค้นหา SKU หรือชื่อสินค้า..." onkeyup="filterTable()">
+        <select id="categoryFilter" onchange="filterTable()">
+            <option value="">ทุกหมวดหมู่</option>
+        </select>
+    </div>
+
+    <div class="table-container">
+        <table id="stockTable">
+            <thead>
+                <tr>
+                   
+                    <th>SKU</th>
+                    <th>ชื่อสินค้า</th>
+                    <th>หมวดหมู่</th>
+                    <th>คงเหลือ</th>
+                    <th>ราคาทุนเฉลี่ย</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbziUDlptL6Mp1gFv0a8MoQSzgcbvh1AjJ0HN6ns6GCLWze-uiy-z64Tp-fE_uGWyPh2/exec";
+        let masterData = {}; // เก็บข้อมูลไว้สำหรับค้นหา
+
+        fetch(SCRIPT_URL)
+            .then(res => res.json())
+            .then(response => {
+                // ถ้า Apps Script ของคุณส่งกลับมาเป็น { fullData: [...] } ให้ใช้ response.fullData
+                const rows = Array.isArray(response) ? response : response.fullData;
+
+                let categories = new Set();
+                let totalValue = 0;
+                let totalQty = 0;
+
+                rows.forEach(row => {
+                    let sku = row[1];
+                    let cat = row[3];
+                    let desc = row[4];
+                    let qty = Number(row[5]);
+                    let price = Number(row[6]) || 0;
+                    let imgUrl = row[7] || "";
+
+                    if (!masterData[sku]) {
+                        masterData[sku] = { desc: desc, cat: cat, total: 0, price: price, img: imgUrl };
+                    }
+                    masterData[sku].total += qty;
+                    categories.add(cat);
+
+                    // คำนวณมูลค่า (เฉพาะรายการที่เป็นยอดบวก)
+                    if (qty > 0) totalValue += (qty * price);
+                });
+
+                // เติมหมวดหมู่ใน Dropdown
+                const catSelect = document.getElementById('categoryFilter');
+                categories.forEach(c => {
+                    if (c) catSelect.innerHTML += `<option value="${c}">${c}</option>`;
+                });
+
+                renderTable(masterData);
+
+                // อัปเดตการ์ดสรุป
+                document.getElementById('totalSkus').innerText = Object.keys(masterData).length;
+                totalQty = Object.values(masterData).reduce((a, b) => a + b.total, 0);
+                document.getElementById('totalQty').innerText = totalQty;
+                document.getElementById('totalValue').innerText = "฿" + totalValue.toLocaleString();
+            });
+
+        function renderTable(data) {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = "";
+
+            for (let sku in data) {
+                const item = data[sku];
+                // แปลงลิงก์ Drive ให้แสดงผลเป็นรูป (Direct Link)
+                const imgTag = item.img ? item.img.replace("view?usp=drivesdk", "uc?export=view&id=").replace("/file/d/", "/uc?id=").split('/view')[0] : "";
+
+                let row = `<tr>
+                     
+                    <td><strong>${sku}</strong></td>
+                    <td>${item.desc}</td>
+                    <td><span class="badge" style="background:#dfe6e9; color:#636e72;">${item.cat}</span></td>
+                    <td>
+                        <span class="badge ${item.total < 5 ? 'low-stock' : 'in-stock'}">
+                            ${item.total}
+                        </span>
+                    </td>
+                    <td>฿${item.price.toLocaleString()}</td>
+                </tr>`;
+                tbody.innerHTML += row;
+            }
+        }
+
+        function filterTable() {
+            const searchText = document.getElementById('searchInput').value.toLowerCase();
+            const catFilter = document.getElementById('categoryFilter').value;
+            const filtered = {};
+
+            for (let sku in masterData) {
+                const item = masterData[sku];
+                const matchesSearch = sku.toLowerCase().includes(searchText) || item.desc.toLowerCase().includes(searchText);
+                const matchesCat = catFilter === "" || item.cat === catFilter;
+
+                if (matchesSearch && matchesCat) {
+                    filtered[sku] = item;
+                }
+            }
+            renderTable(filtered);
+        }
+    </script>
+</body>
+
+</html>
