@@ -1,0 +1,223 @@
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JS Workshop Grid Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Kanit:wght@300;400&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #000000;
+            --card-bg: #111111;
+            --accent: #e2ff3d;
+            --border: rgba(255, 255, 255, 0.05);
+        }
+
+        body {
+            background-color: var(--bg);
+            color: #d1d1d1;
+            font-family: 'Inter', 'Kanit', sans-serif;
+            padding-bottom: 5rem;
+        }
+
+        /* สารบัญแบบมินิมอล */
+        .toc-box {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .toc-box a {
+            color: #888;
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-right: 15px;
+            display: inline-block;
+        }
+
+        .toc-box a:hover {
+            color: var(--accent);
+        }
+
+        /* ระบบ Grid สำหรับเรียงการ์ด */
+        .lesson-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            /* เรียง 2 คอลัมน์ */
+            gap: 25px;
+        }
+
+        /* ปรับเหลือ 1 คอลัมน์ในมือถือ */
+        @media (max-width: 992px) {
+            .lesson-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* สไตล์การ์ดตามรูปภาพ */
+        .lesson-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 2.5rem;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            transition: 0.3s;
+        }
+
+        .lesson-card:hover {
+            border-color: rgba(226, 255, 61, 0.2);
+            transform: translateY(-5px);
+        }
+
+        .lesson-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .lesson-no {
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-right: 12px;
+        }
+
+        .lesson-title {
+            color: #fff;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .lesson-line {
+            width: 40px;
+            height: 3px;
+            background: var(--accent);
+            margin-bottom: 1.5rem;
+            border-radius: 2px;
+        }
+
+        .lesson-desc {
+            color: #888;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+            min-height: 3em;
+        }
+
+        /* ส่วนแสดงโค้ด */
+        .code-box {
+            background: #23272e;
+            /* สีพื้นหลังเลียนแบบ Carbon/Code Editor */
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, 0.3);
+        }
+
+        .code-box iframe {
+            width: 100%;
+            height: 280px;
+            border: none;
+            display: block;
+        }
+
+        #raw-data {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container py-5">
+        <header class="mb-5">
+            <h1 class="text-white fw-bold">JavaScript Dashboard</h1>
+            <p class="text-muted">Workshop Modules - พื้นฐานภาษาโปรแกรม</p>
+        </header>
+
+        <div class="toc-box">
+            <h6 class="text-white mb-3">ข้ามไปยังบทเรียน:</h6>
+            <div id="toc-render"></div>
+        </div>
+
+        <div class="lesson-grid" id="render-area"></div>
+    </div>
+
+    <div id="raw-data">
+        <iframe
+            src="https://carbon.now.sh/embed?bg=rgba%28171%2C+184%2C+195%2C+1%29&t=seti&wt=none&l=javascript&width=555&ds=true&dsyoff=20px&dsblur=68px&wc=true&wa=false&pv=56px&ph=56px&ln=false&fl=1&fm=Hack&fs=14px&lh=133%25&si=false&es=2x&wm=false&code=%252F%252F%2520%25E0%25B8%259B%25E0%25B8%25A3%25E0%25B8%25B0%25E0%25B8%2581%25E0%25B8%25B2%25E0%25B8%25A8%2520%25E0%25B8%2595%25E0%25B8%25B1%25E0%25B8%25A7%25E0%25B9%2581%25E0%25B8%259B%25E0%25B8%25A3%2520%2520%250Avar%2520text_1%2520%253D%252010%253B%250Aconsole.log%28a%29%253B%2520%252F%252F%252010%2520%250A%2520%2520a%2520%253D%2520103%250Aconsole.log%28a%29%253B%2520%252F%252F%2520103%250A"
+            title="การประกาศตัวแปร" data-desc="การเก็บข้อมูลเบื้องต้นและกำหนดค่าให้กับตัวแปร">
+        </iframe>
+
+        <iframe
+            src="https://carbon.now.sh/embed?bg=rgba%28171%2C+184%2C+195%2C+1%29&t=seti&wt=none&l=javascript&width=555&ds=true&dsyoff=20px&dsblur=68px&wc=true&wa=false&pv=56px&ph=56px&ln=false&fl=1&fm=Hack&fs=14px&lh=133%25&si=false&es=2x&wm=false&code=%252F%252F%2520%2520%25E0%25B9%2581%25E0%25B8%25AA%25E0%25B8%2594%25E0%25B8%2587%25E0%25B8%259C%25E0%25B8%25A5%250Aconsole.log%28%2520%2520%2520%29%253B%2520%250A"
+            title="การแสดงผล (Output)"
+            data-desc="การใช้ console.log() เพื่อแสดงผลลัพธ์หรือข้อความในคอนโซลของเบราว์เซอร์">
+        </iframe>
+        <iframe
+            src="https://carbon.now.sh/embed?bg=rgba%28171%2C+184%2C+195%2C+1%29&t=seti&wt=none&l=javascript&width=555&ds=true&dsyoff=20px&dsblur=68px&wc=true&wa=false&pv=56px&ph=56px&ln=false&fl=1&fm=Hack&fs=14px&lh=133%25&si=false&es=2x&wm=false&code=%25E0%25B8%2581%25E0%25B8%25B2%25E0%25B8%25A3%25E0%25B8%259A%25E0%25B8%25A7%25E0%25B8%2581%2520%250Avar%2520a%2520%253D%252010%250Avar%2520b%2520%253D%252020%250Avar%2520c%2520%253D%2520a%2520%252B%2520b%250Aconsole.log%28c%29%253B%2520%252F%252F%252030%250A"
+            title="การบวกเลข (Addition)"
+            data-desc="การคำนวณพื้นฐานใน JavaScript โดยใช้เครื่องหมายบวก (+) เพื่อหาผลรวมของตัวแปรสองตัว">
+        </iframe>
+
+        <iframe
+            src="https://carbon.now.sh/embed?bg=rgba%28171%2C+184%2C+195%2C+1%29&t=seti&wt=none&l=javascript&width=555&ds=true&dsyoff=20px&dsblur=68px&wc=true&wa=false&pv=56px&ph=56px&ln=false&fl=1&fm=Hack&fs=14px&lh=133%25&si=false&es=2x&wm=false&code=%252F%252F%2520%25E0%25B8%2581%25E0%25B8%25B2%25E0%25B8%25A3%25E0%25B8%25A5%25E0%25B8%259B%250Avar%2520a%2520%253D%252010%250Avar%2520b%2520%253D%252020%250Avar%2520c%2520%253D%2520b%2520-%2520a%250Aconsole.log%28c%29%253B%2520%252F%252F%252010%250A"
+            title="การลบเลข (Subtraction)" data-desc="การใช้เครื่องหมายลบเพื่อหาผลต่างระหว่างตัวแปร">
+        </iframe>
+
+        <iframe
+            src="https://carbon.now.sh/embed?bg=rgba%28171%2C+184%2C+195%2C+1%29&t=seti&wt=none&l=javascript&width=555&ds=true&dsyoff=20px&dsblur=68px&wc=true&wa=false&pv=56px&ph=56px&ln=false&fl=1&fm=Hack&fs=14px&lh=133%25&si=false&es=2x&wm=false&code=%25E0%25B8%2581%25E0%25B8%25B2%25E0%25B8%25A3%25E0%25B8%2584%25E0%25B8%25B9%25E0%25B8%2593%2520%250Avar%2520g%2520%253D%25205%250Avar%2520y%2520%253D%25206%250Avar%2520aun%2520%253D%2520g%2520*%2520y%250Aconsole.log%28aun%29%253B%2520%252F%252F%2520%252030%250A"
+            title="การคูณเลข (Multiplication)" data-desc="การใช้เครื่องหมายคูณ (*) เพื่อหาผลคูณของตัวแปรสองตัว">
+        </iframe>
+
+
+
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const rawIframes = document.querySelectorAll('#raw-data iframe');
+            const renderArea = document.getElementById('render-area');
+            const tocRender = document.getElementById('toc-render');
+
+            rawIframes.forEach((ifr, index) => {
+                const title = ifr.getAttribute('title');
+                const desc = ifr.getAttribute('data-desc');
+                const src = ifr.getAttribute('src');
+                const id = `sec-${index}`;
+                const lessonNo = (index + 1).toString().padStart(2, '0');
+
+                // สร้างสารบัญ
+                const tocLink = document.createElement('a');
+                tocLink.href = `#${id}`;
+                tocLink.innerText = `${lessonNo}. ${title}`;
+                tocRender.appendChild(tocLink);
+
+                // สร้างการ์ดดีไซน์ตามรูป
+                const card = `
+                    <div class="lesson-card shadow-sm" id="${id}">
+                        <div class="lesson-header">
+                            <span class="lesson-no">${lessonNo}</span>
+                            <h2 class="lesson-title">${title}</h2>
+                        </div>
+                        <div class="lesson-line"></div>
+                        <p class="lesson-desc">${desc}</p>
+                        <div class="code-box">
+                            <iframe src="${src}" sandbox="allow-scripts allow-same-origin"></iframe>
+                        </div>
+                    </div>
+                `;
+                renderArea.insertAdjacentHTML('beforeend', card);
+            });
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
