@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <title>ประวัติรายการ - History</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+</head>
+
+<body class="bg-gray-50 p-8">
+    <div class="max-w-5xl mx-auto">
+        <div class="flex justify-between mb-6">
+            <h1 class="text-2xl font-bold">📜 ประวัติการเบิก-รับเข้า</h1>
+            <button id="exp" class="bg-green-600 text-white px-4 py-2 rounded">Export Excel</button>
+        </div>
+        <table class="w-full bg-white rounded shadow">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="p-3">เวลา</th>
+                    <th class="p-3">สินค้า</th>
+                    <th class="p-3">ประเภท</th>
+                    <th class="p-3">จำนวน</th>
+                </tr>
+            </thead>
+            <tbody id="logs"></tbody>
+        </table>
+    </div>
+
+    <script type="module">
+        import { db } from './firebase-config.js';
+        import { collection, query, orderBy, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+        // แสดงผล Real-time
+        onSnapshot(query(collection(db, "transactions"), orderBy("timestamp", "desc")), snap => {
+            document.getElementById('logs').innerHTML = snap.docs.map(doc => {
+                const d = doc.data();
+                return `<tr class="border-b">
+                    <td class="p-3">${d.timestamp?.toDate().toLocaleString('th-TH')}</td>
+                    <td class="p-3">${d.ingredientName}</td>
+                    <td class="p-3 text-center ${d.type === 'in' ? 'text-green-600' : 'text-red-600'}">${d.type === 'in' ? 'รับเข้า' : 'เบิก'}</td>
+                    <td class="p-3 text-right">${d.amount}</td>
+                </tr>`;
+            }).join('');
+        });
+
+        // ฟังก์ชัน Export
+        document.getElementById('exp').onclick = async () => {
+            const snap = await getDocs(collection(db, "transactions"));
+            const data = snap.docs.map(d => ({
+                "เวลา": d.data().timestamp?.toDate().toLocaleString(),
+                "สินค้า": d.data().ingredientName,
+                "ประเภท": d.data().type,
+                "จำนวน": d.data().amount
+            }));
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Logs");
+            XLSX.writeFile(wb, "history.xlsx");
+        };
+    </script>
+</body>
+
+</html>

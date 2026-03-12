@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <title>เบิกสินค้า - Withdraw</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-50">
+    <div class="p-8 max-w-lg mx-auto bg-white mt-10 rounded-xl shadow">
+        <h2 class="text-xl font-bold mb-4">📤 เบิกวัตถุดิบ</h2>
+        <select id="sel" class="w-full p-2 border rounded mb-4"></select>
+        <input type="number" id="amt" placeholder="จำนวนที่เบิก" class="w-full p-2 border rounded mb-4">
+        <button id="btn" class="w-full bg-orange-500 text-white py-2 rounded font-bold">ยืนยันการเบิก</button>
+        <p class="mt-4 text-center text-blue-600"><a href="index.html">← กลับหน้าหลัก</a></p>
+    </div>
+
+    <script type="module">
+        import { db } from './firebase-config.js';
+        import { collection, onSnapshot, doc, updateDoc, increment, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+        const sel = document.getElementById('sel');
+        let names = {};
+
+        onSnapshot(collection(db, "ingredients"), snap => {
+            sel.innerHTML = snap.docs.map(d => {
+                names[d.id] = d.data().name;
+                return `<option value="${d.id}">${d.data().name}</option>`;
+            }).join('');
+        });
+
+        document.getElementById('btn').onclick = async () => {
+            const id = sel.value;
+            const a = parseFloat(document.getElementById('amt').value);
+            if (!id || isNaN(a)) return;
+
+            await updateDoc(doc(db, "ingredients", id), { quantity: increment(-a) });
+            await addDoc(collection(db, "transactions"), {
+                ingredientName: names[id],
+                type: 'out',
+                amount: a,
+                timestamp: serverTimestamp()
+            });
+            alert("เบิกสำเร็จ!");
+        };
+    </script>
+</body>
+
+</html>

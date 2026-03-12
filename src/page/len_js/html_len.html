@@ -1,0 +1,204 @@
+ <html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Refined JS Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Kanit:wght@300;400&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --accent: #e2ff3d;
+            --border: rgba(255, 255, 255, 0.1);
+            --card-bg: #111;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: #d1d1d1;
+            font-family: 'Inter', 'Kanit', sans-serif;
+            font-size: 14px;
+        }
+
+        /* Sidebar สไตล์เรียบหรู */
+        .sidebar {
+            position: sticky;
+            top: 2rem;
+            height: calc(100vh - 4rem);
+            border-right: 1px solid var(--border);
+            padding-right: 1.5rem;
+        }
+
+        .nav-link {
+            color: #666;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--accent);
+            background: rgba(226, 255, 61, 0.05);
+        }
+
+        /* Lesson Card แบบเน้นสมส่วน */
+        .lesson-card {
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            background: var(--card-bg);
+            margin-bottom: 2rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            /* สำหรับมือถือ */
+        }
+
+        @media (min-width: 992px) {
+            .lesson-card {
+                flex-direction: row;
+                /* สำหรับจอคอม: ซ้ายเนื้อหา ขวาโค้ด */
+                min-height: 280px;
+            }
+        }
+
+        .lesson-content {
+            padding: 2rem;
+            flex: 1;
+            border-bottom: 1px solid var(--border);
+        }
+
+        @media (min-width: 992px) {
+            .lesson-content {
+                border-bottom: none;
+                border-right: 1px solid var(--border);
+                max-width: 40%;
+            }
+        }
+
+        .lesson-visual {
+            background: #000;
+            flex: 1.5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .lesson-visual iframe {
+            width: 100%;
+            height: 100%;
+            max-height: 250px;
+            border: none;
+        }
+
+        .tag {
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        h2 {
+            color: #fff;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            line-height: 1.6;
+            color: #888;
+        }
+
+        #raw-data {
+            display: none;
+        }
+    </style>
+</head>
+
+<body data-bs-spy="scroll" data-bs-target="#auto-nav">
+
+    <div class="container py-5">
+        <div class="row g-5">
+            <div class="col-lg-2 d-none d-lg-block">
+                <div class="sidebar">
+                    <div class="mb-4 text-white fw-bold" style="letter-spacing: 2px;">JS.CORE</div>
+                    <nav class="nav flex-column" id="auto-nav"></nav>
+                </div>
+            </div>
+
+            <div class="col-lg-10">
+                <header class="mb-5">
+                    <h4 class="text-white fw-bold">Workshop Modules</h4>
+                    <div style="width: 40px; height: 3px; background: var(--accent);"></div>
+                </header>
+
+                <div id="render-area"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="raw-data">
+
+
+        <iframe
+            src="https://carbon.now.sh/embed?bg=rgba%28171%2C+184%2C+195%2C+1%29&t=seti&wt=none&l=javascript&width=555&ds=true&dsyoff=20px&dsblur=68px&wc=true&wa=false&pv=56px&ph=56px&ln=false&fl=1&fm=Hack&fs=14px&lh=133%25&si=false&es=2x&wm=false&code=%252F%252F%2520%25E0%25B8%259B%25E0%25B8%25A3%25E0%25B8%25B0%25E0%25B8%2581%25E0%25B8%25B2%25E0%25B8%25A8%2520%25E0%25B8%2595%25E0%25B8%25B1%25E0%25B8%25A7%25E0%25B9%2581%25E0%25B8%259B%25E0%25B8%25A3%2520%2520%250Avar%2520text_1%2520%253D%252010%253B%250Aconsole.log%28a%29%253B%2520%2520%252F%252F%252010%2520%250A%2520%2520a%2520%253D%2520103%250Aconsole.log%28a%29%253B%2520%252F%252F%2520103%250A"
+            style="width: 755px; height: 598px; border:0; transform: scale(1); overflow:hidden;"
+            sandbox="allow-scripts allow-same-origin" title=" " data-desc=" ">
+        </iframe>
+
+        <iframe
+            src="https://carbon.now.sh/embed?bg=rgba%28171%2C+184%2C+195%2C+1%29&t=seti&wt=none&l=javascript&width=555&ds=true&dsyoff=20px&dsblur=68px&wc=true&wa=false&pv=56px&ph=56px&ln=false&fl=1&fm=Hack&fs=14px&lh=133%25&si=false&es=2x&wm=false&code=%252F%252F%2520%2520%25E0%25B9%2581%25E0%25B8%25AA%25E0%25B8%2594%25E0%25B8%2587%25E0%25B8%259C%25E0%25B8%25A5%250Aconsole.log%28%2520%2520%2520%29%253B%2520%250A"
+            style="width: 555px; height: 242px; border:0; transform: scale(1); overflow:hidden;"
+            sandbox="allow-scripts allow-same-origin" title=" " data-desc=" ">
+        </iframe>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const rawIframes = document.querySelectorAll('#raw-data iframe');
+            const navContainer = document.getElementById('auto-nav');
+            const renderArea = document.getElementById('render-area');
+
+            rawIframes.forEach((ifr, index) => {
+                const title = ifr.getAttribute('title');
+                const desc = ifr.getAttribute('data-desc');
+                const src = ifr.getAttribute('src');
+                const id = `sec-${index}`;
+
+                // Nav Link
+                const link = document.createElement('a');
+                link.className = "nav-link mb-2";
+                link.href = `#${id}`;
+                link.innerText = title;
+                navContainer.appendChild(link);
+
+                // Balanced Card
+                const card = `
+                    <div class="lesson-card shadow-sm" id="${id}">
+                        <div class="lesson-content">
+                            <span class="tag">Lesson 0${index + 1}</span>
+                            <h2>${title}</h2>
+                            <p>${desc}</p>
+                        </div>
+                        <div class="lesson-visual">
+                            <iframe src="${src}" sandbox="allow-scripts allow-same-origin"></iframe>
+                        </div>
+                    </div>
+                `;
+                renderArea.insertAdjacentHTML('beforeend', card);
+            });
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
