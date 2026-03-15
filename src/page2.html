@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="th" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เที่ยวเกาะเสม็ด 2026 - SAMET CHILL BY NuiNuii</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Kanit', sans-serif;
+        }
+
+        .hero-bg {
+            background: linear-gradient(rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.6)),
+                url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        .gradient-blue {
+            background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
+        }
+
+        .nav-link {
+            position: relative;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background-color: #2563eb;
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+
+        @keyframes floating {
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        .star-rating input:checked~label {
+            color: #facc15;
+        }
+
+        .star-rating label:hover,
+        .star-rating label:hover~label {
+            color: #facc15;
+        }
+
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 text-slate-900 leading-relaxed">
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-[100] transition-all duration-300 bg-white/80 backdrop-blur-md border-b border-slate-200"
+        id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-20 items-center">
+                <div class="flex-shrink-0 flex items-center gap-2">
+                    <div
+                        class="w-10 h-10 gradient-blue rounded-xl flex items-center justify-center text-white shadow-lg">
+                        <i data-lucide="palmtree"></i>
+                    </div>
+                    <span class="text-xl font-bold tracking-tighter text-slate-900 md:text-2xl uppercase">SAMET <span
+                            class="text-blue-600">CHILL</span></span>
+                </div>
+
+                <div class="hidden lg:flex space-x-8 text-sm font-semibold uppercase tracking-wide">
+                    <a href="#home" class="nav-link text-slate-600 hover:text-blue-600 transition">หน้าแรก</a>
+                    <a href="#about" class="nav-link text-slate-600 hover:text-blue-600 transition">รู้จักคุณนุ้ย</a>
+                    <a href="#spots" class="nav-link text-slate-600 hover:text-blue-600 transition">ที่เที่ยว</a>
+                    <a href="#credits" class="nav-link text-slate-600 hover:text-blue-600 transition">ภาพเครดิต</a>
+                    <a href="#packages" class="nav-link text-slate-600 hover:text-blue-600 transition">บริการ</a>
+                    <a href="#reviews"
+                        class="nav-link text-blue-600 font-bold hover:text-blue-700 transition">รีวิวจากลูกค้า</a>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <a href="https://line.me/ti/p/dEgqXWwuP3" target="_blank"
+                        class="gradient-blue text-white px-6 py-2.5 rounded-full font-bold shadow-lg hover:shadow-blue-200 transition-all hover:scale-105 flex items-center gap-2">
+                        <i data-lucide="message-circle" class="w-5 h-5"></i>
+                        <span class="hidden sm:inline">ติดต่อสอบถาม</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header id="home" class="hero-bg min-h-[85vh] flex items-center justify-center pt-20 px-4 text-center">
+        <div class="max-w-4xl">
+            <div
+                class="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-4 py-2 rounded-full text-white text-sm mb-6 border border-white/30 floating">
+                <span class="flex h-2 w-2 rounded-full bg-blue-400 animate-ping"></span>
+                ทริปเกาะเสม็ดสุดพิเศษ โดยเอเจนท์ที่เชื่อถือได้
+            </div>
+            <h1 class="text-5xl md:text-8xl font-bold text-white mb-8 drop-shadow-2xl leading-tight">
+                เที่ยวเสม็ด <br><span class="text-blue-400 text-6xl md:text-8xl">By NuiNuii</span>
+            </h1>
+            <p class="text-lg md:text-2xl text-blue-50 mb-10 max-w-2xl mx-auto font-light drop-shadow-md">
+                บริการจองที่พักและเรือสปีดโบ๊ทราคาพิเศษ ทักสอบถามเช็คห้องว่างและรอบเรือได้ตลอด 24 ชม. ค่ะ
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="#credits"
+                    class="bg-blue-500 text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-blue-400 transition shadow-xl flex items-center justify-center gap-2">
+                    <i data-lucide="camera" class="w-5 h-5"></i>
+                    ดูรีวิวและเครดิตงาน
+                </a>
+                <a href="https://line.me/ti/p/dEgqXWwuP3" target="_blank"
+                    class="bg-white/10 backdrop-blur-md text-white border border-white/40 px-10 py-4 rounded-full font-bold text-lg hover:bg-white/20 transition shadow-xl">
+                    ทักแชทสอบถาม
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Trust & Safety Bar -->
+    <section class="bg-white border-b border-slate-100 py-6">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex flex-wrap justify-center items-center gap-8 md:gap-16 text-slate-500">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="heart" class="w-5 h-5 text-blue-600"></i>
+                    <span class="text-xs md:text-sm font-semibold uppercase tracking-wider">ดูแลด้วยใจทุกเคส</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <i data-lucide="history" class="w-5 h-5 text-blue-600"></i>
+                    <span class="text-xs md:text-sm font-semibold uppercase tracking-wider">ประสบการณ์กว่า 5 ปี</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <i data-lucide="user-check" class="w-5 h-5 text-blue-600"></i>
+                    <span class="text-xs md:text-sm font-semibold uppercase tracking-wider">คุณนุ้ยตอบแชทเอง</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <i data-lucide="thumbs-up" class="w-5 h-5 text-blue-600"></i>
+                    <span class="text-xs md:text-sm font-semibold uppercase tracking-wider">รีวิวจากลูกค้าจริง</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- New Spots Section: Must-Visit -->
+    <section id="spots" class="py-16 bg-white overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-end mb-8 px-2">
+                <div>
+                    <h2 class="text-2xl md:text-3xl font-bold text-slate-900">จุดเช็คอินห้ามพลาด</h2>
+                    <p class="text-slate-500 text-sm mt-1">คัดมาให้แล้ว ทริปนี้ต้องไปให้ครบ!</p>
+                </div>
+                <div class="hidden md:flex gap-2">
+                    <button class="p-2 border border-slate-200 rounded-full hover:bg-slate-50 transition"><i
+                            data-lucide="chevron-left" class="w-5 h-5"></i></button>
+                    <button class="p-2 border border-slate-200 rounded-full hover:bg-slate-50 transition"><i
+                            data-lucide="chevron-right" class="w-5 h-5"></i></button>
+                </div>
+            </div>
+
+            <div class="flex gap-4 overflow-x-auto no-scrollbar pb-6 px-2 snap-x">
+                <!-- Spot 1: Sai Kaew Beach -->
+                <div class="min-w-[280px] md:min-w-[320px] snap-start">
+                    <div class="relative h-48 rounded-2xl overflow-hidden shadow-sm group">
+                        <img src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=600&q=80"
+                            class="w-full h-full object-cover group-hover:scale-110 transition duration-500"
+                            alt="หาดทรายแก้ว เกาะเสม็ด">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        <div class="absolute bottom-4 left-4 text-white">
+                            <h4 class="font-bold text-lg">หาดทรายแก้ว</h4>
+                            <p class="text-xs text-white/80">หาดสวย น้ำใส ยอดฮิตที่สุด</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Spot 2: Ao Prao -->
+                <div class="min-w-[280px] md:min-w-[320px] snap-start">
+                    <div class="relative h-48 rounded-2xl overflow-hidden shadow-sm group">
+                        <img src="https://images.unsplash.com/photo-1506929197321-4623176a912d?auto=format&fit=crop&w=600&q=80"
+                            class="w-full h-full object-cover group-hover:scale-110 transition duration-500"
+                            alt="อ่าวพร้าว เกาะเสม็ด">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        <div class="absolute bottom-4 left-4 text-white">
+                            <h4 class="font-bold text-lg">อ่าวพร้าว</h4>
+                            <p class="text-xs text-white/80">จุดชมพระอาทิตย์ตกที่สวยที่สุด</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Spot 3: Ao Wong Deuan -->
+                <div class="min-w-[280px] md:min-w-[320px] snap-start">
+                    <div class="relative h-48 rounded-2xl overflow-hidden shadow-sm group">
+                        <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80"
+                            class="w-full h-full object-cover group-hover:scale-110 transition duration-500"
+                            alt="อ่าววงเดือน เกาะเสม็ด">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        <div class="absolute bottom-4 left-4 text-white">
+                            <h4 class="font-bold text-lg">อ่าววงเดือน</h4>
+                            <p class="text-xs text-white/80">โค้งหาดรูปพระจันทร์เสี้ยว</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Spot 4: Mermaid Statue / Ao Nual -->
+                <div class="min-w-[280px] md:min-w-[320px] snap-start">
+                    <div class="relative h-48 rounded-2xl overflow-hidden shadow-sm group">
+                        <img src="https://images.unsplash.com/photo-1589394815804-964ed962eb33?auto=format&fit=crop&w=600&q=80"
+                            class="w-full h-full object-cover group-hover:scale-110 transition duration-500"
+                            alt="อ่าวนวล เกาะเสม็ด">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        <div class="absolute bottom-4 left-4 text-white">
+                            <h4 class="font-bold text-lg">อ่าวนวล</h4>
+                            <p class="text-xs text-white/80">เงียบสงบ สำหรับสายชิลล์จริง</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Credit Gallery Section -->
+    <section id="credits" class="py-24 bg-slate-50 relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 relative z-10">
+            <div class="text-center mb-16">
+                <h2 class="text-slate-500 font-bold tracking-[0.2em] uppercase text-sm mb-4">Transparency & Trust</h2>
+                <h3 class="text-4xl md:text-5xl font-bold text-slate-900 mb-6">เครดิตการจองล่าสุด</h3>
+                <p class="text-slate-600 max-w-2xl mx-auto">หลักฐานการส่งงานและภาพบรรยากาศจริงจากหน้างาน
+                    เพื่อความมั่นใจของลูกค้าทุกท่าน</p>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="aspect-square rounded-2xl overflow-hidden bg-slate-100 group relative shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1559136555-9303baea8ebd?auto=format&fit=crop&w=400&q=80"
+                        class="w-full h-full object-cover transition duration-500 group-hover:scale-110"
+                        alt="รีวิวลูกค้าเกาะเสม็ด">
+                </div>
+                <div class="aspect-square rounded-2xl overflow-hidden bg-slate-100 group relative shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?auto=format&fit=crop&w=400&q=80"
+                        class="w-full h-full object-cover transition duration-500 group-hover:scale-110"
+                        alt="จองเรือสปีดโบ๊ท">
+                </div>
+                <div class="aspect-square rounded-2xl overflow-hidden bg-slate-100 group relative shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1540553016722-983e48a2cd10?auto=format&fit=crop&w=400&q=80"
+                        class="w-full h-full object-cover transition duration-500 group-hover:scale-110"
+                        alt="บรรยากาศเกาะเสม็ด">
+                </div>
+                <a href="https://line.me/ti/p/dEgqXWwuP3" target="_blank"
+                    class="aspect-square rounded-2xl overflow-hidden bg-blue-600 flex flex-col items-center justify-center text-white p-4 text-center cursor-pointer hover:bg-blue-700 transition shadow-lg text-sm">
+                    <i data-lucide="image" class="w-8 h-8 mb-2"></i>
+                    <span class="font-bold uppercase leading-tight">ดูเครดิตทั้งหมด<br>ใน LINE</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-20 bg-white">
+        <div class="max-w-5xl mx-auto px-4 flex flex-col md:flex-row items-center gap-12">
+            <div class="w-64 h-80 flex-shrink-0 relative">
+                <img src="https://img2.pic.in.th/526744963_24113075615024203_8504359285801527345_n.jpg"
+                    class="w-full h-full object-cover rounded-3xl shadow-2xl border-4 border-white"
+                    alt="คุณนุ้ย เอเจนท์เกาะเสม็ด">
+                <div class="absolute -bottom-4 -right-4 bg-white p-3 rounded-xl shadow-lg border border-blue-100">
+                    <i data-lucide="check-circle" class="text-green-500 w-8 h-8"></i>
+                </div>
+            </div>
+            <div>
+                <h3 class="text-3xl font-bold mb-4">ดูแลโดย "คุณนุ้ย" พีรดา เพรียบพร้อม</h3>
+                <p class="text-slate-600 mb-6 leading-relaxed text-lg font-light">
+                    สวัสดีค่ะ นุ้ยพร้อมดูแลทุกทริปที่เกาะเสม็ดให้เป็นเรื่องง่ายสำหรับคุณค่ะ
+                    ไม่ว่าจะเป็นทริปครอบครัว คู่รัก หรือหมู่คณะ นุ้ยมีที่พักและบริการเรือสปีดโบ๊ทที่คัดสรรมาอย่างดี
+                    รับประกันความปลอดภัยและการบริการที่ตรงไปตรงมาค่ะ
+                </p>
+                <a href="https://line.me/ti/p/dEgqXWwuP3" target="_blank"
+                    class="inline-flex items-center gap-3 bg-blue-600 text-white px-8 py-3 rounded-full font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-200">
+                    คุยสอบถามกับคุณนุ้ย
+                    <i data-lucide="message-square" class="w-4 h-4"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services -->
+    <section id="packages" class="py-24 bg-slate-50">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <h2 class="text-4xl font-bold mb-16">บริการยอดนิยม</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div
+                    class="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl transition flex flex-col items-center">
+                    <div class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mb-6 text-blue-600">
+                        <i data-lucide="ship" class="w-8 h-8"></i>
+                    </div>
+                    <h4 class="text-xl font-bold mb-4">สปีดโบ๊ทไป-กลับ</h4>
+                    <p class="text-slate-500 text-sm mb-6 flex-grow">เรือเร็วข้ามฟากจากท่าเรือเพ ถึงหน้าหาดเกาะเสม็ด
+                        รวดเร็ว ปลอดภัย</p>
+                    <a href="https://line.me/ti/p/dEgqXWwuP3" target="_blank"
+                        class="text-blue-600 font-bold text-sm">สอบถามราคาเรือ &rsaquo;</a>
+                </div>
+                <div
+                    class="bg-white p-8 rounded-3xl border border-blue-100 shadow-sm hover:shadow-xl transition relative overflow-hidden flex flex-col items-center">
+                    <div
+                        class="absolute top-0 right-0 bg-blue-600 text-white px-4 py-1 rounded-bl-xl text-[10px] font-bold uppercase tracking-widest">
+                        Hot</div>
+                    <div
+                        class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mb-6 text-white shadow-lg">
+                        <i data-lucide="anchor" class="w-8 h-8"></i>
+                    </div>
+                    <h4 class="text-xl font-bold mb-4">เหมาเรือส่วนตัว</h4>
+                    <p class="text-slate-500 text-sm mb-6 flex-grow">เที่ยวแบบ Exclusive ไม่ปนกับใคร
+                        เลือกเวลาเดินทางและจุดลงเรือได้เอง</p>
+                    <a href="https://line.me/ti/p/dEgqXWwuP3" target="_blank"
+                        class="text-blue-600 font-bold text-sm">จองเรือส่วนตัว &rsaquo;</a>
+                </div>
+                <div
+                    class="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl transition flex flex-col items-center">
+                    <div class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mb-6 text-blue-600">
+                        <i data-lucide="waves" class="w-8 h-8"></i>
+                    </div>
+                    <h4 class="text-xl font-bold mb-4">ทัวร์ดำน้ำ / ตกหมึก</h4>
+                    <p class="text-slate-500 text-sm mb-6 flex-grow">กิจกรรมดำน้ำชมปะการังรอบเกาะ
+                        พร้อมอุปกรณ์และถ่ายภาพใต้น้ำฟรี</p>
+                    <a href="https://line.me/ti/p/dEgqXWwuP3" target="_blank"
+                        class="text-blue-600 font-bold text-sm">สอบถามโปรแกรมทัวร์ &rsaquo;</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Reviews Section -->
+    <section id="reviews" class="py-24 bg-white overflow-hidden">
+        <div class="max-w-5xl mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">เสียงตอบรับจากลูกค้า</h2>
+                <div class="flex items-center justify-center gap-2 mb-4">
+                    <div class="flex text-yellow-400">
+                        <i data-lucide="star" class="fill-current w-6 h-6"></i>
+                        <i data-lucide="star" class="fill-current w-6 h-6"></i>
+                        <i data-lucide="star" class="fill-current w-6 h-6"></i>
+                        <i data-lucide="star" class="fill-current w-6 h-6"></i>
+                        <i data-lucide="star" class="fill-current w-6 h-6"></i>
+                    </div>
+                    <span class="text-xl font-bold text-slate-700">4.9 / 5.0</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
+                <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold text-sm">
+                                K</div>
+                            <div>
+                                <h5 class="font-bold text-slate-900 text-sm">คุณกนกวรรณ</h5>
+                                <p class="text-[10px] text-slate-400">จองเรือสปีดโบ๊ทและที่พัก</p>
+                            </div>
+                        </div>
+                        <div class="flex text-yellow-400">
+                            <i data-lucide="star" class="fill-current w-3 h-3"></i>
+                            <i data-lucide="star" class="fill-current w-3 h-3"></i>
+                            <i data-lucide="star" class="fill-current w-3 h-3"></i>
+                            <i data-lucide="star" class="fill-current w-3 h-3"></i>
+                            <i data-lucide="star" class="fill-current w-3 h-3"></i>
+                        </div>
+                    </div>
+                    <p class="text-slate-600 text-sm leading-relaxed">
+                        บริการดีมากค่ะ คุณนุ้ยแนะนำที่พักได้ถูกใจสุดๆ จองเรือสปีดโบ๊ทก็สะดวกมาก
+                        ไปถึงท่าเรือไม่ต้องรอนานเลย ประทับใจจริงๆ ค่ะ
+                    </p>
+                </div>
+
+                <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 font-bold text-sm">
+                                T</div>
+                            <div>
+                                <h5 class="font-bold text-slate-900 text-sm">คุณธนพล</h5>
+                                <p class="text-[10px] text-slate-400">เหมาเรือส่วนตัว</p>
+                            </div>
+                        </div>
+                        <div class="flex text-yellow-400">
+                            <i data-lucide="star" class="fill-current w-3 h-3"></i>
+                            <i data-lucide="star" class="fill-current w-3 h-3"></i>
+                            <i data-lucide="star" class="fill-current w-3 h-3"></i>
+                            <i data-lucide="star" class="fill-current w-3 h-3"></i>
+                            <i data-lucide="star" class="fill-current w-3 h-3"></i>
+                        </div>
+                    </div>
+                    <p class="text-slate-600 text-sm leading-relaxed">
+                        เรือใหม่และสะอาดมากครับ คนขับสุภาพ บริการประทับใจตั้งแต่เริ่มคุยกับคุณนุ้ยจนจบทริปเลยครับ
+                        แนะนำเลยครับ
+                    </p>
+                </div>
+            </div>
+
+            <!-- Write a Review Form -->
+            <div class="max-w-2xl mx-auto bg-slate-50 rounded-[2.5rem] p-8 md:p-10 border border-slate-100 shadow-sm">
+                <div class="text-center mb-8">
+                    <h4 class="text-2xl font-bold text-slate-900 mb-2 text-gradient uppercase">Share Your Experience
+                    </h4>
+                    <p class="text-slate-500 text-sm italic">"แบ่งปันความประทับใจของคุณ"</p>
+                </div>
+
+                <form id="reviewForm" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label
+                                class="block text-[10px] font-bold text-slate-400 uppercase mb-2 ml-1">ชื่อของคุณ</label>
+                            <input type="text" placeholder="ระบุชื่อ..."
+                                class="w-full px-5 py-3 rounded-2xl bg-white border border-slate-200 focus:border-blue-400 focus:ring-4 focus:ring-blue-100 transition outline-none text-sm">
+                        </div>
+                        <div>
+                            <label
+                                class="block text-[10px] font-bold text-slate-400 uppercase mb-2 ml-1">บริการที่เลือก</label>
+                            <select
+                                class="w-full px-5 py-3 rounded-2xl bg-white border border-slate-200 focus:border-blue-400 focus:ring-4 focus:ring-blue-100 transition outline-none text-sm appearance-none cursor-pointer">
+                                <option>จองที่พัก</option>
+                                <option>เรือสปีดโบ๊ทไป-กลับ</option>
+                                <option>เหมาเรือส่วนตัว</option>
+                                <option>ทัวร์ดำน้ำ / ตกหมึก</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="text-center">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-3 tracking-widest">Rate
+                            us</label>
+                        <div class="flex flex-row-reverse justify-center gap-2 star-rating">
+                            <input type="radio" id="star5" name="rating" value="5" class="hidden" checked><label
+                                for="star5" class="cursor-pointer text-slate-300 transition-colors"><i
+                                    data-lucide="star" class="fill-current w-8 h-8"></i></label>
+                            <input type="radio" id="star4" name="rating" value="4" class="hidden"><label for="star4"
+                                class="cursor-pointer text-slate-300 transition-colors"><i data-lucide="star"
+                                    class="fill-current w-8 h-8"></i></label>
+                            <input type="radio" id="star3" name="rating" value="3" class="hidden"><label for="star3"
+                                class="cursor-pointer text-slate-300 transition-colors"><i data-lucide="star"
+                                    class="fill-current w-8 h-8"></i></label>
+                            <input type="radio" id="star2" name="rating" value="2" class="hidden"><label for="star2"
+                                class="cursor-pointer text-slate-300 transition-colors"><i data-lucide="star"
+                                    class="fill-current w-8 h-8"></i></label>
+                            <input type="radio" id="star1" name="rating" value="1" class="hidden"><label for="star1"
+                                class="cursor-pointer text-slate-300 transition-colors"><i data-lucide="star"
+                                    class="fill-current w-8 h-8"></i></label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <textarea rows="4" placeholder="เล่าความประทับใจให้เราฟัง..."
+                            class="w-full px-5 py-3 rounded-2xl bg-white border border-slate-200 focus:border-blue-400 focus:ring-4 focus:ring-blue-100 transition outline-none text-sm resize-none"></textarea>
+                    </div>
+
+                    <button type="button" onclick="handleSubmitReview()"
+                        class="w-full gradient-blue text-white py-4 rounded-2xl font-bold shadow-lg hover:shadow-blue-200 transition-all hover:scale-[1.01] flex items-center justify-center gap-2">
+                        ส่งรีวิวของคุณ
+                        <i data-lucide="send" class="w-4 h-4"></i>
+                    </button>
+                </form>
+
+                <div id="thankYouMessage" class="hidden text-center py-10">
+                    <div
+                        class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i data-lucide="check" class="w-8 h-8"></i>
+                    </div>
+                    <h5 class="text-xl font-bold text-slate-900 mb-2">ขอบคุณสำหรับรีวิวค่ะ!</h5>
+                    <p class="text-slate-500 text-sm">เราจะพัฒนาบริการให้ดียิ่งขึ้นไปอีกค่ะ</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-950 pt-20 pb-10 text-slate-400">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-12 mb-16">
+                <div class="lg:col-span-2">
+                    <div class="flex items-center gap-2 mb-6">
+                        <div class="w-8 h-8 gradient-blue rounded-lg flex items-center justify-center text-white">
+                            <i data-lucide="palmtree" class="w-5 h-5"></i>
+                        </div>
+                        <span class="text-xl font-bold tracking-tighter text-white uppercase">SAMET <span
+                                class="text-blue-600">CHILL</span></span>
+                    </div>
+                    <p class="max-w-md mb-8">
+                        บริการนำเที่ยวเกาะเสม็ดครบวงจร โดยคุณนุ้ย จองเรือสปีดโบ๊ท จองที่พัก และกิจกรรมดำน้ำ
+                        ตรวจสอบเครดิตได้ 100% ค่ะ
+                    </p>
+                    <div class="flex gap-4">
+                        <a href="https://line.me/ti/p/dEgqXWwuP3" target="_blank"
+                            class="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-green-600 hover:text-white transition"><i
+                                data-lucide="message-circle" class="w-5 h-5"></i></a>
+                    </div>
+                </div>
+
+                <div>
+                    <h5 class="text-white font-bold mb-6 uppercase tracking-widest text-xs">Menu</h5>
+                    <ul class="space-y-4 text-sm">
+                        <li><a href="#spots" class="hover:text-blue-400 transition">จุดเช็คอิน</a></li>
+                        <li><a href="#packages" class="hover:text-blue-400 transition">บริการของเรา</a></li>
+                        <li><a href="#reviews" class="hover:text-blue-400 transition">รีวิวจากลูกค้า</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h5 class="text-white font-bold mb-6 uppercase tracking-widest text-xs">Contact</h5>
+                    <ul class="space-y-4 text-sm">
+                        <li class="flex items-center gap-3 text-green-400 font-bold">
+                            <i data-lucide="message-circle" class="w-4 h-4 flex-shrink-0"></i>
+                            <a href="https://line.me/ti/p/dEgqXWwuP3" target="_blank">Line ID: sametchill_nui</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="pt-8 border-t border-white/5 text-center text-[10px] tracking-widest uppercase">
+                <p>&copy; 2026 SAMET CHILL BY NuiNuii - YOUR SAMET TRAVEL PARTNER</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Mobile Contact FAB -->
+    <div class="fixed bottom-6 right-6 lg:hidden z-[110]">
+        <a href="https://line.me/ti/p/dEgqXWwuP3" target="_blank"
+            class="w-14 h-14 bg-green-500 text-white rounded-full shadow-2xl flex items-center justify-center animate-bounce">
+            <i data-lucide="message-circle"></i>
+        </a>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // Navbar scroll effect
+        window.addEventListener('scroll', function () {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('bg-white/95', 'shadow-md', 'h-16');
+                navbar.classList.remove('h-20');
+            } else {
+                navbar.classList.remove('bg-white/95', 'shadow-md', 'h-16');
+                navbar.classList.add('h-20');
+            }
+        });
+
+        // Submit review mockup
+        function handleSubmitReview() {
+            const form = document.getElementById('reviewForm');
+            const thankYou = document.getElementById('thankYouMessage');
+
+            form.classList.add('opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                form.classList.add('hidden');
+                thankYou.classList.remove('hidden');
+                thankYou.classList.add('animate-fade-in');
+                lucide.createIcons();
+            }, 300);
+        }
+    </script>
+</body>
+
+</html>
