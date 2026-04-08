@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chang Gym Korat - ช้างยิม โคราช</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #ffcc00;
+            --dark: #0a0a0a;
+            --card-bg: #1e1e1e;
+            --text-gray: #b0b0b0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Prompt', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--dark);
+            color: #fff;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* --- Header --- */
+        header {
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 1rem 10%;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(255, 204, 0, 0.2);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .logo span {
+            color: var(--primary);
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+
+        nav ul li a {
+            color: #fff;
+            text-decoration: none;
+            margin-left: 2.5rem;
+            font-weight: 400;
+            transition: 0.3s;
+        }
+
+        nav ul li a:hover {
+            color: var(--primary);
+        }
+
+        /* --- Hero Section --- */
+        .hero {
+            height: 100vh;
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.9)),
+                url('https://images.unsplash.com/photo-1540497077202-7c8a3999166f?auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        .hero-content h1 {
+            font-size: clamp(2.5rem, 8vw, 4.5rem);
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+        }
+
+        .hero-content h1 span {
+            color: var(--primary);
+            text-shadow: 0 0 20px rgba(255, 204, 0, 0.4);
+        }
+
+        .hero-content p {
+            font-size: 1.2rem;
+            color: var(--text-gray);
+            margin-bottom: 2.5rem;
+        }
+
+        .btn-main {
+            padding: 1rem 3rem;
+            background: var(--primary);
+            color: #000;
+            text-decoration: none;
+            font-weight: 700;
+            border-radius: 50px;
+            text-transform: uppercase;
+            transition: 0.4s;
+            box-shadow: 0 5px 15px rgba(255, 204, 0, 0.3);
+        }
+
+        .btn-main:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(255, 204, 0, 0.5);
+        }
+
+        /* --- Services Section --- */
+        .services {
+            padding: 8rem 10% 5rem;
+            text-align: center;
+        }
+
+        .services h2 {
+            font-size: 2.5rem;
+            margin-bottom: 4rem;
+            position: relative;
+        }
+
+        .services h2::after {
+            content: '';
+            width: 80px;
+            height: 4px;
+            background: var(--primary);
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .service-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2.5rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 3rem 2rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-15px);
+            border-color: var(--primary);
+            background: #252525;
+        }
+
+        .card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .card p {
+            color: var(--text-gray);
+        }
+
+        /* --- Testimonials --- */
+        .testimonials {
+            padding: 5rem 10%;
+            background: #0f0f0f;
+            text-align: center;
+        }
+
+        .testimonial-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 4rem;
+        }
+
+        .testimonial-card {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 2.5rem;
+            border-radius: 20px;
+            text-align: left;
+            border-left: 5px solid var(--primary);
+        }
+
+        .stars {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .review-text {
+            font-style: italic;
+            margin-bottom: 2rem;
+            color: #eee;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-info img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 2px solid var(--primary);
+        }
+
+        /* --- Contact --- */
+        .contact {
+            padding: 8rem 10%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            background: var(--dark);
+        }
+
+        .contact-info {
+            text-align: left;
+        }
+
+        .contact-info h2 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .contact-info p {
+            margin-bottom: 1.2rem;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .map-container {
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid var(--primary);
+            box-shadow: 0 0 20px rgba(255, 204, 0, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            nav ul {
+                display: none;
+            }
+
+            /* ซ่อนเมนูบนมือถือเพื่อความสะอาด */
+            .contact {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-content h1 {
+                font-size: 3rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <nav>
+            <div class="logo">CHANG GYM <span>KORAT</span></div>
+            <ul>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#services">Services</a></li>
+                <li><a href="#testimonials">Reviews</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1>NO PAIN, NO GAIN<br>ที่ <span>ช้างยิม โคราช</span></h1>
+            <p>สัมผัสประสบการณ์การออกกำลังกายที่เหนือระดับ ด้วยอุปกรณ์ที่ทันสมัยที่สุด</p>
+            <a href="#contact" class="btn-main">รับสิทธิ์ทดลองเล่นฟรี</a>
+        </div>
+    </section>
+
+    <section id="services" class="services">
+        <h2>OUR SERVICES</h2>
+        <div class="service-grid">
+            <div class="card">
+                <h3>Weight Training</h3>
+                <p>โซนยกน้ำหนักขนาดใหญ่ อุปกรณ์ครบครันสำหรับสร้างกล้ามเนื้อทุกสัดส่วน</p>
+            </div>
+            <div class="card">
+                <h3>Cardio Zone</h3>
+                <p>เผาผลาญไขมันด้วยเครื่อง Cardio ทันสมัย ทั้งลู่วิ่ง จักรยาน และ Elliptical</p>
+            </div>
+            <div class="card">
+                <h3>Professional Coaching</h3>
+                <p>ปรึกษาเทรนเนอร์มืออาชีพ ออกแบบโปรแกรมเฉพาะบุคคลเพื่อให้ถึงเป้าหมายไวขึ้น</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="testimonials" class="testimonials">
+        <h2>WHAT THEY SAY</h2>
+        <div class="testimonial-container">
+            <div class="testimonial-card">
+                <div class="stars">★★★★★</div>
+                <p class="review-text">"บรรยากาศดีมากครับ ไม่แออัด เครื่องเล่นสะอาดและได้รับการบำรุงรักษาตลอด"</p>
+                <div class="user-info">
+                    <img src="https://i.pravatar.cc/100?u=1" alt="Member 1">
+                    <div>
+                        <h4>คุณก้อง</h4>
+                        <span>Member</span>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-card">
+                <div class="stars">★★★★★</div>
+                <p class="review-text">"ชอบที่เปิดถึงดึกครับ พนักงานยิ้มแย้มแจ่มใส เป็นกันเองมาก"</p>
+                <div class="user-info">
+                    <img src="https://i.pravatar.cc/100?u=20" alt="Member 2">
+                    <div>
+                        <h4>คุณพลอย</h4>
+                        <span>Member</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="contact">
+        <div class="contact-info">
+            <h2>READY TO TRAIN?</h2>
+            <p>📍 437 ม. 5 ต.มะเริง อ.เมือง จ.นครราชสีมา</p>
+            <p>⏰ 09:00 - 21:30 น. (เปิดทุกวัน)</p>
+            <p>📞 093-324-5344</p>
+            <p>📱 Facebook: <a href="https://m.facebook.com/CHANGGYMKORAT/" target="_blank"
+                    style="color: var(--primary); text-decoration: none;">CHANG GYM KORAT</a></p>
+        </div>
+       
+    </section>
+
+</body>
+
+</html>
