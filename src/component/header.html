@@ -4,246 +4,168 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard Layout สวยงาม</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <title>Dashboard Management</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
   <style>
-    /* CSS กำหนดเอง */
     .body-custom {
       background-color: #e9ecef;
-      /* สีพื้นหลังเทาอ่อนมากๆ */
     }
 
     .navbar-custom {
       background-color: #17a2b8;
-      /* สีน้ำเงินอมเขียว (Info) ดูทันสมัย */
     }
 
     .card-menu {
       transition: transform 0.2s;
-      /* เพิ่ม Animation เวลา Hover */
+      cursor: pointer;
     }
 
     .card-menu:hover {
       transform: translateY(-5px);
-      /* ยก Card ขึ้นเล็กน้อยเมื่อชี้ */
       box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
     }
 
     .card-icon {
       font-size: 2.5rem;
-      /* ขนาดไอคอนใหญ่ขึ้น */
     }
   </style>
 </head>
 
 <body class="body-custom">
 
-  <nav class="navbar navbar-expand-lg navbar-dark navbar-custom shadow-sm" aria-label="Main navigation">
+  <nav class="navbar navbar-expand-lg navbar-dark navbar-custom shadow-sm">
     <div class="container-fluid">
-
-      <div class="navbar-brand fs-4 fw-bold" href="#">
-        <!-- <i class="bi bi-grid-fill"></i>  -->
-        my App
-      </div>
-
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
-        aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="navbar-brand fs-4 fw-bold">My App</div>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
         <span class="navbar-toggler-icon"></span>
       </button>
-
       <div class="collapse navbar-collapse" id="mainNav">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-
-
-        </ul>
-
-        <!-- search -->
-        <form class="d-flex" role="search">
+        <form class="d-flex ms-auto" role="search">
           <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
           <button class="btn btn-outline-light" type="submit">Search</button>
         </form>
-        <!-- search -->
-
       </div>
     </div>
   </nav>
 
   <div class="container my-5">
-    <h2 class="mb-4 text-center text-secondary fw-light">
-      ✨✨ ✨ เมนูหลัก ✨✨✨
-    </h2>
+    <h2 class="mb-4 text-center text-secondary fw-light">✨✨ เมนูหลัก ✨✨</h2>
     <hr>
-
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
-
-      <!-- Home -->
-      <div class="col">
-        <a href="/index.html" class="text-decoration-none">
-          <div class="card h-100 shadow-sm card-menu border-primary text-center">
-            <div class="card-body">
-              <i class="bi bi-house-door-fill text-primary card-icon mb-3"></i>
-              <h5 class="card-title">Home</h5>
-              <p class="card-text text-muted">หน้าหลักของเว็บไซต์</p>
-            </div>
-          </div>
-        </a>
-      </div>
-      <!-- Home -->
-
-      <!-- Workout -->
-      <div class="col">
-        <a href="/src/page/workout.html" class="text-decoration-none">
-          <div class="card h-100 shadow-sm card-menu border-success text-center">
-            <div class="card-body">
-              <i class="bi bi-lightning-charge-fill text-success card-icon mb-3"></i>
-              <h5 class="card-title">Workout</h5>
-              <p class="card-text text-muted">บันทึกการออกกำลังกาย</p>
-            </div>
-          </div>
-        </a>
-      </div>
-      <!-- Workout -->
-
-
-
-      <!-- Terminal -->
-      <div class="col">
-        <a href="/src/page/a.html" class="text-decoration-none">
-          <div class="card h-100 shadow-sm card-menu border-dark text-center">
-            <div class="card-body">
-
-              <h5 class="card-title">
-
-                crud
-              </h5>
-              <p class="card-text text-muted">
-                google
-              </p>
-            </div>
-          </div>
-        </a>
-      </div>
-      <!-- Terminal -->
-
-      <div class="col">
-        <a href="/src/page/test.html" class="text-decoration-none">
-          <div class="card h-100 shadow-sm card-menu border-warning text-center">
-            <div class="card-body">
-              <i class="bi bi-database-fill text-warning card-icon mb-3"></i>
-              <h5 class="card-title">Test Firebase</h5>
-              <p class="card-text text-muted">ทดสอบ Input และ Database</p>
-            </div>
-          </div>
-        </a>
-      </div>
-
-
-      <!-- เครื่องมือเลือกสี -->
-      <div class="col">
-        <a href="/src/page/color.html" class="text-decoration-none">
-          <div class="card h-100 shadow-sm card-menu border-info text-center">
-            <div class="card-body">
-              <i class="bi bi-palette-fill text-info card-icon mb-3"></i>
-              <h5 class="card-title">Color Picker</h5>
-              <p class="card-text text-muted">เครื่องมือเลือกสี</p>
-            </div>
-          </div>
-        </a>
-      </div>
-      <!-- เครื่องมือเลือกสี -->
-
-
-
-      <!-- เครื่องมืออำนวยความสะดวก -->
-      <div class="col">
-        <a href="/src/page/tool.html" class="text-decoration-none">
-          <div class="card h-100 shadow-sm card-menu border-secondary text-center">
-            <div class="card-body">
-              <i class="bi bi-tools text-secondary card-icon mb-3"></i>
-              <h5 class="card-title">Tools</h5>
-              <p class="card-text text-muted">เครื่องมืออำนวยความสะดวก</p>
-            </div>
-          </div>
-        </a>
-      </div>
-      <!-- เครื่องมืออำนวยความสะดวก -->
-
-
-
-      <!-- รายการสิ่งที่ต้องทำ -->
-      <div class="col">
-        <a href="/src/page/tasks.html" class="text-decoration-none">
-          <div class="card h-100 shadow-sm card-menu border-danger text-center">
-            <div class="card-body">
-              <i class="bi bi-list-check text-danger card-icon mb-3"></i>
-              <h5 class="card-title">Tasks</h5>
-              <p class="card-text text-muted">รายการสิ่งที่ต้องทำ</p>
-            </div>
-          </div>
-        </a>
-      </div>
-      <!-- รายการสิ่งที่ต้องทำ -->
-
-      <!-- เครื่องมือคำนวณจำนวนนม -->
-      <div class="col">
-        <a href="/src/page/c_milk.html" class="text-decoration-none">
-          <div class="card h-100 shadow-sm card-menu border-primary text-center">
-            <div class="card-body">
-              <i class="bi bi-calculator-fill text-primary card-icon mb-3"></i>
-                  
-              <h5 class="card-title">เครื่องมือคำนวณจำนวนนม</h5>
-              <p class="card-text text-muted">เครื่องมือคำนวณจำนวนนม</p>
-            </div>
-          </div>
-        </a>
-      </div>
-      <!-- เครื่องมือคำนวณจำนวนนม  -->
-
-
-
-      <!-- Note -->
-      <div class="col">
-
-          <!-- แก้ตรงนี้ -->
-          <a href="/src/page/note.html" class="text-decoration-none">
-          <!-- แก้ตรงนี้ -->
-
-          <div class="card h-100 shadow-sm card-menu border-primary text-center">
-            <div class="card-body">
-              <i class="bi bi-journal-text text-primary card-icon mb-3"></i>
-              <!-- แก้ตรงนี้ -->
-              <h5 class="card-title">Note</h5>
-              <p class="card-text text-muted"> Note</p>
-              <!-- แก้ตรงนี้ -->
-            </div>
-          </div>
-        </a>
-      </div>
-      <!-- Note  -->
-
-
-
-
-
-
-
-
-
-
-
-    </div>
+    <div id="menu-container" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4"></div>
   </div>
 
+  <script>
+    // 1. เก็บข้อมูลเมนูทั้งหมดไว้ที่นี่
+    const menuData = [
+      {
+        title: "Home",
+        desc: "หน้าหลักของเว็บไซต์",
+        icon: "bi-house-door-fill",
+        color: "primary",
+        link: "/index.html"
+      },
+      {
+        title: "Workout",
+        desc: "บันทึกการออกกำลังกาย",
+        icon: "bi-lightning-charge-fill",
+        color: "success",
+        link: "/src/page/workout.html"
+      },
+      {
+        title: "CRUD Google",
+        desc: "จัดการข้อมูลพื้นฐาน",
+        icon: "bi-grid-fill",
+        color: "dark",
+        link: "/src/page/a.html"
+      },
+      {
+        title: "Test Firebase",
+        desc: "ทดสอบ Input และ Database",
+        icon: "bi-database-fill",
+        color: "warning",
+        link: "/src/page/test.html"
+      },
+      {
+        title: "Color Picker",
+        desc: "เครื่องมือเลือกสี",
+        icon: "bi-palette-fill",
+        color: "info",
+        link: "/src/page/color.html"
+      },
+      {
+        title: "Tools",
+        desc: "เครื่องมืออำนวยความสะดวก",
+        icon: "bi-tools",
+        color: "secondary",
+        link: "/src/page/tool.html"
+      },
+      {
+        title: "Tasks",
+        desc: "รายการสิ่งที่ต้องทำ",
+        icon: "bi-list-check",
+        color: "danger",
+        link: "/src/page/tasks.html"
+      },
+      {
+        title: "คำนวณจำนวนนม",
+        desc: "เครื่องมือคำนวณจำนวนนม",
+        icon: "bi-calculator-fill",
+        color: "primary",
+        link: "/src/page/c_milk.html"
+      },
+      {
+        title: "Note",
+        desc: "บันทึกข้อความ",
+        icon: "bi-journal-text",
+        color: "primary",
+        link: "/src/page/note.html"
+      },
+      {
+        title: "book",
+        desc: "บันทึกข้อความ",
+        icon: "bi-journal-text",
+        color: "primary",
+        link: "/src/page/book/index.html"
+      },
+       {
+        title: "book",
+        desc: "บันทึกข้อความ",
+        icon: "bi-journal-text",
+        color: "primary",
+        link: "/src/page/book/admin.html"
+      },
+    ];
+
+    // 2. ฟังก์ชันสำหรับสร้าง HTML จากข้อมูล
+    function renderMenus(data) {
+      const container = document.getElementById('menu-container');
+
+      const html = data.map(item => `
+        <div class="col">
+            <a href="${item.link}" class="text-decoration-none">
+                <div class="card h-100 shadow-sm card-menu border-${item.color} text-center">
+                    <div class="card-body">
+                        <i class="bi ${item.icon} text-${item.color} card-icon mb-3"></i>
+                        <h5 class="card-title text-dark">${item.title}</h5>
+                        <p class="card-text text-muted small">${item.desc}</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    `).join('');
+
+      container.innerHTML = html;
+    }
+
+    // 3. รันฟังก์ชันเมื่อโหลดหน้าเว็บ
+    document.addEventListener('DOMContentLoaded', () => {
+      renderMenus(menuData);
+    });
 
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
-    crossorigin="anonymous"></script>
-
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-
 
 </html>
