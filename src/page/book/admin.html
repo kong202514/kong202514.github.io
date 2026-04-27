@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+ !DOCTYPE html>
 <html lang="th">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dark Book Manager - Admin</title>
+    <title>Professional Book Editor - Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -15,6 +15,7 @@
             --danger: #ef4444;
             --success: #22c55e;
             --border: #334155;
+            --sidebar-width: 280px;
         }
 
         body {
@@ -41,7 +42,6 @@
             margin-bottom: 30px;
         }
 
-        /* Search Bar Dark Style */
         .search-bar {
             width: 100%;
             padding: 15px;
@@ -52,6 +52,7 @@
             color: white;
             font-size: 1rem;
             outline: none;
+            box-sizing: border-box;
         }
 
         .search-bar:focus {
@@ -75,7 +76,6 @@
             border-bottom: 1px solid var(--border);
         }
 
-        /* Status Tags */
         .status {
             padding: 4px 12px;
             border-radius: 50px;
@@ -93,7 +93,6 @@
             color: #fbbf24;
         }
 
-        /* Buttons */
         .btn {
             padding: 10px 20px;
             border: none;
@@ -107,11 +106,6 @@
         .btn-add {
             background: var(--accent);
             color: #000;
-        }
-
-        .btn-add:hover {
-            opacity: 0.9;
-            transform: translateY(-2px);
         }
 
         .btn-del {
@@ -130,7 +124,7 @@
             margin-right: 8px;
         }
 
-        /* Modern Editor Overlay */
+        /* --- Full Screen Editor Overlay --- */
         #editor {
             display: none;
             position: fixed;
@@ -138,65 +132,100 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: #0f172a;
+            background: var(--bg-dark);
             z-index: 1000;
-            padding: 40px;
-            box-sizing: border-box;
-            overflow-y: auto;
         }
 
-        .editor-header {
-            max-width: 900px;
-            margin: 0 auto 30px auto;
+        .editor-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* --- Sidebar Navigation --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: #0b1120;
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .pages-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .page-item {
+            padding: 15px;
+            background: var(--card-dark);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            transition: 0.2s;
         }
 
-        .page-grid {
-            max-width: 900px;
-            margin: auto;
-            display: grid;
-            gap: 25px;
+        .page-item:hover {
+            border-color: var(--accent);
         }
 
-        .page-card {
+        .page-item.active {
+            background: var(--accent);
+            color: #000;
+        }
+
+        .page-item small:hover {
+            color: var(--danger);
+        }
+
+        /* --- Main Content Area --- */
+        .main-editor {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 40px;
+            background: var(--bg-dark);
+        }
+
+        .writing-area {
+            flex-grow: 1;
             background: var(--card-dark);
+            border-radius: 20px;
             border: 1px solid var(--border);
-            padding: 25px;
-            border-radius: 15px;
-            position: relative;
-        }
-
-        .page-num {
-            color: var(--accent);
-            font-weight: bold;
-            margin-bottom: 10px;
-            display: block;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
         }
 
         textarea {
+            flex-grow: 1;
             width: 100%;
-            height: 200px;
             background: transparent;
             border: none;
             color: var(--text-main);
-            font-size: 1.1rem;
-            line-height: 1.6;
+            font-size: 1.25rem;
+            line-height: 1.8;
             resize: none;
             outline: none;
             font-family: inherit;
         }
 
         .auto-save-tag {
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             color: #64748b;
-            margin-left: 10px;
         }
 
-        .action-area {
-            text-align: right;
-            margin-top: 10px;
+        .empty-state {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #64748b;
         }
     </style>
 </head>
@@ -205,13 +234,10 @@
 
     <div class="container">
         <header>
-            <h1 style="font-size: 1.5rem;">📚 Book Management <small
-                    style="font-weight: 400; color: #64748b;">Admin</small></h1>
+            <h1>📚 Book Manager</h1>
             <button class="btn btn-add" onclick="addNewBook()">+ เขียนเล่มใหม่</button>
         </header>
-
         <input type="text" class="search-bar" id="search" placeholder="🔍 ค้นหาตามชื่อหนังสือ..." onkeyup="doSearch()">
-
         <table>
             <thead>
                 <tr>
@@ -225,27 +251,33 @@
     </div>
 
     <div id="editor">
-        <div class="editor-header">
-            <div>
-                <h2 id="edit-title" style="margin:0">กำลังแก้ไข</h2>
-                <span id="save-status" class="auto-save-tag">ระบบจะบันทึกอัตโนมัติเมื่อพิมพ์...</span>
+        <div class="editor-container">
+            <div class="sidebar">
+                <h3 style="margin: 0;">📑 หน้าทั้งหมด</h3>
+                <button class="btn btn-add" style="width: 100%; margin-top: 15px;" onclick="addBlankPage()">+
+                    เพิ่มหน้าใหม่</button>
+                <div class="pages-list" id="pages-list"></div>
+                <button class="btn btn-del" style="width: 100%;" onclick="closeEdit()">✕ ปิด</button>
             </div>
-            <button class="btn btn-del" onclick="closeEdit()">✕ ปิดหน้าต่าง</button>
-        </div>
 
-        <div id="pages-area" class="page-grid"></div>
-
-        <div style="max-width: 900px; margin: 40px auto; text-align: center;">
-            <button class="btn btn-add" style="width: 100%; padding: 20px;" onclick="addBlankPage()">+
-                เพิ่มหน้ากระดาษใหม่</button>
+            <div class="main-editor">
+                <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h2 id="edit-title" style="margin:0">ชื่อหนังสือ</h2>
+                        <span id="save-status" class="auto-save-tag">ไม่ได้เลือกหน้า</span>
+                    </div>
+                </div>
+                <div id="writing-area-container" class="writing-area">
+                    <div class="empty-state">เลือกหน้าจาก Sidebar เพื่อเริ่มเขียน</div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-        // Firebase Config (คงไว้ตามเดิมของคุณ)
         const firebaseConfig = {
             apiKey: "AIzaSyCQiXHPEMP8vWV_MyfdITuGRkNZyHRTJRc",
             authDomain: "project-3463735746903079568.firebaseapp.com",
@@ -257,118 +289,132 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        let books = [];
-        let activeId = null;
-        let saveTimeout = null;
 
-        // Load & Render Data
+        let books = [];
+        let activeBookId = null;
+        let activePageId = null;
+        let allPages = [];
+        let saveTimeout = null;
+        let unsubscribePages = null;
+
+        // --- Books List ---
         onSnapshot(query(collection(db, "my_books"), orderBy("createdAt", "desc")), (snap) => {
-            books = [];
-            snap.forEach(d => books.push({ id: d.id, ...d.data() }));
-            render(books);
+            books = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            renderBooks(books);
         });
 
-        function render(data) {
-            const list = document.getElementById('list');
-            list.innerHTML = '';
-            data.forEach(b => {
-                list.innerHTML += `
+        function renderBooks(data) {
+            document.getElementById('list').innerHTML = data.map(b => `
                 <tr>
-                    <td><strong style="font-size:1.1rem">${b.title}</strong></td>
-                    <td><span class="status ${b.status === 'published' ? 'pub' : 'drf'}">${b.status === 'published' ? 'เผยแพร่แล้ว' : 'แบบร่าง'}</span></td>
+                    <td><strong>${b.title}</strong></td>
+                    <td><span class="status ${b.status === 'published' ? 'pub' : 'drf'}">${b.status === 'published' ? 'เผยแพร่' : 'แบบร่าง'}</span></td>
                     <td style="text-align: right;">
-                        <button class="btn btn-edit" onclick="openEdit('${b.id}', '${b.title}')">แก้ไขเนื้อหา</button>
-                        <button class="btn" style="background:rgba(255,255,255,0.1);color:#ccc" onclick="flipStatus('${b.id}','${b.status}')">สลับสถานะ</button>
+                        <button class="btn btn-edit" onclick="openEdit('${b.id}', '${b.title}')">แก้ไข</button>
                         <button class="btn btn-del" onclick="delBook('${b.id}')">ลบ</button>
                     </td>
-                </tr>`;
-            });
+                </tr>
+            `).join('');
         }
 
-        // Logic Functions
-        window.doSearch = () => {
-            const q = document.getElementById('search').value.toLowerCase();
-            render(books.filter(b => b.title.toLowerCase().includes(q)));
-        };
-
         window.addNewBook = async () => {
-            const t = prompt("กรุณาระบุชื่อหนังสือเล่มใหม่:");
+            const t = prompt("ชื่อหนังสือ:");
             if (t) await addDoc(collection(db, "my_books"), { title: t, status: 'draft', createdAt: serverTimestamp() });
         };
 
-        window.flipStatus = async (id, s) => {
-            await updateDoc(doc(db, "my_books", id), { status: s === 'published' ? 'draft' : 'published' });
-        };
-
         window.delBook = async (id) => {
-            if (confirm("ยืนยันการลบหนังสือเล่มนี้? ข้อมูลจะหายไปถาวร")) await deleteDoc(doc(db, "my_books", id));
+            if (confirm("ลบหนังสือเล่มนี้?")) await deleteDoc(doc(db, "my_books", id));
         };
 
-        // Editor with Auto-Save
+        // --- Editor Logic (Fixed Jumping) ---
         window.openEdit = (id, title) => {
-            activeId = id;
+            activeBookId = id;
+            activePageId = null;
             document.getElementById('edit-title').innerText = title;
             document.getElementById('editor').style.display = 'block';
-            document.body.style.overflow = 'hidden'; // Lock Scroll
-            loadPages(id);
+            document.body.style.overflow = 'hidden';
+
+            const q = query(collection(db, `my_books/${id}/pages`), orderBy("createdAt", "asc"));
+            unsubscribePages = onSnapshot(q, (snap) => {
+                allPages = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                renderSidebar();
+            });
+        };
+
+        function renderSidebar() {
+            const list = document.getElementById('pages-list');
+            list.innerHTML = allPages.map((p, i) => `
+                <div class="page-item ${activePageId === p.id ? 'active' : ''}" onclick="selectPage('${p.id}')">
+                    <span>หน้าที่ ${i + 1}</span>
+                    <small onclick="event.stopPropagation(); delPage('${p.id}')">ลบ</small>
+                </div>
+            `).join('');
+        }
+
+        window.selectPage = (pid) => {
+            activePageId = pid;
+            renderSidebar();
+
+            const page = allPages.find(p => p.id === pid);
+            const container = document.getElementById('writing-area-container');
+
+            // วาด Textarea ใหม่แค่ตอนเปลี่ยนหน้าเท่านั้น
+            container.innerHTML = `
+                <div style="margin-bottom:10px; color:var(--accent);">กำลังแก้ไขหน้าที่ ${allPages.indexOf(page) + 1}</div>
+                <textarea id="main-textarea" placeholder="เริ่มเขียน...">${page.content || ''}</textarea>
+            `;
+
+            const area = document.getElementById('main-textarea');
+            area.focus();
+
+            // ใช้ Event Listener แทนการใส่ oninput ใน HTML เพื่อความนิ่ง
+            area.addEventListener('input', (e) => {
+                autoSave(pid, e.target.value);
+            });
+        };
+
+        window.autoSave = (pid, content) => {
+            const status = document.getElementById('save-status');
+            status.innerText = "กำลังบันทึก...";
+            status.style.color = "#fbbf24";
+
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(async () => {
+                try {
+                    await updateDoc(doc(db, `my_books/${activeBookId}/pages`, pid), { content: content });
+                    status.innerText = "บันทึกแล้ว ✅";
+                    status.style.color = "#4ade80";
+                } catch (e) { console.error(e); }
+            }, 800); // บันทึกหลังจากหยุดพิมพ์ 0.8 วินาที
+        };
+
+        window.addBlankPage = async () => {
+            const docRef = await addDoc(collection(db, `my_books/${activeBookId}/pages`), {
+                content: "",
+                createdAt: Date.now()
+            });
+            // เมื่อสร้างหน้าใหม่ ให้ทำการ Select หน้าใหม่นั้นทันที
+            setTimeout(() => selectPage(docRef.id), 500);
+        };
+
+        window.delPage = async (pid) => {
+            if (confirm("ลบหน้านี้?")) {
+                await deleteDoc(doc(db, `my_books/${activeBookId}/pages`, pid));
+                if (activePageId === pid) {
+                    activePageId = null;
+                    document.getElementById('writing-area-container').innerHTML = `<div class="empty-state">เลือกหน้าจาก Sidebar เพื่อเริ่มเขียน</div>`;
+                }
+            }
         };
 
         window.closeEdit = () => {
+            if (unsubscribePages) unsubscribePages();
             document.getElementById('editor').style.display = 'none';
             document.body.style.overflow = 'auto';
         };
 
-        async function loadPages(id) {
-            const q = query(collection(db, `my_books/${id}/pages`), orderBy("createdAt", "asc"));
-            const snap = await getDocs(q);
-            const area = document.getElementById('pages-area');
-            area.innerHTML = '';
-            snap.forEach((d, i) => {
-                area.innerHTML += `
-                <div class="page-card">
-                    <span class="page-num">หน้าที่ ${i + 1}</span>
-                    <textarea 
-                        id="t-${d.id}" 
-                        placeholder="เริ่มเขียนเนื้อหาของคุณตรงนี้..."
-                        oninput="autoSave('${d.id}')"
-                    >${d.data().content || ''}</textarea>
-                    <div class="action-area">
-                        <button class="btn btn-del" style="font-size:0.7rem; padding: 5px 10px;" onclick="delP('${d.id}')">ลบหน้านี้</button>
-                    </div>
-                </div>`;
-            });
-        }
-
-        // ระบบ Auto Save
-        window.autoSave = (pid) => {
-            const statusTag = document.getElementById('save-status');
-            statusTag.innerText = "กำลังบันทึก...";
-            statusTag.style.color = "#fbbf24";
-
-            clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(async () => {
-                const content = document.getElementById(`t-${pid}`).value;
-                try {
-                    await updateDoc(doc(db, `my_books/${activeId}/pages`, pid), { content: content });
-                    statusTag.innerText = "บันทึกเรียบร้อยแล้ว";
-                    statusTag.style.color = "#4ade80";
-                } catch (e) {
-                    statusTag.innerText = "เกิดข้อผิดพลาดในการบันทึก!";
-                    statusTag.style.color = "#ef4444";
-                }
-            }, 1000); // บันทึกหลังจากหยุดพิมพ์ 1 วินาที
-        };
-
-        window.addBlankPage = async () => {
-            await addDoc(collection(db, `my_books/${activeId}/pages`), { content: "", createdAt: Date.now() });
-            loadPages(activeId);
-        };
-
-        window.delP = async (pid) => {
-            if (confirm("ลบหน้ากระดาษนี้?")) {
-                await deleteDoc(doc(db, `my_books/${activeId}/pages`, pid));
-                loadPages(activeId);
-            }
+        window.doSearch = () => {
+            const q = document.getElementById('search').value.toLowerCase();
+            renderBooks(books.filter(b => b.title.toLowerCase().includes(q)));
         };
     </script>
 </body>
