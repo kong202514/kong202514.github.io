@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Book Manager</title>
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background: #1c2128;
+            margin: 0;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .pub {
+            background: #e3f9e5;
+            color: #1f7a33;
+        }
+
+        .drf {
+            background: #fff4e5;
+            color: #b76e00;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .btn-add {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-edit {
+            background: #2ecc71;
+            color: white;
+            margin-right: 5px;
+        }
+
+        .btn-del {
+            background: #e74c3c;
+            color: white;
+        }
+
+        /* Editor Modal */
+        #editor {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 100;
+            overflow-y: auto;
+            padding: 50px;
+            box-sizing: border-box;
+        }
+
+        .page-box {
+            background: #f9f9f9;
+            padding: 20px;
+            border: 1px solid #ddd;
+            margin-bottom: 20px;
+            border-radius: 10px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 150px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            font-family: inherit;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <header>
+            <h2>📚 ระบบจัดการหลังบ้าน</h2>
+            <button class="btn btn-add" onclick="addNewBook()">+ เพิ่มหนังสือเล่มใหม่</button>
+        </header>
+
+        <input type="text" class="search-bar" id="search" placeholder="🔍 ค้นหาชื่อหนังสือ..." onkeyup="doSearch()">
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ชื่อเรื่อง</th>
+                    <th>สถานะ</th>
+                    <th style="text-align: right;">จัดการ</th>
+                </tr>
+            </thead>
+            <tbody id="list"></tbody>
+        </table>
+    </div>
+
+    <div id="editor">
+        <div style="max-width: 800px; margin: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2 id="edit-title">แก้ไขเนื้อหา</h2>
+                <button class="btn btn-del" onclick="closeEdit()">ปิดหน้าต่าง</button>
+            </div>
+            <hr>
+            <div id="pages-area"></div>
+            <button class="btn btn-add" style="width: 100%; padding: 20px;" onclick="addBlankPage()">+
+                เพิ่มหน้ากระดาษใหม่</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCQiXHPEMP8vWV_MyfdITuGRkNZyHRTJRc",
+            authDomain: "project-3463735746903079568.firebaseapp.com",
+            projectId: "project-3463735746903079568",
+            storageBucket: "project-3463735746903079568.firebasestorage.app",
+            messagingSenderId: "691755634120",
+            appId: "1:691755634120:web:4105342eb7d035dcac04fd"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        let books = [];
+        let activeId = null;
+
+        // Load Data
+        onSnapshot(query(collection(db, "my_books"), orderBy("createdAt", "desc")), (snap) => {
+            books = [];
+            snap.forEach(d => books.push({ id: d.id, ...d.data() }));
+            render(books);
+        });
+
+        function render(data) {
+            const list = document.getElementById('list');
+            list.innerHTML = '';
+            data.forEach(b => {
+                list.innerHTML += `
+                <tr>
+                    <td><strong>${b.title}</strong></td>
+                    <td><span class="status ${b.status === 'published' ? 'pub' : 'drf'}">${b.status === 'published' ? 'Published' : 'Draft'}</span></td>
+                    <td style="text-align: right;">
+                        <button class="btn btn-edit" onclick="openEdit('${b.id}', '${b.title}')">เนื้อหา</button>
+                        <button class="btn" style="background:#666;color:white" onclick="flipStatus('${b.id}','${b.status}')">สลับสถานะ</button>
+                        <button class="btn btn-del" onclick="delBook('${b.id}')">ลบ</button>
+                    </td>
+                </tr>`;
+            });
+        }
+
+        window.doSearch = () => {
+            const q = document.getElementById('search').value.toLowerCase();
+            render(books.filter(b => b.title.toLowerCase().includes(q)));
+        };
+
+        window.addNewBook = async () => {
+            const t = prompt("ชื่อหนังสือ:");
+            if (t) await addDoc(collection(db, "my_books"), { title: t, status: 'draft', createdAt: serverTimestamp() });
+        };
+
+        window.flipStatus = async (id, s) => {
+            await updateDoc(doc(db, "my_books", id), { status: s === 'published' ? 'draft' : 'published' });
+        };
+
+        window.delBook = async (id) => {
+            if (confirm("ลบถาวร?")) await deleteDoc(doc(db, "my_books", id));
+        };
+
+        // Editor Logic
+        window.openEdit = (id, title) => {
+            activeId = id;
+            document.getElementById('edit-title').innerText = title;
+            document.getElementById('editor').style.display = 'block';
+            loadPages(id);
+        };
+
+        window.closeEdit = () => document.getElementById('editor').style.display = 'none';
+
+        async function loadPages(id) {
+            const q = query(collection(db, `my_books/${id}/pages`), orderBy("createdAt", "asc"));
+            const snap = await getDocs(q);
+            const area = document.getElementById('pages-area');
+            area.innerHTML = '';
+            snap.forEach((d, i) => {
+                area.innerHTML += `
+                <div class="page-box">
+                    <b>หน้าที่ ${i + 1}</b>
+                    <textarea id="t-${d.id}">${d.data().content || ''}</textarea>
+                    <button class="btn btn-edit" onclick="saveP('${d.id}')">บันทึกหน้านี้</button>
+                    <button class="btn btn-del" onclick="delP('${d.id}')">ลบหน้านี้</button>
+                </div>`;
+            });
+        }
+
+        window.addBlankPage = async () => {
+            await addDoc(collection(db, `my_books/${activeId}/pages`), { content: "", createdAt: Date.now() });
+            loadPages(activeId);
+        };
+
+        window.saveP = async (pid) => {
+            const c = document.getElementById(`t-${pid}`).value;
+            await updateDoc(doc(db, `my_books/${activeId}/pages`, pid), { content: c });
+            alert("เซฟแล้ว!");
+        };
+
+        window.delP = async (pid) => {
+            if (confirm("ลบหน้า?")) {
+                await deleteDoc(doc(db, `my_books/${activeId}/pages`, pid));
+                loadPages(activeId);
+            }
+        };
+    </script>
+</body>
+
+</html>

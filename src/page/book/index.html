@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Library & Reader</title>
+    <style>
+        :root {
+            --bg: #1a252f;
+            --paper: #fdfaf0;
+            --accent: #f1c40f;
+            --hl: rgba(46, 204, 113, 0.4);
+        }
+
+        body {
+            background: var(--bg);
+            margin: 0;
+            font-family: 'Sarabun', sans-serif;
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Library View */
+        #library-view {
+            padding: 40px 20px;
+            width: 100%;
+            max-width: 1000px;
+            box-sizing: border-box;
+        }
+
+        .book-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .book-item {
+            background: white;
+            color: #333;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .book-item:hover {
+            transform: translateY(-8px);
+        }
+
+        .book-icon {
+            font-size: 50px;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        /* Reader View */
+        #reader-view {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            width: 100%;
+            perspective: 2000px;
+        }
+
+        .nav-bar {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+
+        .btn-back {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        .book-title {
+            color: var(--accent);
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .book {
+            position: relative;
+            width: 400px;
+            height: 550px;
+        }
+
+        .paper {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            transition: transform 0.8s ease;
+            transform-origin: left;
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+
+        .front,
+        .back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            padding: 40px;
+            box-sizing: border-box;
+            background: var(--paper);
+            backface-visibility: hidden;
+            box-shadow: inset 3px 0 10px rgba(0, 0, 0, 0.1);
+            color: #333;
+            border-radius: 0 5px 5px 0;
+            border: 1px solid #ddd;
+        }
+
+        .back {
+            transform: rotateY(180deg);
+            border-radius: 5px 0 0 5px;
+        }
+
+        .flipped {
+            transform: rotateY(-180deg);
+        }
+
+        .content {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            height: 100%;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            user-select: text;
+        }
+
+        .page-footer {
+            position: absolute;
+            bottom: 20px;
+            font-size: 0.8rem;
+            color: #999;
+            width: calc(100% - 80px);
+            text-align: center;
+        }
+
+        /* Highlight Tools */
+        .highlight {
+            background-color: var(--hl);
+            border-radius: 2px;
+        }
+
+        #hl-tool {
+            position: absolute;
+            display: none;
+            background: #2ecc71;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            z-index: 3000;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        @media (max-width: 450px) {
+            .book {
+                width: 320px;
+                height: 480px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="library-view">
+        <div style="text-align: center;">
+            <h1>🏛️ หอสมุดดิจิทัล</h1>
+            <p id="lib-status">กำลังเชื่อมต่อชั้นวางหนังสือ...</p>
+        </div>
+        <div class="book-grid" id="book-grid"></div>
+    </div>
+
+    <div id="reader-view">
+        <div class="nav-bar">
+            <button class="btn-back" onclick="location.reload()">← กลับหน้าหอสมุด</button>
+        </div>
+        <div class="book-title" id="book-display-title"></div>
+        <div class="book" id="book-container"></div>
+        <button id="hl-tool">✨ ไฮไลท์ข้อความ</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, orderBy, onSnapshot, where } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCQiXHPEMP8vWV_MyfdITuGRkNZyHRTJRc",
+            authDomain: "project-3463735746903079568.firebaseapp.com",
+            projectId: "project-3463735746903079568",
+            storageBucket: "project-3463735746903079568.firebasestorage.app",
+            messagingSenderId: "691755634120",
+            appId: "1:691755634120:web:4105342eb7d035dcac04fd"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        let activeBookId = null;
+
+        // --- 1. Load Library (Only Published) ---
+        const libQuery = query(collection(db, "my_books"), where("status", "==", "published"), orderBy("createdAt", "desc"));
+        onSnapshot(libQuery, (snap) => {
+            const grid = document.getElementById('book-grid');
+            grid.innerHTML = '';
+            document.getElementById('lib-status').innerText = `พบหนังสือทั้งหมด ${snap.size} เล่ม`;
+            snap.forEach(doc => {
+                const b = doc.data();
+                const div = document.createElement('div');
+                div.className = 'book-item';
+                div.innerHTML = `<span class="book-icon">📘</span><b>${b.title}</b>`;
+                div.onclick = () => openReader(doc.id, b.title);
+                grid.appendChild(div);
+            });
+        });
+
+        // --- 2. Reader Logic ---
+        async function openReader(id, title) {
+            activeBookId = id;
+            document.getElementById('library-view').style.display = 'none';
+            document.getElementById('reader-view').style.display = 'flex';
+            document.getElementById('book-display-title').innerText = title;
+
+            const container = document.getElementById('book-container');
+
+            // Check LocalStorage for saved highlights
+            const localData = localStorage.getItem(`hl_${id}`);
+            if (localData) {
+                container.innerHTML = localData;
+                initFlip();
+                return;
+            }
+
+            container.innerHTML = '<p style="color:white">กำลังเปิดหน้ากระดาษ...</p>';
+            const pQuery = query(collection(db, `my_books/${id}/pages`), orderBy("createdAt", "asc"));
+            const pSnap = await getDocs(pQuery);
+
+            let html = '';
+            const pages = [];
+            pSnap.forEach(d => pages.push(d.data().content || ""));
+
+            for (let i = 0; i < pages.length; i += 2) {
+                html += `
+                    <div class="paper">
+                        <div class="front"><div class="content">${pages[i]}</div><div class="page-footer">${i + 1}</div></div>
+                        <div class="back"><div class="content">${pages[i + 1] || ""}</div><div class="page-footer">${i + 2}</div></div>
+                    </div>`;
+            }
+            container.innerHTML = html || '<p>หนังสือเล่มนี้ยังไม่มีเนื้อหา</p>';
+            initFlip();
+        }
+
+        function initFlip() {
+            const papers = document.querySelectorAll('.paper');
+            papers.forEach((p, i) => {
+                p.style.zIndex = papers.length - i;
+                p.onclick = () => {
+                    if (window.getSelection().toString()) return;
+                    p.classList.toggle('flipped');
+                    p.style.zIndex = p.classList.contains('flipped') ? i + 1 : papers.length - i;
+                };
+            });
+        }
+
+        // --- 3. Highlight Logic ---
+        const hlBtn = document.getElementById('hl-tool');
+        document.addEventListener('mouseup', (e) => {
+            const sel = window.getSelection();
+            if (sel.toString().trim()) {
+                hlBtn.style.display = 'block';
+                hlBtn.style.left = e.pageX + 'px';
+                hlBtn.style.top = (e.pageY - 50) + 'px';
+            } else {
+                hlBtn.style.display = 'none';
+            }
+        });
+
+        hlBtn.onclick = () => {
+            const sel = window.getSelection();
+            if (!sel.rangeCount) return;
+            const range = sel.getRangeAt(0);
+            const span = document.createElement('span');
+            span.className = 'highlight';
+            try {
+                range.surroundContents(span);
+                localStorage.setItem(`hl_${activeBookId}`, document.getElementById('book-container').innerHTML);
+            } catch (e) { alert("ไม่สามารถไฮไลท์ข้ามย่อหน้าได้"); }
+            sel.removeAllRanges();
+            hlBtn.style.display = 'none';
+        };
+    </script>
+</body>
+
+</html>
