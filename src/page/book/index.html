@@ -1,103 +1,85 @@
-<!DOCTYPE html>
+ !DOCTYPE html>
 <html lang="th">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digital Library & Reader</title>
+    <title>Ultimate Digital Library - Fullscreen Enabled</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #1a252f;
-            --paper: #fdfaf0;
-            --accent: #f1c40f;
-            --hl: rgba(46, 204, 113, 0.4);
+            --bg: #0f172a;
+            --paper: #fcfaf2;
+            --accent: #fbbf24;
         }
 
         body {
             background: var(--bg);
             margin: 0;
             font-family: 'Sarabun', sans-serif;
-            color: white;
+            overflow-x: hidden;
+        }
+
+        /* --- Library Section --- */
+        #library-view {
             min-height: 100vh;
+            padding: 50px 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
-        /* Library View */
-        #library-view {
-            padding: 40px 20px;
-            width: 100%;
-            max-width: 1000px;
-            box-sizing: border-box;
-        }
-
         .book-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
             gap: 25px;
-            margin-top: 30px;
+            width: 100%;
+            max-width: 1000px;
         }
 
         .book-item {
             background: white;
             color: #333;
-            padding: 20px;
-            border-radius: 12px;
+            padding: 30px 20px;
+            border-radius: 15px;
             text-align: center;
             cursor: pointer;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
             transition: 0.3s;
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
         }
 
         .book-item:hover {
-            transform: translateY(-8px);
+            transform: translateY(-10px);
         }
 
-        .book-icon {
-            font-size: 50px;
-            display: block;
-            margin-bottom: 10px;
-        }
-
-        /* Reader View */
+        /* --- Reader Section --- */
         #reader-view {
             display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
             height: 100vh;
-            width: 100%;
+            width: 100vw;
+            background: radial-gradient(circle, #1e293b, #0f172a);
+            position: fixed;
+            top: 0;
+            left: 0;
+            justify-content: center;
+            align-items: center;
             perspective: 2000px;
+            z-index: 9999;
         }
 
-        .nav-bar {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            z-index: 1000;
-        }
-
-        .btn-back {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: 1px solid white;
-            padding: 8px 15px;
-            border-radius: 20px;
-            cursor: pointer;
-        }
-
-        .book-title {
-            color: var(--accent);
-            font-size: 1.5rem;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
+        /* Book Structure */
         .book {
             position: relative;
             width: 400px;
-            height: 550px;
+            height: 600px;
+            transform-style: preserve-3d;
+            transition: transform 0.5s ease;
+            /* สำหรับตอนขยาย */
+        }
+
+        /* เมื่อเข้า Fullscreen ให้ขยายสมุด */
+        #reader-view:fullscreen .book {
+            transform: scale(1.2);
         }
 
         .paper {
@@ -106,10 +88,9 @@
             height: 100%;
             top: 0;
             left: 0;
-            transition: transform 0.8s ease;
             transform-origin: left;
             transform-style: preserve-3d;
-            cursor: pointer;
+            transition: transform 0.8s cubic-bezier(0.645, 0.045, 0.355, 1);
         }
 
         .front,
@@ -117,19 +98,23 @@
             position: absolute;
             width: 100%;
             height: 100%;
-            padding: 40px;
-            box-sizing: border-box;
             background: var(--paper);
             backface-visibility: hidden;
-            box-shadow: inset 3px 0 10px rgba(0, 0, 0, 0.1);
-            color: #333;
-            border-radius: 0 5px 5px 0;
-            border: 1px solid #ddd;
+            border: 1px solid #d1d5db;
+            color: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .front {
+            border-radius: 0 10px 10px 0;
+            z-index: 2;
         }
 
         .back {
             transform: rotateY(180deg);
-            border-radius: 5px 0 0 5px;
+            border-radius: 10px 0 0 10px;
+            z-index: 1;
         }
 
         .flipped {
@@ -137,48 +122,96 @@
         }
 
         .content {
+            flex: 1;
+            padding: 40px;
             font-size: 1.1rem;
-            line-height: 1.6;
-            height: 100%;
+            line-height: 1.7;
             overflow-y: auto;
             white-space: pre-wrap;
             user-select: text;
         }
 
         .page-footer {
-            position: absolute;
-            bottom: 20px;
+            height: 40px;
+            text-align: center;
             font-size: 0.8rem;
             color: #999;
-            width: calc(100% - 80px);
-            text-align: center;
+            pointer-events: none;
         }
 
-        /* Highlight Tools */
-        .highlight {
-            background-color: var(--hl);
-            border-radius: 2px;
+        .nav-zone {
+            position: absolute;
+            top: 0;
+            width: 50px;
+            height: 100%;
+            z-index: 100;
+            cursor: pointer;
+            background: rgba(0, 0, 0, 0.02);
+            transition: 0.3s;
+        }
+
+        .nav-zone:hover {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .next-zone {
+            right: -50px;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .prev-zone {
+            left: 0;
+            border-radius: 10px 0 0 10px;
+        }
+
+        /* Toolbar */
+        .nav-bar {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 10000;
+        }
+
+        .btn-ui {
+            background: white;
+            color: black;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-ui:hover {
+            background: var(--accent);
         }
 
         #hl-tool {
             position: absolute;
             display: none;
-            background: #2ecc71;
+            background: #10b981;
             color: white;
             border: none;
-            padding: 8px 15px;
+            padding: 10px 20px;
             border-radius: 50px;
             cursor: pointer;
-            font-size: 0.8rem;
-            z-index: 3000;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            z-index: 5000;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
         }
 
-        @media (max-width: 450px) {
-            .book {
-                width: 320px;
-                height: 480px;
-            }
+        .highlight {
+            background: rgba(251, 191, 36, 0.4);
+        }
+
+        /* ซ่อนปุ่ม Fullscreen ถ้า Browser ไม่รองรับ */
+        :fullscreen-enabled #btn-fs {
+            display: flex;
         }
     </style>
 </head>
@@ -186,25 +219,22 @@
 <body>
 
     <div id="library-view">
-        <div style="text-align: center;">
-            <h1>🏛️ หอสมุดดิจิทัล</h1>
-            <p id="lib-status">กำลังเชื่อมต่อชั้นวางหนังสือ...</p>
-        </div>
+        <h1 style="color:var(--accent)">🏛️ หอสมุดดิจิทัล</h1>
         <div class="book-grid" id="book-grid"></div>
     </div>
 
     <div id="reader-view">
         <div class="nav-bar">
-            <button class="btn-back" onclick="location.reload()">← กลับหน้าหอสมุด</button>
+            <button class="btn-ui" onclick="location.reload()">← ออก</button>
+            <button class="btn-ui" id="btn-fs" onclick="toggleFullscreen()">🔲 เต็มหน้าจอ</button>
         </div>
-        <div class="book-title" id="book-display-title"></div>
         <div class="book" id="book-container"></div>
         <button id="hl-tool">✨ ไฮไลท์ข้อความ</button>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, orderBy, onSnapshot, where } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, query, orderBy, onSnapshot, where, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCQiXHPEMP8vWV_MyfdITuGRkNZyHRTJRc",
@@ -219,95 +249,106 @@
         const db = getFirestore(app);
         let activeBookId = null;
 
-        // --- 1. Load Library (Only Published) ---
-        const libQuery = query(collection(db, "my_books"), where("status", "==", "published"), orderBy("createdAt", "desc"));
-        onSnapshot(libQuery, (snap) => {
+        // 1. โหลดคลังหนังสือ
+        onSnapshot(query(collection(db, "my_books"), where("status", "==", "published")), (snap) => {
             const grid = document.getElementById('book-grid');
             grid.innerHTML = '';
-            document.getElementById('lib-status').innerText = `พบหนังสือทั้งหมด ${snap.size} เล่ม`;
-            snap.forEach(doc => {
-                const b = doc.data();
+            snap.forEach(d => {
                 const div = document.createElement('div');
                 div.className = 'book-item';
-                div.innerHTML = `<span class="book-icon">📘</span><b>${b.title}</b>`;
-                div.onclick = () => openReader(doc.id, b.title);
+                div.innerHTML = `<b>${d.data().title}</b>`;
+                div.onclick = () => openReader(d.id);
                 grid.appendChild(div);
             });
         });
 
-        // --- 2. Reader Logic ---
-        async function openReader(id, title) {
+        // 2. ระบบ Fullscreen
+        window.toggleFullscreen = () => {
+            const elem = document.getElementById("reader-view");
+            const btn = document.getElementById("btn-fs");
+
+            if (!document.fullscreenElement) {
+                elem.requestFullscreen().catch(err => {
+                    alert(`Error: ${err.message}`);
+                });
+                btn.innerHTML = "🔳 ออกจากเต็มจอ";
+            } else {
+                document.exitFullscreen();
+                btn.innerHTML = "🔲 เต็มหน้าจอ";
+            }
+        };
+
+        // 3. เปิดหน้าอ่าน
+        async function openReader(id) {
             activeBookId = id;
             document.getElementById('library-view').style.display = 'none';
             document.getElementById('reader-view').style.display = 'flex';
-            document.getElementById('book-display-title').innerText = title;
 
-            const container = document.getElementById('book-container');
-
-            // Check LocalStorage for saved highlights
-            const localData = localStorage.getItem(`hl_${id}`);
-            if (localData) {
-                container.innerHTML = localData;
-                initFlip();
-                return;
-            }
-
-            container.innerHTML = '<p style="color:white">กำลังเปิดหน้ากระดาษ...</p>';
-            const pQuery = query(collection(db, `my_books/${id}/pages`), orderBy("createdAt", "asc"));
-            const pSnap = await getDocs(pQuery);
+            const pSnap = await getDocs(query(collection(db, `my_books/${id}/pages`), orderBy("createdAt", "asc")));
+            const pages = [];
+            pSnap.forEach(d => pages.push({ id: d.id, content: d.data().content || "" }));
 
             let html = '';
-            const pages = [];
-            pSnap.forEach(d => pages.push(d.data().content || ""));
-
             for (let i = 0; i < pages.length; i += 2) {
                 html += `
-                    <div class="paper">
-                        <div class="front"><div class="content">${pages[i]}</div><div class="page-footer">${i + 1}</div></div>
-                        <div class="back"><div class="content">${pages[i + 1] || ""}</div><div class="page-footer">${i + 2}</div></div>
-                    </div>`;
+                <div class="paper" style="z-index: ${pages.length - i}">
+                    <div class="nav-zone next-zone" onclick="flip(this.parentElement, 'next', ${i})"></div>
+                    <div class="front">
+                        <div class="content" data-id="${pages[i].id}">${pages[i].content}</div>
+                        <div class="page-footer">${i + 1}</div>
+                    </div>
+                    <div class="back">
+                        <div class="nav-zone prev-zone" onclick="flip(this.parentElement, 'prev', ${i})"></div>
+                        <div class="content" data-id="${pages[i + 1]?.id || ''}">${pages[i + 1]?.content || 'จบเล่ม'}</div>
+                        <div class="page-footer">${i + 2}</div>
+                    </div>
+                </div>`;
             }
-            container.innerHTML = html || '<p>หนังสือเล่มนี้ยังไม่มีเนื้อหา</p>';
-            initFlip();
+            document.getElementById('book-container').innerHTML = html;
         }
 
-        function initFlip() {
-            const papers = document.querySelectorAll('.paper');
-            papers.forEach((p, i) => {
-                p.style.zIndex = papers.length - i;
-                p.onclick = () => {
-                    if (window.getSelection().toString()) return;
-                    p.classList.toggle('flipped');
-                    p.style.zIndex = p.classList.contains('flipped') ? i + 1 : papers.length - i;
-                };
-            });
-        }
+        // 4. พลิกหน้า
+        window.flip = (paper, dir, idx) => {
+            if (dir === 'next') {
+                paper.classList.add('flipped');
+                setTimeout(() => { paper.style.zIndex = idx + 1; }, 500);
+            } else {
+                paper.classList.remove('flipped');
+                const total = document.querySelectorAll('.paper').length;
+                setTimeout(() => { paper.style.zIndex = total - idx; }, 500);
+            }
+        };
 
-        // --- 3. Highlight Logic ---
+        // 5. ไฮไลท์
         const hlBtn = document.getElementById('hl-tool');
         document.addEventListener('mouseup', (e) => {
             const sel = window.getSelection();
             if (sel.toString().trim()) {
                 hlBtn.style.display = 'block';
                 hlBtn.style.left = e.pageX + 'px';
-                hlBtn.style.top = (e.pageY - 50) + 'px';
+                hlBtn.style.top = (e.pageY - 60) + 'px';
             } else {
-                hlBtn.style.display = 'none';
+                setTimeout(() => { if (!window.getSelection().toString()) hlBtn.style.display = 'none'; }, 200);
             }
         });
 
-        hlBtn.onclick = () => {
+        hlBtn.onclick = async (e) => {
+            e.stopPropagation();
             const sel = window.getSelection();
-            if (!sel.rangeCount) return;
             const range = sel.getRangeAt(0);
+            const contentDiv = range.commonAncestorContainer.parentElement.closest('.content');
+            if (!contentDiv) return;
+
             const span = document.createElement('span');
             span.className = 'highlight';
             try {
                 range.surroundContents(span);
-                localStorage.setItem(`hl_${activeBookId}`, document.getElementById('book-container').innerHTML);
-            } catch (e) { alert("ไม่สามารถไฮไลท์ข้ามย่อหน้าได้"); }
-            sel.removeAllRanges();
-            hlBtn.style.display = 'none';
+                await updateDoc(doc(db, `my_books/${activeBookId}/pages`, contentDiv.dataset.id), {
+                    content: contentDiv.innerHTML
+                });
+                hlBtn.style.display = 'none';
+                sel.removeAllRanges();
+            } catch (err) { alert("กรุณาไฮไลท์เฉพาะในย่อหน้าเดียวกัน"); }
         };
     </script>
 </body>
