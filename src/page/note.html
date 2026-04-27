@@ -1,13 +1,14 @@
-<!DOCTYPE html>
+ !DOCTYPE html>
 <html lang="th">
 
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>StickyCloud Pro - Full Feature Edition</title>
+    <title>StickyCloud Pro - Code & Text Edition</title>
     <link
-        href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&family=Kanit:wght@400;600&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&family=Kanit:wght@400;600&family=Fira+Code:wght@400;500&display=swap"
         rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         :root {
             --bg: #f1f5f9;
@@ -37,6 +38,7 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            user-select: none;
         }
 
         header {
@@ -75,9 +77,52 @@
             align-items: center;
             gap: 8px;
             transition: 0.2s;
+            position: relative;
         }
 
         .btn:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-pro {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .dropdown {
+            position: absolute;
+            top: 110%;
+            right: 0;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            width: 160px;
+            display: none;
+            flex-direction: column;
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+        .dropdown.show {
+            display: flex;
+        }
+
+        .dropdown-item {
+            padding: 10px 15px;
+            font-size: 13px;
+            color: var(--text);
+            cursor: pointer;
+            text-align: left;
+        }
+
+        .dropdown-item:hover {
             background: var(--accent);
             color: white;
         }
@@ -106,8 +151,8 @@
 
         .note {
             position: absolute;
-            width: 220px;
-            min-height: 150px;
+            width: 230px;
+            min-height: 160px;
             background: #fff9c4;
             border-radius: 8px;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
@@ -118,6 +163,7 @@
             resize: both;
             overflow: hidden;
             border: 1px solid rgba(0, 0, 0, 0.05);
+            user-select: auto;
         }
 
         .note-drag-handle {
@@ -135,6 +181,7 @@
             padding: 4px 8px;
             background: rgba(0, 0, 0, 0.02);
             border-bottom: 1px solid var(--border);
+            align-items: center;
         }
 
         .f-btn {
@@ -151,6 +198,16 @@
             background: rgba(0, 0, 0, 0.1);
         }
 
+        .md-status {
+            font-size: 9px;
+            font-weight: bold;
+            margin-right: 5px;
+            padding: 2px 4px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 1px solid var(--border);
+        }
+
         .content {
             flex: 1;
             outline: none;
@@ -161,9 +218,72 @@
             line-height: 1.5;
         }
 
-        .content input[type="checkbox"] {
-            margin-right: 8px;
-            transform: scale(1.1);
+        .note.is-code {
+            background: #282c34 !important;
+            color: #abb2bf !important;
+        }
+
+        .note.is-code .content {
+            font-family: 'Fira Code', monospace;
+            white-space: pre-wrap;
+        }
+
+        .note.is-code .note-drag-handle {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .note.is-code .f-btn,
+        .note.is-code .md-status {
+            color: #818cf8;
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* --- Grouping System Styles --- */
+        .group-area {
+            position: absolute;
+            border: 2px dashed #94a3b8;
+            border-radius: 12px;
+            background-color: rgba(79, 70, 229, 0.04);
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        body.dark .group-area {
+            border-color: #475569;
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .group-label {
+            position: absolute;
+            top: -32px;
+            left: 0;
+            background: var(--accent);
+            color: white;
+            padding: 4px 15px;
+            border-radius: 8px 8px 0 0;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: move;
+            pointer-events: all;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .group-del-btn {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+            padding: 0;
+            opacity: 0.7;
+        }
+
+        .group-del-btn:hover {
+            opacity: 1;
         }
 
         .page-bar {
@@ -193,50 +313,68 @@
             font-weight: 600;
         }
 
-        footer {
-            font-size: 11px;
-            padding: 6px;
-            text-align: center;
-            color: var(--muted);
-            background: var(--panel);
+        .hidden {
+            display: none !important;
+        }
+
+        .font-ctrl {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 4px;
+            padding: 0 2px;
+        }
+
+        .f-step-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0 4px;
+            font-weight: bold;
+            font-size: 14px;
+            color: var(--text);
         }
     </style>
 </head>
 
 <body>
-
     <header>
         <div class="logo">StickyCloud Pro</div>
         <div class="toolbar">
-            <div style="display:flex; align-items:center; gap:8px; font-size:13px;">
-                <input type="checkbox" id="snapToggle" checked> <label for="snapToggle">Snap Grid</label>
+            <div style="position:relative;">
+                <button class="btn" style="background:var(--accent); color:white; border:none;" id="addNoteBtn">+
+                    โน้ตใหม่</button>
+                <div class="dropdown" id="noteDropdown">
+                    <div class="dropdown-item" onclick="app.addNote('text')">📄 ข้อความปกติ</div>
+                    <div class="dropdown-item" onclick="app.addNote('code')">💻 กล่องโค้ด (Code)</div>
+                </div>
             </div>
-            <button class="btn" style="background:var(--accent); color:white; border:none;" id="addNote">+
-                โน้ตใหม่</button>
             <div id="syncIndicator" style="display:flex; align-items:center; gap:8px;">
                 <span id="syncDot" style="width:10px; height:10px; background:#10b981; border-radius:50%;"></span>
-                <span id="syncText" style="font-size:12px; font-weight:600;">ออนไลน์</span>
+                <span id="syncText" style="font-size:12px;">ออนไลน์</span>
             </div>
             <button class="btn" id="toggleDark">🌙</button>
+            <button onclick="app.createGroup()" class="btn-pro">📁 สร้างกลุ่มใหม่</button>
         </div>
     </header>
 
     <main id="board" class="board">
-        <svg id="connection-layer">
-            <defs>
-                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
-                    <path d="M0,0 L10,5 L0,10 Z" fill="var(--muted)" />
-                </marker>
-            </defs>
-        </svg>
+        <div id="canvas" style="width: 5000px; height: 5000px; position: relative;">
+            <svg id="connection-layer">
+                <defs>
+                    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+                        <path d="M0,0 L10,5 L0,10 Z" fill="var(--muted)" />
+                    </marker>
+                </defs>
+            </svg>
+        </div>
     </main>
 
     <div class="page-bar" id="pageBar">
         <button class="btn" id="addPage"
             style="border-radius:50%; width:32px; height:32px; padding:0; justify-content:center;">+</button>
     </div>
-
-    <footer>Tab: ย่อหน้า | Checklist: ☑️ | ลากมุมขวาเพื่อขยาย | คลิกขวาค้างเพื่อเลื่อนบอร์ด</footer>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
@@ -251,24 +389,27 @@
             appId: "1:266704545369:web:e403d47f324a91234a3348",
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        const fbApp = initializeApp(firebaseConfig);
+        const db = getFirestore(fbApp);
 
         class Note {
             constructor(parent, data) {
                 this.parent = parent;
                 this.id = data.id || "n_" + crypto.randomUUID();
-                this.text = data.text || ''; // เก็บเป็น HTML
-                this.color = data.color || 'rgb(49 ,56 ,94)'
+                this.text = data.text || '';
+                this.type = data.type || 'text';
+                this.color = data.color || (this.type === 'code' ? '#282c34' : 'rgb(49, 56, 94)');
                 this.x = data.x || 30; this.y = data.y || 30;
-                this.w = data.w || 220; this.h = data.h || 150;
-                this.fontSize = data.fontSize || 14;
+                this.w = data.w || 230; this.h = data.h || 160;
+                this.fontSize = parseInt(data.fontSize) || 14;
+                this.isMarkdownEnabled = data.isMarkdownEnabled || false;
+                this.isPreview = false;
                 this.createEl();
             }
 
             createEl() {
                 this.el = document.createElement('div');
-                this.el.className = 'note';
+                this.el.className = `note ${this.type === 'code' ? 'is-code' : ''}`;
                 this.el.style.backgroundColor = this.color;
                 this.el.style.left = this.x + 'px'; this.el.style.top = this.y + 'px';
                 this.el.style.width = this.w + 'px'; this.el.style.height = this.h + 'px';
@@ -277,169 +418,175 @@
                 this.el.innerHTML = `
                 <div class="note-drag-handle">
                     <div style="display:flex; gap:6px; align-items:center;">
-                        <button class="connect-btn" title="เชื่อม" style="background:none;border:none;cursor:pointer;">🔗</button>
-                        <select class="size-sel" style="font-size:10px;">
-                            <option value="12" ${this.fontSize == 12 ? 'selected' : ''}>12</option>
-                            <option value="14" ${this.fontSize == 14 ? 'selected' : ''}>14</option>
-                            <option value="18" ${this.fontSize == 18 ? 'selected' : ''}>18</option>
-                            <option value="24" ${this.fontSize == 24 ? 'selected' : ''}>24</option>
-                            <option value="26" ${this.fontSize == 26 ? 'selected' : ''}>26</option>
-                            <option value="28" ${this.fontSize == 28 ? 'selected' : ''}>28</option>
-                            <option value="30" ${this.fontSize == 30 ? 'selected' : ''}>30</option>
-                            <option value="32" ${this.fontSize == 32 ? 'selected' : ''}>32</option>
-                            <option value="34" ${this.fontSize == 34 ? 'selected' : ''}>34</option>
-                            <option value="36" ${this.fontSize == 36 ? 'selected' : ''}>36</option>
-                             
-                        </select>
+                        <button class="connect-btn" title="เชื่อม">🔗</button>
+                        <div class="font-ctrl">
+                            <button class="f-step-btn" id="f-minus">-</button>
+                            <select class="size-sel" style="font-size:10px;">
+                                ${[10, 12, 14, 16, 18, 20, 24, 28, 32, 36, 40, 48, 64].map(s => `<option value="${s}" ${this.fontSize == s ? 'selected' : ''}>${s}</option>`).join('')}
+                            </select>
+                            <button class="f-step-btn" id="f-plus">+</button>
+                        </div>
                     </div>
                     <div style="display:flex; gap:5px; align-items:center;">
-                        <input type="color" class="color-picker" value="${this.rgbToHex(this.color)}" style="width:16px;height:16px;border:none;background:none;cursor:pointer;">
-                        <button class="del-btn" style="background:none;border:none;cursor:pointer;">🗑️</button>
+                        <input type="color" class="color-picker" value="${this.rgbToHex(this.color)}">
+                        <button class="del-btn">🗑️</button>
                     </div>
                 </div>
-                <div class="format-bar">
+                <div class="format-bar ${this.type === 'code' ? 'hidden' : ''}">
+                    <div class="md-status">${this.isMarkdownEnabled ? 'MD: ON' : 'MD: OFF'}</div>
                     <button class="f-btn" data-cmd="bold"><b>B</b></button>
                     <button class="f-btn" data-cmd="italic"><i>I</i></button>
-                    <button class="f-btn" data-cmd="underline"><u>U</u></button>
                     <button class="f-btn" id="todo-btn">☑️</button>
+                    <button class="f-btn md-toggle ${this.isMarkdownEnabled ? '' : 'hidden'}" style="margin-left:auto; border:1px solid var(--border)">👁️</button>
                 </div>
                 <div class="content" contenteditable="true" spellcheck="false" style="font-size:${this.fontSize}px;">${this.text}</div>
                 `;
 
                 const contentEl = this.el.querySelector('.content');
+                const mdToggleBtn = this.el.querySelector('.md-toggle');
+                const mdStatusBtn = this.el.querySelector('.md-status');
+                const sizeSel = this.el.querySelector('.size-sel');
 
-                // Rich Text Commands
-                this.el.querySelectorAll('.f-btn[data-cmd]').forEach(btn => {
-                    btn.onmousedown = (e) => {
-                        e.preventDefault();
-                        document.execCommand(btn.dataset.cmd, false, null);
-                    };
+                this.el.querySelectorAll('.font-ctrl, .color-picker, .del-btn, .connect-btn').forEach(ctrl => {
+                    ctrl.onmousedown = (e) => e.stopPropagation();
                 });
 
-                // To-do List Command
-                this.el.querySelector('#todo-btn').onmousedown = (e) => {
-                    e.preventDefault();
-                    document.execCommand('insertHTML', false, '<div><input type="checkbox"> &nbsp;</div>');
-                };
+                this.el.querySelector('#f-plus').onclick = () => { if (this.fontSize < 64) { this.fontSize += 2; this.applyFontSize(contentEl, sizeSel); } };
+                this.el.querySelector('#f-minus').onclick = () => { if (this.fontSize > 10) { this.fontSize -= 2; this.applyFontSize(contentEl, sizeSel); } };
 
-                // Tab Support
-                contentEl.onkeydown = (e) => {
-                    if (e.key === 'Tab') {
-                        e.preventDefault();
-                        document.execCommand('insertHTML', false, '&#160;&#160;&#160;&#160;');
-                    }
-                };
+                if (mdStatusBtn) {
+                    mdStatusBtn.onclick = (e) => {
+                        this.isMarkdownEnabled = !this.isMarkdownEnabled;
+                        mdStatusBtn.innerText = this.isMarkdownEnabled ? 'MD: ON' : 'MD: OFF';
+                        mdToggleBtn.classList.toggle('hidden', !this.isMarkdownEnabled);
+                        if (!this.isMarkdownEnabled && this.isPreview) {
+                            this.isPreview = false;
+                            mdToggleBtn.innerText = '👁️';
+                            contentEl.contentEditable = "true";
+                            contentEl.innerHTML = this.text;
+                        }
+                        this.parent.autoSave();
+                    };
+                }
 
-                // Checkbox state handling
-                contentEl.onclick = (e) => {
-                    if (e.target.type === 'checkbox') {
-                        if (e.target.checked) e.target.setAttribute('checked', '');
-                        else e.target.removeAttribute('checked');
-                        this.saveContent(contentEl);
-                    }
-                };
+                if (mdToggleBtn) {
+                    mdToggleBtn.onclick = (e) => {
+                        this.isPreview = !this.isPreview;
+                        if (this.isPreview) {
+                            mdToggleBtn.innerText = '✏️';
+                            contentEl.contentEditable = "false";
+                            this.text = (this.type === 'code') ? contentEl.innerText : contentEl.innerHTML;
+                            contentEl.innerHTML = marked.parse(this.type === 'code' ? contentEl.innerText : contentEl.innerText);
+                        } else {
+                            mdToggleBtn.innerText = '👁️';
+                            contentEl.contentEditable = "true";
+                            contentEl.innerHTML = this.text;
+                        }
+                    };
+                }
 
-                contentEl.oninput = () => this.saveContent(contentEl);
-                contentEl.onmousedown = (e) => e.stopPropagation();
+                this.el.querySelectorAll('.f-btn[data-cmd]').forEach(btn => {
+                    btn.onmousedown = (e) => { e.preventDefault(); e.stopPropagation(); if (!this.isPreview) document.execCommand(btn.dataset.cmd, false, null); };
+                });
 
-                this.el.querySelector('.size-sel').onchange = (e) => {
-                    this.fontSize = e.target.value;
-                    contentEl.style.fontSize = this.fontSize + 'px';
-                    this.parent.autoSave();
-                };
-
-                this.el.querySelector('.del-btn').onclick = () => this.parent.deleteNote(this.id);
-                this.el.querySelector('.connect-btn').onclick = () => this.parent.startConnect(this);
-                this.el.querySelector('.color-picker').oninput = (e) => {
-                    this.color = e.target.value;
-                    this.el.style.backgroundColor = this.color;
-                    this.parent.autoSave();
-                };
+                contentEl.oninput = () => { if (!this.isPreview) { this.text = (this.type === 'code') ? contentEl.innerText : contentEl.innerHTML; this.parent.autoSave(); } };
+                sizeSel.onchange = (e) => { this.fontSize = parseInt(e.target.value); this.applyFontSize(contentEl, sizeSel); };
+                this.el.querySelector('.del-btn').onclick = (e) => this.parent.deleteNote(this.id);
+                this.el.querySelector('.connect-btn').onclick = (e) => this.parent.startConnect(this);
+                this.el.querySelector('.color-picker').oninput = (e) => { this.color = e.target.value; this.el.style.backgroundColor = this.color; this.parent.autoSave(); };
 
                 const ro = new ResizeObserver(() => {
-                    this.w = this.el.offsetWidth; this.h = this.el.offsetHeight;
-                    this.parent.drawConnections(); this.parent.autoSave();
+                    if (Math.abs(this.el.offsetWidth - this.w) > 2 || Math.abs(this.el.offsetHeight - this.h) > 2) {
+                        this.w = this.el.offsetWidth;
+                        this.h = this.el.offsetHeight;
+                        this.parent.drawConnections();
+                        this.parent.autoSave();
+                    }
                 });
                 ro.observe(this.el);
                 this.setupDrag();
             }
 
-            saveContent(el) {
-                this.text = el.innerHTML;
-                this.parent.autoSave();
-            }
-
-            rgbToHex(rgb) {
-                if (rgb.startsWith('#')) return rgb;
-                const m = rgb.match(/\d+/g);
-                return m ? "#" + m.slice(0, 3).map(x => parseInt(x).toString(16).padStart(2, '0')).join('') : '#fff9c4';
-            }
+            applyFontSize(contentEl, sizeSel) { contentEl.style.fontSize = this.fontSize + 'px'; sizeSel.value = this.fontSize; this.parent.autoSave(); }
+            rgbToHex(rgb) { if (rgb.startsWith('#')) return rgb; const m = rgb.match(/\d+/g); return m ? "#" + m.slice(0, 3).map(x => parseInt(x).toString(16).padStart(2, '0')).join('') : '#fff9c4'; }
 
             setupDrag() {
                 let ox, oy, isD = false;
                 const h = this.el.querySelector('.note-drag-handle');
                 h.onmousedown = (e) => {
-                    if (e.button !== 0) return;
-                    isD = true; this.parent.isDraggingAny = true;
-                    ox = e.clientX - this.el.offsetLeft; oy = e.clientY - this.el.offsetTop;
+                    if (e.button !== 0 || e.target !== h && !h.contains(e.target) || e.target.closest('.font-ctrl, .color-picker, .btn')) return;
+                    isD = true;
+                    ox = e.clientX - this.el.offsetLeft;
+                    oy = e.clientY - this.el.offsetTop;
                     this.el.style.zIndex = 1000;
+                    e.preventDefault();
                 };
-                document.addEventListener('mousemove', (e) => {
+                const onMove = (e) => {
                     if (!isD) return;
-                    let nx = e.clientX - ox, ny = e.clientY - oy;
-                    if (document.getElementById('snapToggle').checked) {
-                        nx = Math.round(nx / 30) * 30; ny = Math.round(ny / 30) * 30;
-                    }
-                    this.x = nx; this.y = ny;
-                    this.el.style.left = nx + 'px'; this.el.style.top = ny + 'px';
+                    this.x = e.clientX - ox;
+                    this.y = e.clientY - oy;
+                    this.el.style.left = this.x + 'px';
+                    this.el.style.top = this.y + 'px';
                     this.parent.drawConnections();
-                });
-                document.addEventListener('mouseup', () => {
+                };
+                const onUp = () => {
                     if (isD) {
-                        isD = false; this.parent.isDraggingAny = false;
-                        this.el.style.zIndex = ''; this.parent.autoSave();
+                        isD = false;
+                        this.el.style.zIndex = '';
+                        this.parent.autoSave();
                     }
-                });
+                };
+                document.addEventListener('mousemove', onMove);
+                document.addEventListener('mouseup', onUp);
             }
         }
 
         class StickyApp {
             constructor() {
-                this.notes = []; this.connections = []; this.pages = [];
+                this.notes = [];
+                this.groups = [];
+                this.connections = [];
                 this.activePageId = localStorage.getItem('cloud_active_page') || 'default';
                 this.container = document.getElementById('board');
+                this.canvas = document.getElementById('canvas');
                 this.svg = document.getElementById('connection-layer');
-                this.lastUpdate = 0;
                 this.init();
             }
             init() {
-                document.getElementById('addNote').onclick = () => this.addNote();
+                const addBtn = document.getElementById('addNoteBtn');
+                const dropdown = document.getElementById('noteDropdown');
+                addBtn.onclick = (e) => { e.stopPropagation(); dropdown.classList.toggle('show'); };
+                window.addEventListener('click', () => dropdown.classList.remove('show'));
+
                 document.getElementById('addPage').onclick = () => this.addPage();
                 document.getElementById('toggleDark').onclick = () => {
                     document.body.classList.toggle('dark');
                     localStorage.theme = document.body.classList.contains('dark') ? 'dark' : 'light';
                 };
                 if (localStorage.theme === 'dark') document.body.classList.add('dark');
+
                 this.setupPanning();
                 this.syncPages();
                 this.syncNotes();
             }
 
             setupPanning() {
-                let isP = false, sx, sy, sl, st;
-                this.container.oncontextmenu = e => e.preventDefault();
+                let isP = false, startX, startY, scrollL, scrollT;
+                this.container.oncontextmenu = e => { if (e.target === this.container || e.target === this.canvas) e.preventDefault(); };
                 this.container.onmousedown = (e) => {
                     if (e.button === 2) {
-                        isP = true; this.container.classList.add('panning');
-                        sx = e.pageX; sy = e.pageY; sl = this.container.scrollLeft; st = this.container.scrollTop;
+                        isP = true;
+                        this.container.classList.add('panning');
+                        startX = e.clientX; startY = e.clientY;
+                        scrollL = this.container.scrollLeft; scrollT = this.container.scrollTop;
                     }
                 };
-                document.onmousemove = (e) => {
+                document.addEventListener('mousemove', (e) => {
                     if (!isP) return;
-                    this.container.scrollLeft = sl - (e.pageX - sx);
-                    this.container.scrollTop = st - (e.pageY - sy);
-                };
-                document.onmouseup = () => { isP = false; this.container.classList.remove('panning'); };
+                    this.container.scrollLeft = scrollL - (e.clientX - startX);
+                    this.container.scrollTop = scrollT - (e.clientY - startY);
+                });
+                document.addEventListener('mouseup', () => { isP = false; this.container.classList.remove('panning'); });
             }
 
             syncPages() {
@@ -452,66 +599,191 @@
             syncNotes() {
                 if (this.unsub) this.unsub();
                 this.unsub = onSnapshot(doc(db, "stickynotes", this.activePageId), (s) => {
-                    if (this.isDraggingAny) return;
-                    const d = s.exists() ? s.data() : { notes: [], connections: [] };
-                    if (d.lastChanged > this.lastUpdate || !this.lastUpdate) this.renderBoard(d);
-                    this.updateStatus("✅ ออนไลน์", "#10b981");
+                    if (this.isSaving) return;
+                    const d = s.exists() ? s.data() : { notes: [], connections: [], groups: [] };
+                    this.renderBoard(d);
                 });
             }
 
+            // --- Group Management Logic ---
+            createGroup(title = "หัวข้อกลุ่ม") {
+                const group = {
+                    id: 'grp-' + crypto.randomUUID(),
+                    title: title,
+                    x: this.container.scrollLeft + 150,
+                    y: this.container.scrollTop + 150,
+                    w: 500, h: 350
+                };
+                this.groups.push(group);
+                this.renderGroup(group);
+                this.autoSave();
+            }
+
+            removeGroup(id) {
+                if (confirm("ลบกลุ่มนี้ใช่หรือไม่? (โน้ตข้างในจะไม่ถูกลบ)")) {
+                    this.groups = this.groups.filter(g => g.id !== id);
+                    document.getElementById(id)?.remove();
+                    this.autoSave();
+                }
+            }
+
+            renderGroup(g) {
+                if (document.getElementById(g.id)) return;
+                const el = document.createElement('div');
+                el.className = 'group-area';
+                el.id = g.id;
+                el.style.left = g.x + 'px'; el.style.top = g.y + 'px';
+                el.style.width = g.w + 'px'; el.style.height = g.h + 'px';
+
+                el.innerHTML = `
+                    <div class="group-label">
+                        <span contenteditable="true" class="g-title">${g.title}</span>
+                        <button class="group-del-btn" onclick="app.removeGroup('${g.id}')">✕</button>
+                    </div>
+                `;
+
+                const label = el.querySelector('.group-label');
+                label.onmousedown = (e) => {
+                    if (e.target.classList.contains('group-del-btn')) return;
+                    const startX = e.clientX, startY = e.clientY;
+                    const notesInGroup = this.notes.filter(n =>
+                        n.x >= g.x && n.x <= g.x + g.w && n.y >= g.y && n.y <= g.y + g.h
+                    ).map(n => ({ note: n, oldX: n.x, oldY: n.y }));
+                    const origX = g.x, origY = g.y;
+
+                    const move = (ev) => {
+                        const dx = ev.clientX - startX, dy = ev.clientY - startY;
+                        g.x = origX + dx; g.y = origY + dy;
+                        el.style.left = g.x + 'px'; el.style.top = g.y + 'px';
+                        notesInGroup.forEach(p => {
+                            p.note.x = p.oldX + dx; p.note.y = p.oldY + dy;
+                            p.note.el.style.left = p.note.x + 'px'; p.note.el.style.top = p.note.y + 'px';
+                        });
+                        this.drawConnections();
+                    };
+                    const up = () => {
+                        document.removeEventListener('mousemove', move);
+                        document.removeEventListener('mouseup', up);
+                        this.autoSave();
+                    };
+                    document.addEventListener('mousemove', move);
+                    document.addEventListener('mouseup', up);
+                };
+                this.canvas.appendChild(el);
+            }
+
             renderBoard(d) {
-                const rNotes = d.notes || []; this.connections = d.connections || [];
+                const rNotes = d.notes || [];
+                const rGroups = d.groups || [];
+                this.connections = d.connections || [];
                 const rIds = rNotes.map(n => n.id);
-                this.notes = this.notes.filter(ln => { if (!rIds.includes(ln.id)) { ln.el.remove(); return false; } return true; });
+
+                this.notes = this.notes.filter(ln => {
+                    if (!rIds.includes(ln.id)) { ln.el.remove(); return false; }
+                    return true;
+                });
+
                 rNotes.forEach(rn => {
                     const ex = this.notes.find(n => n.id === rn.id);
                     if (ex) {
                         const c = ex.el.querySelector('.content');
-                        if (document.activeElement !== c) { c.innerHTML = rn.text; ex.text = rn.text; }
-                        ex.fontSize = rn.fontSize || 14; c.style.fontSize = ex.fontSize + 'px';
+                        if (document.activeElement !== c && !ex.isPreview) {
+                            if (ex.type === 'code') c.innerText = rn.text; else c.innerHTML = rn.text;
+                            ex.text = rn.text;
+                        }
+                        ex.isMarkdownEnabled = rn.isMarkdownEnabled || false;
                         ex.color = rn.color; ex.el.style.backgroundColor = rn.color;
                         ex.x = rn.x; ex.y = rn.y; ex.w = rn.w; ex.h = rn.h;
+                        ex.fontSize = rn.fontSize || 14;
+                        c.style.fontSize = ex.fontSize + 'px';
                         ex.el.style.left = rn.x + 'px'; ex.el.style.top = rn.y + 'px';
                         ex.el.style.width = ex.w + 'px'; ex.el.style.height = ex.h + 'px';
-                    } else { const n = new Note(this, rn); this.notes.push(n); this.container.appendChild(n.el); }
+                    } else {
+                        const n = new Note(this, rn);
+                        this.notes.push(n);
+                        this.canvas.appendChild(n.el);
+                    }
                 });
+
+                // Render Groups
+                this.groups = rGroups;
+                const gIds = rGroups.map(g => g.id);
+                this.canvas.querySelectorAll('.group-area').forEach(gel => {
+                    if (!gIds.includes(gel.id)) gel.remove();
+                });
+                rGroups.forEach(rg => this.renderGroup(rg));
+
                 this.drawConnections();
+                this.updateSyncStatus("ออนไลน์", "#10b981");
+            }
+
+            updateSyncStatus(text, color) {
+                const txt = document.getElementById('syncText');
+                const dot = document.getElementById('syncDot');
+                if (txt) txt.innerText = text;
+                if (dot) dot.style.background = color;
             }
 
             autoSave() {
                 clearTimeout(this.st);
-                this.updateStatus("⏳ บันทึก...", "#3b82f6");
                 this.st = setTimeout(async () => {
-                    this.lastUpdate = Date.now();
-                    await setDoc(doc(db, "stickynotes", this.activePageId), {
-                        notes: this.notes.map(n => ({ id: n.id, text: n.text, color: n.color, x: n.x, y: n.y, w: n.w, h: n.h, fontSize: n.fontSize })),
-                        connections: this.connections, lastChanged: this.lastUpdate
-                    });
-                    this.updateStatus("✅ บันทึกแล้ว", "#10b981");
-                }, 800);
+                    this.isSaving = true;
+                    this.updateSyncStatus("บันทึก...", "#3b82f6");
+                    try {
+                        await setDoc(doc(db, "stickynotes", this.activePageId), {
+                            notes: this.notes.map(n => ({
+                                id: n.id, text: n.text, type: n.type, color: n.color,
+                                x: n.x, y: n.y, w: n.w, h: n.h, fontSize: n.fontSize,
+                                isMarkdownEnabled: n.isMarkdownEnabled
+                            })),
+                            groups: this.groups,
+                            connections: this.connections,
+                            lastChanged: Date.now()
+                        });
+                    } catch (e) { console.error(e); }
+                    this.isSaving = false;
+                    this.updateSyncStatus("ออนไลน์", "#10b981");
+                }, 1000);
             }
 
             renderTabs() {
                 const bar = document.getElementById('pageBar');
                 bar.querySelectorAll('.tab').forEach(t => t.remove());
                 this.pages.forEach(p => {
-                    const t = document.createElement('div'); t.className = `tab ${p.id === this.activePageId ? 'active' : ''}`;
-                    t.innerHTML = `${p.name} <span class="del-pg" style="margin-left:8px;opacity:0.5">✕</span>`;
+                    const t = document.createElement('div');
+                    t.className = `tab ${p.id === this.activePageId ? 'active' : ''}`;
+                    t.innerHTML = `${p.name} <span class="del-pg" style="margin-left:8px;opacity:0.3">✕</span>`;
                     t.onclick = () => this.switchPage(p.id);
                     t.querySelector('.del-pg').onclick = (e) => { e.stopPropagation(); this.deletePage(p); };
                     bar.insertBefore(t, document.getElementById('addPage'));
                 });
             }
 
-            switchPage(id) { this.activePageId = id; localStorage.setItem('cloud_active_page', id); this.lastUpdate = 0; this.syncNotes(); this.renderTabs(); }
+            switchPage(id) {
+                this.activePageId = id;
+                localStorage.setItem('cloud_active_page', id);
+                this.canvas.querySelectorAll('.note, .group-area').forEach(n => n.remove());
+                this.notes = []; this.groups = [];
+                this.syncNotes();
+                this.renderTabs();
+            }
             async addPage() { const n = prompt("ชื่อหน้าใหม่:"); if (n) await updateDoc(doc(db, "stickynotes", "_metadata"), { list: arrayUnion({ id: "pg_" + Date.now(), name: n }) }); }
             async deletePage(p) { if (this.pages.length > 1 && confirm(`ลบหน้า ${p.name}?`)) await updateDoc(doc(db, "stickynotes", "_metadata"), { list: arrayRemove(p) }); }
-            addNote() { const n = new Note(this, { x: 100, y: 100 }); this.notes.push(n); this.container.appendChild(n.el); this.autoSave(); }
-            deleteNote(id) { this.notes = this.notes.filter(n => n.id !== id); this.container.querySelector(`[data-id="${id}"]`)?.remove(); this.connections = this.connections.filter(c => c.from !== id && c.to !== id); this.drawConnections(); this.autoSave(); }
 
+            addNote(type = 'text') {
+                const n = new Note(this, { x: this.container.scrollLeft + 100, y: this.container.scrollTop + 100, type: type });
+                this.notes.push(n); this.canvas.appendChild(n.el); this.autoSave();
+            }
+            deleteNote(id) {
+                this.notes = this.notes.filter(n => n.id !== id);
+                this.canvas.querySelector(`[data-id="${id}"]`)?.remove();
+                this.connections = this.connections.filter(c => c.from !== id && c.to !== id);
+                this.drawConnections(); this.autoSave();
+            }
             startConnect(n) {
-                if (!this.pn) { this.pn = n; n.el.style.outline = "3px solid var(--accent)"; }
-                else {
+                if (!this.pn) {
+                    this.pn = n; n.el.style.outline = "3px solid var(--accent)";
+                } else {
                     if (this.pn.id !== n.id && !this.connections.some(c => c.from === this.pn.id && c.to === n.id)) {
                         this.connections.push({ from: this.pn.id, to: n.id });
                         this.drawConnections(); this.autoSave();
@@ -519,24 +791,28 @@
                     this.pn.el.style.outline = ""; this.pn = null;
                 }
             }
-
             drawConnections() {
-                this.svg.querySelectorAll('line').forEach(l => l.remove());
+                this.svg.innerHTML = `
+                <defs>
+                    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+                        <path d="M0,0 L10,5 L0,10 Z" fill="#94a3b8" />
+                    </marker>
+                </defs>
+                `;
                 this.connections.forEach(c => {
                     const n1 = this.notes.find(n => n.id === c.from), n2 = this.notes.find(n => n.id === c.to);
                     if (n1 && n2) {
                         const l = document.createElementNS("http://www.w3.org/2000/svg", "line");
                         l.setAttribute('x1', n1.x + (n1.w / 2)); l.setAttribute('y1', n1.y + (n1.h / 2));
                         l.setAttribute('x2', n2.x + (n2.w / 2)); l.setAttribute('y2', n2.y + (n2.h / 2));
-                        l.setAttribute('stroke', 'var(--muted)'); l.setAttribute('stroke-width', '2');
+                        l.setAttribute('stroke', '#94a3b8'); l.setAttribute('stroke-width', '2');
                         l.setAttribute('stroke-dasharray', '4'); l.setAttribute('marker-end', 'url(#arrow)');
                         this.svg.appendChild(l);
                     }
                 });
             }
-            updateStatus(t, c) { document.getElementById('syncText').innerText = t; document.getElementById('syncDot').style.background = c; }
         }
-        window.onload = () => new StickyApp();
+        window.app = new StickyApp();
     </script>
 </body>
 
