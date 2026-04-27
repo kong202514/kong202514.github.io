@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>StickyCloud Pro - Code & Text Edition</title>
+    <title>StickyCloud Pro - Enhanced Edition</title>
     <link
         href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&family=Kanit:wght@400;600&family=Fira+Code:wght@400;500&display=swap"
         rel="stylesheet">
@@ -162,8 +162,14 @@
             box-sizing: border-box;
             resize: both;
             overflow: hidden;
-            border: 1px solid rgba(0, 0, 0, 0.05);
+            border: 2px solid transparent;
             user-select: auto;
+        }
+
+        .note.dragging {
+            border-color: var(--accent);
+            opacity: 0.9;
+            z-index: 1001 !important;
         }
 
         .note-drag-handle {
@@ -233,12 +239,6 @@
             color: white;
         }
 
-        .note.is-code .f-btn,
-        .note.is-code .md-status {
-            color: #818cf8;
-            border-color: rgba(255, 255, 255, 0.1);
-        }
-
         /* --- Grouping System Styles --- */
         .group-area {
             position: absolute;
@@ -247,6 +247,14 @@
             background-color: rgba(79, 70, 229, 0.04);
             z-index: 5;
             pointer-events: none;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+
+        .group-area.dragging {
+            border-color: var(--accent);
+            background-color: rgba(79, 70, 229, 0.08);
+            border-style: solid;
         }
 
         body.dark .group-area {
@@ -270,6 +278,24 @@
             align-items: center;
             gap: 10px;
             box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            white-space: nowrap;
+        }
+
+        .group-resizer {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            width: 20px;
+            height: 20px;
+            cursor: nwse-resize;
+            pointer-events: all;
+            background: linear-gradient(135deg, transparent 50%, var(--muted) 50%);
+            border-radius: 0 0 10px 0;
+            opacity: 0.5;
+        }
+
+        .group-resizer:hover {
+            opacity: 1;
         }
 
         .group-del-btn {
@@ -497,8 +523,8 @@
 
                 const ro = new ResizeObserver(() => {
                     if (Math.abs(this.el.offsetWidth - this.w) > 2 || Math.abs(this.el.offsetHeight - this.h) > 2) {
-                        this.w = this.el.offsetWidth;
-                        this.h = this.el.offsetHeight;
+                        this.w = Math.round(this.el.offsetWidth / 10) * 10;
+                        this.h = Math.round(this.el.offsetHeight / 10) * 10;
                         this.parent.drawConnections();
                         this.parent.autoSave();
                     }
@@ -516,6 +542,7 @@
                 h.onmousedown = (e) => {
                     if (e.button !== 0 || e.target !== h && !h.contains(e.target) || e.target.closest('.font-ctrl, .color-picker, .btn')) return;
                     isD = true;
+                    this.el.classList.add('dragging');
                     ox = e.clientX - this.el.offsetLeft;
                     oy = e.clientY - this.el.offsetTop;
                     this.el.style.zIndex = 1000;
@@ -523,8 +550,9 @@
                 };
                 const onMove = (e) => {
                     if (!isD) return;
-                    this.x = e.clientX - ox;
-                    this.y = e.clientY - oy;
+                    // Magnet Grid 30px
+                    this.x = Math.round((e.clientX - ox) / 30) * 30;
+                    this.y = Math.round((e.clientY - oy) / 30) * 30;
                     this.el.style.left = this.x + 'px';
                     this.el.style.top = this.y + 'px';
                     this.parent.drawConnections();
@@ -532,6 +560,7 @@
                 const onUp = () => {
                     if (isD) {
                         isD = false;
+                        this.el.classList.remove('dragging');
                         this.el.style.zIndex = '';
                         this.parent.autoSave();
                     }
@@ -605,14 +634,13 @@
                 });
             }
 
-            // --- Group Management Logic ---
             createGroup(title = "หัวข้อกลุ่ม") {
                 const group = {
                     id: 'grp-' + crypto.randomUUID(),
                     title: title,
-                    x: this.container.scrollLeft + 150,
-                    y: this.container.scrollTop + 150,
-                    w: 500, h: 350
+                    x: Math.round((this.container.scrollLeft + 150) / 30) * 30,
+                    y: Math.round((this.container.scrollTop + 150) / 30) * 30,
+                    w: 480, h: 360
                 };
                 this.groups.push(group);
                 this.renderGroup(group);
@@ -620,7 +648,7 @@
             }
 
             removeGroup(id) {
-                if (confirm("ลบกลุ่มนี้ใช่หรือไม่? (โน้ตข้างในจะไม่ถูกลบ)")) {
+                if (confirm("ลบกลุ่มนี้ใช่หรือไม่? (โน้ตจะไม่ถูกลบ)")) {
                     this.groups = this.groups.filter(g => g.id !== id);
                     document.getElementById(id)?.remove();
                     this.autoSave();
@@ -640,26 +668,20 @@
                         <span contenteditable="true" class="g-title">${g.title}</span>
                         <button class="group-del-btn" onclick="app.removeGroup('${g.id}')">✕</button>
                     </div>
+                    <div class="group-resizer"></div>
                 `;
 
                 const label = el.querySelector('.group-label');
-                label.onmousedown = (e) => {
-                    if (e.target.classList.contains('group-del-btn')) return;
-                    const startX = e.clientX, startY = e.clientY;
-                    const notesInGroup = this.notes.filter(n =>
-                        n.x >= g.x && n.x <= g.x + g.w && n.y >= g.y && n.y <= g.y + g.h
-                    ).map(n => ({ note: n, oldX: n.x, oldY: n.y }));
-                    const origX = g.x, origY = g.y;
+                const resizer = el.querySelector('.group-resizer');
 
+                resizer.onmousedown = (e) => {
+                    e.preventDefault(); e.stopPropagation();
+                    const startX = e.clientX, startY = e.clientY;
+                    const startW = el.offsetWidth, startH = el.offsetHeight;
                     const move = (ev) => {
-                        const dx = ev.clientX - startX, dy = ev.clientY - startY;
-                        g.x = origX + dx; g.y = origY + dy;
-                        el.style.left = g.x + 'px'; el.style.top = g.y + 'px';
-                        notesInGroup.forEach(p => {
-                            p.note.x = p.oldX + dx; p.note.y = p.oldY + dy;
-                            p.note.el.style.left = p.note.x + 'px'; p.note.el.style.top = p.note.y + 'px';
-                        });
-                        this.drawConnections();
+                        g.w = Math.round((startW + (ev.clientX - startX)) / 30) * 30;
+                        g.h = Math.round((startH + (ev.clientY - startY)) / 30) * 30;
+                        el.style.width = g.w + 'px'; el.style.height = g.h + 'px';
                     };
                     const up = () => {
                         document.removeEventListener('mousemove', move);
@@ -669,6 +691,38 @@
                     document.addEventListener('mousemove', move);
                     document.addEventListener('mouseup', up);
                 };
+
+                label.onmousedown = (e) => {
+                    if (e.target.classList.contains('group-del-btn')) return;
+                    el.classList.add('dragging');
+                    const startX = e.clientX, startY = e.clientY;
+                    const notesInGroup = this.notes.filter(n =>
+                        n.x >= g.x && n.x < g.x + g.w && n.y >= g.y && n.y < g.y + g.h
+                    ).map(n => ({ note: n, oldX: n.x, oldY: n.y }));
+                    const origX = g.x, origY = g.y;
+
+                    const move = (ev) => {
+                        const dx = Math.round((ev.clientX - startX) / 30) * 30;
+                        const dy = Math.round((ev.clientY - startY) / 30) * 30;
+                        g.x = origX + dx; g.y = origY + dy;
+                        el.style.left = g.x + 'px'; el.style.top = g.y + 'px';
+                        notesInGroup.forEach(p => {
+                            p.note.x = p.oldX + dx; p.note.y = p.oldY + dy;
+                            p.note.el.style.left = p.note.x + 'px'; p.note.el.style.top = p.note.y + 'px';
+                        });
+                        this.drawConnections();
+                    };
+                    const up = () => {
+                        el.classList.remove('dragging');
+                        document.removeEventListener('mousemove', move);
+                        document.removeEventListener('mouseup', up);
+                        this.autoSave();
+                    };
+                    document.addEventListener('mousemove', move);
+                    document.addEventListener('mouseup', up);
+                };
+
+                el.querySelector('.g-title').onblur = (e) => { g.title = e.target.innerText; this.autoSave(); };
                 this.canvas.appendChild(el);
             }
 
@@ -705,13 +759,17 @@
                     }
                 });
 
-                // Render Groups
                 this.groups = rGroups;
                 const gIds = rGroups.map(g => g.id);
-                this.canvas.querySelectorAll('.group-area').forEach(gel => {
-                    if (!gIds.includes(gel.id)) gel.remove();
+                this.canvas.querySelectorAll('.group-area').forEach(gel => { if (!gIds.includes(gel.id)) gel.remove(); });
+                rGroups.forEach(rg => {
+                    const exG = document.getElementById(rg.id);
+                    if (exG) {
+                        exG.style.left = rg.x + 'px'; exG.style.top = rg.y + 'px';
+                        exG.style.width = rg.w + 'px'; exG.style.height = rg.h + 'px';
+                        exG.querySelector('.g-title').innerText = rg.title;
+                    } else { this.renderGroup(rg); }
                 });
-                rGroups.forEach(rg => this.renderGroup(rg));
 
                 this.drawConnections();
                 this.updateSyncStatus("ออนไลน์", "#10b981");
@@ -743,7 +801,7 @@
                     } catch (e) { console.error(e); }
                     this.isSaving = false;
                     this.updateSyncStatus("ออนไลน์", "#10b981");
-                }, 1000);
+                }, 800);
             }
 
             renderTabs() {
@@ -771,7 +829,7 @@
             async deletePage(p) { if (this.pages.length > 1 && confirm(`ลบหน้า ${p.name}?`)) await updateDoc(doc(db, "stickynotes", "_metadata"), { list: arrayRemove(p) }); }
 
             addNote(type = 'text') {
-                const n = new Note(this, { x: this.container.scrollLeft + 100, y: this.container.scrollTop + 100, type: type });
+                const n = new Note(this, { x: Math.round((this.container.scrollLeft + 100) / 30) * 30, y: Math.round((this.container.scrollTop + 100) / 30) * 30, type: type });
                 this.notes.push(n); this.canvas.appendChild(n.el); this.autoSave();
             }
             deleteNote(id) {
@@ -781,9 +839,8 @@
                 this.drawConnections(); this.autoSave();
             }
             startConnect(n) {
-                if (!this.pn) {
-                    this.pn = n; n.el.style.outline = "3px solid var(--accent)";
-                } else {
+                if (!this.pn) { this.pn = n; n.el.style.outline = "3px solid var(--accent)"; }
+                else {
                     if (this.pn.id !== n.id && !this.connections.some(c => c.from === this.pn.id && c.to === n.id)) {
                         this.connections.push({ from: this.pn.id, to: n.id });
                         this.drawConnections(); this.autoSave();
@@ -793,12 +850,7 @@
             }
             drawConnections() {
                 this.svg.innerHTML = `
-                <defs>
-                    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
-                        <path d="M0,0 L10,5 L0,10 Z" fill="#94a3b8" />
-                    </marker>
-                </defs>
-                `;
+                <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#94a3b8" /></marker></defs>`;
                 this.connections.forEach(c => {
                     const n1 = this.notes.find(n => n.id === c.from), n2 = this.notes.find(n => n.id === c.to);
                     if (n1 && n2) {
