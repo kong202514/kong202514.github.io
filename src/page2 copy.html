@@ -1,53 +1,33 @@
- 
+ <!DOCTYPE html>
 <html lang="th">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ศูนย์ควบคุมการบิน YouTube - เวอร์ชันภาษาไทย</title>
+    <title>YouTube Mission Control - Flight Deck v2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Anuphan:wght@300;500;700&display=swap');
-
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+        
         body {
             background-color: #050505;
             color: #33ff33;
-            font-family: 'Anuphan', 'JetBrains Mono', sans-serif;
+            font-family: 'JetBrains Mono', monospace;
             overflow-x: hidden;
         }
 
         .cockpit-panel {
             background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
             border: 2px solid #333;
-            box-shadow: inset 0 0 15px rgba(0, 255, 0, 0.05), 0 10px 30px rgba(0, 0, 0, 0.5);
+            box-shadow: inset 0 0 15px rgba(0, 255, 0, 0.05), 0 10px 30px rgba(0,0,0,0.5);
             position: relative;
         }
 
-        .led-green {
-            box-shadow: 0 0 10px #00ff00;
-            background-color: #00ff00;
-        }
-
-        .led-red {
-            box-shadow: 0 0 10px #ff0000;
-            background-color: #ff0000;
-        }
-
-        .led-blue {
-            box-shadow: 0 0 10px #00ffff;
-            background-color: #00ffff;
-        }
-
-        .led-orange {
-            box-shadow: 0 0 10px #ffaa00;
-            background-color: #ffaa00;
-        }
-
-        .led-off {
-            background-color: #1a1a1a;
-            box-shadow: none;
-        }
+        .led-green { box-shadow: 0 0 10px #00ff00; background-color: #00ff00; }
+        .led-red { box-shadow: 0 0 10px #ff0000; background-color: #ff0000; }
+        .led-blue { box-shadow: 0 0 10px #00ffff; background-color: #00ffff; }
+        .led-orange { box-shadow: 0 0 10px #ffaa00; background-color: #ffaa00; }
+        .led-off { background-color: #1a1a1a; box-shadow: none; }
 
         .btn-cockpit {
             background: #222;
@@ -77,22 +57,19 @@
             background-size: 20px 20px;
         }
 
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #33ff33; }
+
         @keyframes scanline {
-            0% {
-                transform: translateY(-100%);
-            }
-
-            100% {
-                transform: translateY(100%);
-            }
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
         }
-
         .scanline {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 2px;
+            top: 0; left: 0; width: 100%; height: 2px;
             background: rgba(51, 255, 51, 0.05);
             animation: scanline 8s linear infinite;
             pointer-events: none;
@@ -101,10 +78,7 @@
 
         .crt-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 118, 0.03));
             background-size: 100% 3px, 3px 100%;
             pointer-events: none;
@@ -112,174 +86,151 @@
         }
     </style>
 </head>
-
 <body class="p-4 grid-bg">
     <div class="scanline"></div>
     <div class="crt-overlay"></div>
 
-    <!-- ส่วนหัวเครื่อง / HUD -->
+    <!-- HEADER / HUD -->
     <header class="mb-6 flex flex-wrap justify-between items-end border-b-2 border-green-900/50 pb-4">
         <div>
-            <h1 class="text-3xl font-black italic tracking-tighter screen-glow">แผงควบคุมภารกิจ // รุ่น V2.1</h1>
-            <p class="text-[10px] text-green-700 opacity-80 uppercase tracking-widest">รหัสเซสชัน: <span
-                    id="session-id">กำลังโหลด...</span></p>
+            <h1 class="text-3xl font-black italic tracking-tighter screen-glow">YT_MISSION_CONTROL // FLIGHT_DECK_v2</h1>
+            <p class="text-[10px] text-green-700 opacity-80 uppercase tracking-widest">Session_ID: <span id="session-id">LOADING...</span></p>
         </div>
         <div class="flex gap-8 text-[12px]">
             <div class="text-right">
-                <p class="text-green-800 uppercase">เวลามาตรฐาน</p>
-                <p id="clock">00:00:00</p>
+                <p class="text-green-800 uppercase">Current_Coordinates</p>
+                <p id="clock">00:00:00 UTC</p>
             </div>
             <div class="text-right">
-                <p class="text-green-800 uppercase">สถานะระบบ</p>
-                <p id="system-status-text" class="text-green-400">พร้อมปฏิบัติงาน</p>
+                <p class="text-green-800 uppercase">Engine_Status</p>
+                <p id="system-status-text" class="text-green-400">OPTIMAL</p>
             </div>
         </div>
     </header>
 
     <main class="grid grid-cols-12 gap-4">
-
-        <!-- แผงซ้าย: คลังไอเดียและระดับเสียง -->
+        
+        <!-- LEFT PANEL: MISSION PLANNING -->
         <div class="col-span-12 lg:col-span-3 space-y-4">
             <div class="cockpit-panel p-4 rounded-lg">
                 <div class="flex justify-between items-center mb-4 border-b border-green-900/30 pb-2">
-                    <span class="text-xs font-bold text-green-500 uppercase">คลังไอเดียภารกิจ</span>
+                    <span class="text-xs font-bold text-green-500 uppercase">Idea_Vault</span>
                     <div id="vault-led" class="led-green h-2 w-2 rounded-full"></div>
                 </div>
                 <div class="space-y-3 max-h-[350px] overflow-y-auto pr-2" id="idea-list">
-                    <!-- รายการไอเดียจะแสดงที่นี่ -->
+                    <!-- Idea Items are injected here -->
                 </div>
-                <button onclick="addIdea()"
-                    class="w-full mt-4 btn-cockpit py-2 text-xs font-bold text-green-400 border-green-800 hover:bg-green-900/20">
-                    <i class="fas fa-plus mr-2"></i>สร้างภารกิจใหม่
+                <button onclick="addIdea()" class="w-full mt-4 btn-cockpit py-2 text-xs font-bold text-green-400 border-green-800 hover:bg-green-900/20">
+                    <i class="fas fa-plus mr-2"></i>CREATE_NEW_MISSION
                 </button>
             </div>
 
             <div class="cockpit-panel p-4 rounded-lg">
-                <span class="text-xs font-bold text-green-500 uppercase block mb-3">ระดับการสื่อสาร (Live)</span>
+                <span class="text-xs font-bold text-green-500 uppercase block mb-3">Live_Comms_Levels</span>
                 <div class="space-y-2">
                     <div class="h-4 bg-black border border-gray-800 relative overflow-hidden">
-                        <div id="audio-bar-1"
-                            class="h-full bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 w-[0%] transition-all duration-100">
-                        </div>
+                        <div id="audio-bar-1" class="h-full bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 w-[0%] transition-all duration-100"></div>
                     </div>
                     <div class="h-4 bg-black border border-gray-800 relative overflow-hidden">
-                        <div id="audio-bar-2"
-                            class="h-full bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 w-[0%] transition-all duration-100">
-                        </div>
+                        <div id="audio-bar-2" class="h-full bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 w-[0%] transition-all duration-100"></div>
                     </div>
                 </div>
                 <div class="grid grid-cols-4 gap-1 mt-4">
-                    <div
-                        class="h-8 bg-gray-900 border border-gray-700 rounded flex flex-col items-center justify-center">
+                    <div id="rec-status-btn" class="h-8 bg-gray-900 border border-gray-700 rounded flex flex-col items-center justify-center transition-colors">
                         <div id="rec-led" class="led-off h-1 w-3 mb-1"></div>
-                        <span class="text-[8px]">บันทึก</span>
+                        <span class="text-[8px]">REC</span>
                     </div>
-                    <div
-                        class="h-8 bg-gray-900 border border-gray-700 rounded flex flex-col items-center justify-center">
+                    <div class="h-8 bg-gray-900 border border-gray-700 rounded flex flex-col items-center justify-center">
                         <div class="led-blue h-1 w-3 mb-1"></div>
-                        <span class="text-[8px]">เสียง</span>
+                        <span class="text-[8px]">MON</span>
                     </div>
-                    <div
-                        class="h-8 bg-gray-900 border border-gray-700 rounded flex flex-col items-center justify-center">
+                    <div class="h-8 bg-gray-900 border border-gray-700 rounded flex flex-col items-center justify-center">
                         <div class="led-green h-1 w-3 mb-1"></div>
-                        <span class="text-[8px]">สัญญาณ</span>
+                        <span class="text-[8px]">AUX</span>
                     </div>
-                    <div
-                        class="h-8 bg-gray-900 border border-gray-700 rounded flex flex-col items-center justify-center">
+                    <div class="h-8 bg-gray-900 border border-gray-700 rounded flex flex-col items-center justify-center">
                         <div id="battery-led" class="led-green h-1 w-3 mb-1"></div>
-                        <span class="text-[8px]">แบต</span>
+                        <span class="text-[8px]">BATT</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- แผงกลาง: การเขียนสคริปต์และตัวควบคุมหลัก -->
+        <!-- CENTER PANEL: FLIGHT RECORDER & SCRIPT -->
         <div class="col-span-12 lg:col-span-6 space-y-4">
             <div class="cockpit-panel p-6 rounded-lg min-h-[550px] flex flex-col shadow-[0_0_50px_rgba(0,255,0,0.03)]">
                 <div class="flex justify-between items-center mb-6">
                     <div class="flex gap-4">
                         <div class="text-center bg-black/40 p-2 border border-green-900/30 rounded">
-                            <span class="text-[9px] block text-green-800">ค่าแสง (ISO)</span>
+                            <span class="text-[9px] block text-green-800">EXP_READY</span>
                             <span class="text-lg font-bold" id="current-iso">800</span>
                         </div>
                         <div class="text-center bg-black/40 p-2 border border-green-900/30 rounded">
-                            <span class="text-[9px] block text-green-800">พื้นที่ว่าง (GB)</span>
+                            <span class="text-[9px] block text-green-800">STORAGE_GB</span>
                             <span class="text-lg font-bold" id="disk-space">420</span>
                         </div>
                     </div>
                     <div class="text-right">
-                        <span class="text-[10px] block text-red-700 italic">ระยะเวลาภารกิจ</span>
+                        <span class="text-[10px] block text-red-700 italic">MISSION_DURATION</span>
                         <span class="text-3xl font-black text-red-500 screen-glow" id="rec-time">00:00:00:00</span>
                     </div>
                 </div>
 
-                <!-- ตัวแก้ไขสคริปต์ -->
+                <!-- SCRIPT EDITOR -->
                 <div class="flex-grow bg-black/60 border-2 border-green-900/40 rounded p-4 mb-4 relative shadow-inner">
                     <div class="absolute top-2 right-2 flex gap-3 z-10">
-                        <button onclick="exportScript()"
-                            class="text-[10px] text-blue-500 hover:text-blue-300 font-bold bg-blue-900/10 px-2 py-1 rounded border border-blue-900/50">ดาวน์โหลด
-                            TXT</button>
-                        <button onclick="clearScript()"
-                            class="text-[10px] text-red-700 hover:text-red-400 font-bold">ล้างข้อมูล</button>
+                        <button onclick="exportScript()" class="text-[10px] text-blue-500 hover:text-blue-300 font-bold bg-blue-900/10 px-2 py-1 rounded border border-blue-900/50">DOWNLOAD_TXT</button>
+                        <button onclick="clearScript()" class="text-[10px] text-red-700 hover:text-red-400 font-bold">CLEAR_BUFFER</button>
                     </div>
-                    <span
-                        class="text-[10px] text-green-800 mb-2 block tracking-widest font-black uppercase">โมดูลสคริปต์ที่ใช้งานอยู่</span>
-                    <textarea id="main-script"
-                        class="w-full h-[320px] bg-transparent outline-none text-green-400 text-sm resize-none leading-relaxed"
-                        spellcheck="false" placeholder="เริ่มเขียนบทหรือวางโครงสร้างเนื้อหาได้ที่นี่..."></textarea>
+                    <span class="text-[10px] text-green-800 mb-2 block tracking-widest font-black uppercase">Active_Script_Module</span>
+                    <textarea id="main-script" class="w-full h-[320px] bg-transparent outline-none text-green-400 text-sm resize-none leading-relaxed" spellcheck="false" placeholder="กรอกสคริปต์หรือเนื้อหาที่นี่..."></textarea>
                 </div>
 
-                <!-- แผงปุ่มควบคุมหลัก -->
+                <!-- MAIN CONTROL CONSOLE -->
                 <div class="grid grid-cols-6 gap-2">
-                    <button id="btn-rec" onclick="toggleRecording()"
-                        class="btn-cockpit h-16 rounded flex flex-col items-center justify-center text-red-600 group">
+                    <button id="btn-rec" onclick="toggleRecording()" class="btn-cockpit h-16 rounded flex flex-col items-center justify-center text-red-600 group">
                         <i class="fas fa-circle text-lg mb-1" id="rec-icon"></i>
-                        <span class="text-[8px] font-black" id="rec-text">เริ่มบันทึก</span>
+                        <span class="text-[8px] font-black" id="rec-text">START_REC</span>
                     </button>
-                    <button onclick="takeSnapshot()"
-                        class="btn-cockpit h-16 rounded flex flex-col items-center justify-center text-blue-400">
+                    <button onclick="takeSnapshot()" class="btn-cockpit h-16 rounded flex flex-col items-center justify-center text-blue-400">
                         <i class="fas fa-camera text-lg mb-1"></i>
-                        <span class="text-[8px] font-black">ถ่ายภาพด่วน</span>
+                        <span class="text-[8px] font-black">SNAPSHOT</span>
                     </button>
-                    <button onclick="toggleLights()"
-                        class="btn-cockpit h-16 rounded flex flex-col items-center justify-center text-yellow-500">
+                    <button onclick="toggleLights()" class="btn-cockpit h-16 rounded flex flex-col items-center justify-center text-yellow-500">
                         <i class="fas fa-bolt text-lg mb-1"></i>
-                        <span class="text-[8px] font-black">ระบบไฟ</span>
+                        <span class="text-[8px] font-black">TLX_LIGHTS</span>
                     </button>
-                    <button onclick="saveMission()"
-                        class="btn-cockpit h-16 rounded flex flex-col items-center justify-center text-purple-400">
+                    <button onclick="saveMission()" class="btn-cockpit h-16 rounded flex flex-col items-center justify-center text-purple-400">
                         <i class="fas fa-save text-lg mb-1"></i>
-                        <span class="text-[8px] font-black">บันทึกข้อมูล</span>
+                        <span class="text-[8px] font-black">SAVE_LOG</span>
                     </button>
-                    <button
-                        class="btn-cockpit h-16 rounded flex flex-col items-center justify-center text-green-400 opacity-50 cursor-not-allowed">
+                    <button class="btn-cockpit h-16 rounded flex flex-col items-center justify-center text-green-400 opacity-50 cursor-not-allowed">
                         <i class="fas fa-cloud-upload-alt text-lg mb-1"></i>
-                        <span class="text-[8px] font-black">ส่งขึ้นคลาวด์</span>
+                        <span class="text-[8px] font-black">AIR_SYNC</span>
                     </button>
-                    <button onclick="resetSystem()"
-                        class="btn-cockpit h-16 rounded flex flex-col items-center justify-center text-gray-500">
+                    <button onclick="resetSystem()" class="btn-cockpit h-16 rounded flex flex-col items-center justify-center text-gray-500">
                         <i class="fas fa-sync text-lg mb-1"></i>
-                        <span class="text-[8px] font-black">รีบูตระบบ</span>
+                        <span class="text-[8px] font-black">REBOOT</span>
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- แผงขวา: ข้อมูลสถิติและรายการตรวจสอบ -->
+        <!-- RIGHT PANEL: CHECKLIST & TELEMETRY -->
         <div class="col-span-12 lg:col-span-3 space-y-4">
             <div class="cockpit-panel p-4 rounded-lg">
-                <span class="text-xs font-bold text-green-500 uppercase block mb-3">ข้อมูลการตอบสนอง</span>
+                <span class="text-xs font-bold text-green-500 uppercase block mb-3">Live_Data_Feed</span>
                 <div class="grid grid-cols-2 gap-3">
                     <div class="border border-green-900/30 p-2 bg-black/20">
-                        <span class="text-[8px] text-green-800 uppercase">อัตราความสนใจ</span>
+                        <span class="text-[8px] text-green-800 uppercase">Engagement</span>
                         <div class="text-lg font-bold text-blue-400" id="stat-engagement">0.0%</div>
                     </div>
                     <div class="border border-green-900/30 p-2 bg-black/20">
-                        <span class="text-[8px] text-green-800 uppercase">จำนวนภารกิจ</span>
+                        <span class="text-[8px] text-green-800 uppercase">Missions_Done</span>
                         <div class="text-lg font-bold text-green-400" id="stat-count">0</div>
                     </div>
                 </div>
-                <!-- กราฟจำลอง -->
+                <!-- Dynamic Bar Graph -->
                 <div class="mt-4 h-24 flex items-end gap-1 px-1 border-b border-green-900/20">
                     <div id="bar-1" class="bg-green-500/40 w-full h-[20%] transition-all duration-500"></div>
                     <div id="bar-2" class="bg-green-500/60 w-full h-[40%] transition-all duration-500"></div>
@@ -291,99 +242,93 @@
 
             <div class="cockpit-panel p-4 rounded-lg border-red-900/30 shadow-[0_0_20px_rgba(255,0,0,0.05)]">
                 <div class="flex justify-between items-center mb-3">
-                    <span class="text-xs font-bold text-red-500 uppercase italic">ตรวจสอบก่อนเริ่มบิน</span>
+                    <span class="text-xs font-bold text-red-500 uppercase italic">Pre-Flight_Check</span>
                     <span id="check-percent" class="text-[10px] text-red-900">0%</span>
                 </div>
                 <div class="space-y-2 text-[10px]" id="checklist-container">
                     <label class="flex items-center gap-3 cursor-pointer group p-1 hover:bg-red-500/5 rounded">
-                        <input type="checkbox" onchange="updateTakeoffStatus()"
-                            class="mission-check accent-red-500 h-3 w-3 bg-black border-red-900">
-                        <span class="group-hover:text-red-400">ตรวจสอบระดับไมโครโฟน</span>
+                        <input type="checkbox" onchange="updateTakeoffStatus()" class="mission-check accent-red-500 h-3 w-3 bg-black border-red-900">
+                        <span class="group-hover:text-red-400">MIC_LEVELS_VERIFIED</span>
                     </label>
                     <label class="flex items-center gap-3 cursor-pointer group p-1 hover:bg-red-500/5 rounded">
-                        <input type="checkbox" onchange="updateTakeoffStatus()"
-                            class="mission-check accent-red-500 h-3 w-3">
-                        <span class="group-hover:text-red-400">จัดองค์ประกอบภาพในกล้อง</span>
+                        <input type="checkbox" onchange="updateTakeoffStatus()" class="mission-check accent-red-500 h-3 w-3">
+                        <span class="group-hover:text-red-400">FRAME_COMPOSITION_SET</span>
                     </label>
                     <label class="flex items-center gap-3 cursor-pointer group p-1 hover:bg-red-500/5 rounded">
-                        <input type="checkbox" onchange="updateTakeoffStatus()"
-                            class="mission-check accent-red-500 h-3 w-3">
-                        <span class="group-hover:text-red-400">เซตสภาพแวดล้อมและแสงไฟ</span>
+                        <input type="checkbox" onchange="updateTakeoffStatus()" class="mission-check accent-red-500 h-3 w-3">
+                        <span class="group-hover:text-red-400">LIGHTING_ENVIRONMENT_LUX</span>
                     </label>
                     <label class="flex items-center gap-3 cursor-pointer group p-1 hover:bg-red-500/5 rounded">
-                        <input type="checkbox" onchange="updateTakeoffStatus()"
-                            class="mission-check accent-red-500 h-3 w-3">
-                        <span class="group-hover:text-red-400">เตรียมคีย์เวิร์ด SEO/แท็ก</span>
+                        <input type="checkbox" onchange="updateTakeoffStatus()" class="mission-check accent-red-500 h-3 w-3">
+                        <span class="group-hover:text-red-400">SEO_KEYWORD_TAGS_LOADED</span>
                     </label>
                     <label class="flex items-center gap-3 cursor-pointer group p-1 hover:bg-red-500/5 rounded">
-                        <input type="checkbox" onchange="updateTakeoffStatus()"
-                            class="mission-check accent-red-500 h-3 w-3">
-                        <span class="group-hover:text-red-400">แบตเตอรี่สำรองพร้อมใช้งาน</span>
+                        <input type="checkbox" onchange="updateTakeoffStatus()" class="mission-check accent-red-500 h-3 w-3">
+                        <span class="group-hover:text-red-400">BATTERY_LEVEL_>_50%</span>
                     </label>
                 </div>
-                <button id="btn-takeoff" disabled onclick="initiateTakeoff()"
-                    class="w-full mt-6 py-3 bg-gray-900 border border-gray-700 text-gray-700 text-[10px] font-black transition-all uppercase">
-                    เริ่มภารกิจ (ระบบล็อค)
+                <button id="btn-takeoff" disabled onclick="initiateTakeoff()" class="w-full mt-6 py-3 bg-gray-900 border border-gray-700 text-gray-700 text-[10px] font-black transition-all uppercase">
+                    INITIATE_TAKEOFF (LOCK)
                 </button>
             </div>
         </div>
     </main>
 
-    <!-- บันทึกระบบ -->
+    <!-- SYSTEM LOGS -->
     <footer class="mt-4 grid grid-cols-12 gap-4">
         <div class="col-span-12 lg:col-span-9 cockpit-panel p-2 rounded h-24 overflow-hidden shadow-inner">
             <div id="logs" class="text-[9px] text-green-900 font-mono">
-                <!-- Log จะแสดงที่นี่ -->
+                <!-- Logs injected here -->
             </div>
         </div>
         <div class="col-span-12 lg:col-span-3 cockpit-panel p-2 rounded flex items-center justify-around">
             <div class="text-center">
-                <p class="text-[8px] text-green-800 uppercase font-black">CPU_ภาระงาน</p>
+                <p class="text-[8px] text-green-800 uppercase font-black">CPU_Load</p>
                 <p id="cpu-load" class="text-xs">0%</p>
             </div>
             <div id="warning-light" class="text-center group">
                 <div class="led-off h-3 w-3 rounded-full mx-auto mb-1 group-hover:led-orange"></div>
-                <p class="text-[8px] text-green-800">แจ้งเตือน</p>
+                <p class="text-[8px] text-green-800">ALERT</p>
             </div>
             <div class="text-center">
-                <p class="text-[8px] text-green-800 uppercase font-black">MEM_บัฟเฟอร์</p>
+                <p class="text-[8px] text-green-800 uppercase font-black">MEM_Buffer</p>
                 <p class="text-xs">1.2GB</p>
             </div>
         </div>
     </footer>
 
     <script>
-        // --- ระบบจัดเก็บข้อมูล ---
-        let missions = JSON.parse(localStorage.getItem('yt_missions_th')) || [];
-        let currentScript = localStorage.getItem('yt_current_script_th') || "";
+        // --- DATA PERSISTENCE ENGINE ---
+        let missions = JSON.parse(localStorage.getItem('yt_missions')) || [];
+        let currentScript = localStorage.getItem('yt_current_script') || "";
         let sessionID = Math.random().toString(36).substring(2, 10).toUpperCase();
 
-        // --- การจัดการสถานะ ---
+        // --- STATE MANAGEMENT ---
         let isRecording = false;
         let recSeconds = 0;
         let recInterval;
 
-        // --- เริ่มต้นระบบ ---
+        // --- INITIALIZATION ---
         window.onload = () => {
             document.getElementById('session-id').innerText = sessionID;
             document.getElementById('main-script').value = currentScript;
             renderMissions();
-            addLog("เริ่มต้นระบบ... ยินดีต้อนรับ ผู้บัญชาการภารกิจ");
+            addLog("SYSTEM INITIALIZED. WELCOME COMMANDER.");
             startSimulations();
             updateStats();
         };
 
-        // --- นาฬิกาและจำลอง HUD ---
+        // --- CLOCK & HUD SIMULATION ---
         function updateClock() {
             const now = new Date();
-            document.getElementById('clock').innerText = now.toLocaleTimeString('th-TH');
+            document.getElementById('clock').innerText = now.toISOString().replace('T', ' ').split('.')[0] + " UTC";
         }
         setInterval(updateClock, 1000);
 
         function startSimulations() {
-            // จำลองระดับเสียง
+            // Audio simulation
             setInterval(() => {
-                if (isRecording) {
+                if(isRecording) {
                     document.getElementById('audio-bar-1').style.width = (Math.random() * 40 + 50) + '%';
                     document.getElementById('audio-bar-2').style.width = (Math.random() * 30 + 40) + '%';
                 } else {
@@ -392,70 +337,69 @@
                 }
             }, 150);
 
-            // จำลอง CPU
+            // CPU Load simulation
             setInterval(() => {
-                document.getElementById('cpu-load').innerText = Math.floor(Math.random() * 15 + 5) + '%';
+                document.getElementById('cpu-load').innerText = Math.floor(Math.random() * 25 + 5) + '%';
             }, 3000);
 
-            // จำลอง Log เบื้องหลัง
-            const systemMsgs = ["กำลังซิงค์ข้อมูลเซิร์ฟเวอร์...", "สแกนอัลกอริทึมเสร็จสิ้น", "เครือข่ายเสถียร", "บัฟเฟอร์ว่าง"];
+            // Background Log simulation
+            const systemMsgs = ["PINGING_SERVER...", "ALGO_SCAN_COMPLETE", "BUFFER_CLEARED", "SYNC_OK"];
             setInterval(() => {
-                if (Math.random() > 0.8) addLog(systemMsgs[Math.floor(Math.random() * systemMsgs.length)]);
-            }, 10000);
+                if(Math.random() > 0.7) addLog(systemMsgs[Math.floor(Math.random()*systemMsgs.length)]);
+            }, 8000);
         }
 
-        // --- การจัดการภารกิจ (ไอเดีย) ---
+        // --- MISSION ACTIONS ---
         function addIdea() {
-            const title = prompt("ป้อนชื่อไอเดียหรือภารกิจหลัก:");
-            if (title) {
+            const title = prompt("ENTER MISSION_OBJECTIVE (ชื่อหัวข้อวิดีโอ):");
+            if(title) {
                 const mission = {
                     id: Date.now(),
                     title: title,
-                    date: new Date().toLocaleDateString('th-TH'),
-                    priority: "ปานกลาง",
-                    status: "กำลังวางแผน"
+                    date: new Date().toLocaleDateString(),
+                    priority: "BETA",
+                    status: "PLANNING"
                 };
                 missions.push(mission);
                 saveData();
                 renderMissions();
-                addLog(`เพิ่มภารกิจใหม่: ${title}`);
+                addLog(`NEW MISSION CAPTURED: ${title}`);
             }
         }
 
         function deployMission(id) {
             const mission = missions.find(m => m.id === id);
-            if (mission) {
-                const existingText = document.getElementById('main-script').value;
-                document.getElementById('main-script').value = `[หัวข้อภารกิจ: ${mission.title}]\n------------------\n${existingText}`;
-                addLog(`ส่งข้อมูลภารกิจเข้าสู่แผงควบคุมกลาง: ${mission.title}`);
+            if(mission) {
+                document.getElementById('main-script').value = `[OBJECTIVE: ${mission.title}]\n------------------\n\n`;
+                addLog(`DEPLOYING MISSION DATA TO CENTER HUD: ${mission.title}`);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         }
 
         function deleteMission(id) {
-            if (confirm("ต้องการยกเลิกภารกิจนี้ใช่หรือไม่?")) {
+            if(confirm("ABORT MISSION?")) {
                 missions = missions.filter(m => m.id !== id);
                 saveData();
                 renderMissions();
-                addLog("ยกเลิกภารกิจและล้างข้อมูลออกจากหน่วยความจำแล้ว");
+                addLog("MISSION ABORTED AND REMOVED FROM STORAGE.");
             }
         }
 
         function renderMissions() {
             const list = document.getElementById('idea-list');
-            list.innerHTML = missions.length ? "" : "<p class='text-[10px] text-green-900 italic'>ยังไม่มีข้อมูลภารกิจในคลัง</p>";
+            list.innerHTML = missions.length ? "" : "<p class='text-[10px] text-green-900 italic'>NO MISSIONS LOADED.</p>";
             missions.slice().reverse().forEach(m => {
                 const div = document.createElement('div');
                 div.className = "bg-black/40 border border-green-900/30 p-2 text-xs rounded hover:border-green-500/50 transition-all";
                 div.innerHTML = `
                     <div class="flex justify-between mb-1">
-                        <span class="text-blue-500 text-[9px] font-bold">[สถานะ: ${m.priority}]</span>
+                        <span class="text-blue-500 text-[9px] font-bold">[PRIORITY: ${m.priority}]</span>
                         <span class="text-gray-600 text-[8px]">${m.date}</span>
                     </div>
                     <p class="mb-2 text-green-400 font-bold truncate">${m.title}</p>
                     <div class="flex gap-2">
-                        <button onclick="deployMission(${m.id})" class="text-[9px] border border-green-900 px-2 py-0.5 hover:bg-green-500 hover:text-black font-bold">ส่งข้อมูล</button>
-                        <button onclick="deleteMission(${m.id})" class="text-[9px] border border-red-900 px-2 py-0.5 hover:bg-red-900 hover:text-white">ลบ</button>
+                        <button onclick="deployMission(${m.id})" class="text-[9px] border border-green-900 px-2 py-0.5 hover:bg-green-500 hover:text-black font-bold">DEPLOY</button>
+                        <button onclick="deleteMission(${m.id})" class="text-[9px] border border-red-900 px-2 py-0.5 hover:bg-red-900 hover:text-white">ABORT</button>
                     </div>
                 `;
                 list.appendChild(div);
@@ -463,7 +407,7 @@
             updateStats();
         }
 
-        // --- ส่วนควบคุมการผลิต ---
+        // --- PRODUCTION CONTROLS ---
         function toggleRecording() {
             isRecording = !isRecording;
             const btn = document.getElementById('btn-rec');
@@ -471,22 +415,22 @@
             const text = document.getElementById('rec-text');
             const led = document.getElementById('rec-led');
 
-            if (isRecording) {
+            if(isRecording) {
                 btn.classList.add('bg-red-900/20');
                 icon.classList.add('animate-pulse');
-                text.innerText = "หยุดบันทึก";
+                text.innerText = "STOP_REC";
                 led.className = "led-red h-1 w-3 mb-1";
-                addLog("เริ่มการบันทึก... กำลังติดตามรหัสเวลา");
+                addLog("RECORDING INITIATED. TIMECODE START.");
                 recInterval = setInterval(() => {
                     recSeconds++;
                     updateTimecode();
-                }, 1000 / 24);
+                }, 1000/24);
             } else {
                 btn.classList.remove('bg-red-900/20');
                 icon.classList.remove('animate-pulse');
-                text.innerText = "เริ่มบันทึก";
+                text.innerText = "START_REC";
                 led.className = "led-off h-1 w-3 mb-1";
-                addLog(`หยุดการบันทึก... รวมระยะเวลา: ${document.getElementById('rec-time').innerText}`);
+                addLog(`RECORDING PAUSED. TOTAL TIME: ${document.getElementById('rec-time').innerText}`);
                 clearInterval(recInterval);
             }
         }
@@ -500,112 +444,114 @@
         }
 
         function clearScript() {
-            if (confirm("ล้างข้อมูลสคริปต์ทั้งหมดในบัฟเฟอร์?")) {
+            if(confirm("WIPE SCRIPT BUFFER?")) {
                 document.getElementById('main-script').value = "";
-                localStorage.removeItem('yt_current_script_th');
-                addLog("ล้างบัฟเฟอร์สคริปต์เสร็จสิ้น");
+                localStorage.removeItem('yt_current_script');
+                addLog("SCRIPT BUFFER WIPED.");
             }
         }
 
         function exportScript() {
             const text = document.getElementById('main-script').value;
-            if (!text) return addLog("ผิดพลาด: ไม่มีข้อมูลในบัฟเฟอร์เพื่อส่งออก");
+            if(!text) return addLog("ERROR: NO DATA IN BUFFER.");
             const blob = new Blob([text], { type: 'text/plain' });
             const anchor = document.createElement('a');
-            anchor.download = `บทวิดีโอ_เซสชัน_${sessionID}.txt`;
+            anchor.download = `MISSION_SCRIPT_${sessionID}.txt`;
             anchor.href = window.URL.createObjectURL(blob);
             anchor.click();
-            addLog("ส่งออกบทเป็นไฟล์ .txt เรียบร้อยแล้ว");
+            addLog("SCRIPT EXPORTED TO LOCAL STORAGE.");
         }
 
         function saveMission() {
             const script = document.getElementById('main-script').value;
-            localStorage.setItem('yt_current_script_th', script);
-            addLog("บันทึกภารกิจอัตโนมัติลงในหน่วยความจำเครื่องเรียบร้อย");
+            localStorage.setItem('yt_current_script', script);
+            addLog("AUTOSAVE COMPLETED. MISSION DATA PERSISTED.");
         }
 
         function toggleLights() {
             const led = document.getElementById('vault-led');
-            if (led.classList.contains('led-green')) {
+            if(led.classList.contains('led-green')) {
                 led.className = "led-blue h-2 w-2 rounded-full";
-                addLog("ปรับโหมดแสง: โทนเย็น (BLUE)");
+                addLog("LIGHTING PRESET: COOL_BLUE");
             } else {
                 led.className = "led-green h-2 w-2 rounded-full";
-                addLog("ปรับโหมดแสง: มาตรฐาน (GREEN)");
+                addLog("LIGHTING PRESET: STUDIO_GREEN");
             }
         }
 
-        // --- ระบบตรวจสอบและการบิน ---
+        // --- CHECKLIST & TAKEOFF ---
         function updateTakeoffStatus() {
             const checks = document.querySelectorAll('.mission-check');
             const checked = Array.from(checks).filter(c => c.checked).length;
             const percent = Math.round((checked / checks.length) * 100);
-
+            
             document.getElementById('check-percent').innerText = `${percent}%`;
-
+            
             const takeoffBtn = document.getElementById('btn-takeoff');
-            if (percent === 100) {
+            if(percent === 100) {
                 takeoffBtn.disabled = false;
                 takeoffBtn.className = "w-full mt-6 py-3 bg-red-600 border border-red-400 text-white text-[10px] font-black hover:bg-red-500 shadow-[0_0_20px_rgba(255,0,0,0.4)] transition-all cursor-pointer uppercase";
-                takeoffBtn.innerText = "เริ่มภารกิจ (พร้อม)";
-                addLog("ทุกระบบอยู่ในเกณฑ์ปกติ... อนุมัติการดำเนินการ");
+                takeoffBtn.innerText = "INITIATE_TAKEOFF (READY)";
+                addLog("ALL SYSTEMS GREEN. TAKEOFF AUTHORIZED.");
             } else {
                 takeoffBtn.disabled = true;
                 takeoffBtn.className = "w-full mt-6 py-3 bg-gray-900 border border-gray-700 text-gray-700 text-[10px] font-black uppercase";
-                takeoffBtn.innerText = "เริ่มภารกิจ (ระบบล็อค)";
+                takeoffBtn.innerText = "INITIATE_TAKEOFF (LOCK)";
             }
         }
 
         function initiateTakeoff() {
-            addLog("นับถอยหลัง 3... 2... 1...");
+            addLog("T-MINUS 3... 2... 1...");
             setTimeout(() => {
-                alert("ยินดีด้วย! ภารกิจของคุณพร้อมสำหรับการเริ่มถ่ายทำ/อัปโหลดแล้ว!");
-                addLog("ภารกิจเสร็จสิ้นสมบูรณ์... ปิดโหมด HUD");
+                alert("MISSION SUCCESS: วิดีโอของคุณพร้อมสำหรับการ Takeoff แล้ว!");
+                addLog("MISSION COMPLETED. DISENGAGING HUD.");
+                // Reset checks
                 document.querySelectorAll('.mission-check').forEach(c => c.checked = false);
                 updateTakeoffStatus();
             }, 1000);
         }
 
-        // --- เครื่องมือเสริม ---
+        // --- UTILS ---
         function addLog(msg) {
             const logsDiv = document.getElementById('logs');
             const div = document.createElement('div');
-            div.innerHTML = `<span class="text-green-700">[${new Date().toLocaleTimeString('th-TH')}]</span> > ${msg}`;
+            div.innerHTML = `<span class="text-green-700">[${new Date().toLocaleTimeString()}]</span> > ${msg}`;
             logsDiv.prepend(div);
-            if (logsDiv.children.length > 20) logsDiv.removeChild(logsDiv.lastChild);
+            if(logsDiv.children.length > 20) logsDiv.removeChild(logsDiv.lastChild);
         }
 
         function saveData() {
-            localStorage.setItem('yt_missions_th', JSON.stringify(missions));
+            localStorage.setItem('yt_missions', JSON.stringify(missions));
         }
 
         function updateStats() {
             document.getElementById('stat-count').innerText = missions.length;
             document.getElementById('stat-engagement').innerText = (Math.random() * 5 + 5).toFixed(1) + "%";
-            for (let i = 1; i <= 5; i++) {
+            
+            // Randomize bars for visual effect
+            for(let i=1; i<=5; i++) {
                 document.getElementById(`bar-${i}`).style.height = (Math.random() * 80 + 20) + '%';
             }
         }
 
         function resetSystem() {
-            if (confirm("รีเซ็ตระบบเป็นค่าโรงงาน? (ข้อมูลไอเดียและบททั้งหมดจะหายไป)")) {
+            if(confirm("FACTORY RESET SYSTEM? ข้อมูลทั้งหมดจะหายไป")) {
                 localStorage.clear();
                 location.reload();
             }
         }
 
         function takeSnapshot() {
-            addLog("ถ่ายภาพหน้าจอด่วน... บันทึก Metadata สำเร็จ");
+            addLog("SNAPSHOT CAPTURED. METADATA SAVED TO RAW_LOGS.");
             document.body.style.opacity = "0.5";
             setTimeout(() => document.body.style.opacity = "1", 50);
         }
 
-        // บันทึกขณะพิมพ์
+        // Save script on typing
         document.getElementById('main-script').addEventListener('input', (e) => {
-            localStorage.setItem('yt_current_script_th', e.target.value);
+            localStorage.setItem('yt_current_script', e.target.value);
         });
 
     </script>
 </body>
-
 </html>
