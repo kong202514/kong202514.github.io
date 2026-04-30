@@ -123,7 +123,8 @@
                                 class="bg-black border border-gray-800 w-full"></label>
                         <label class="text-yellow-500">วันตัด (EDIT): <input type="date" id="date-edit"
                                 class="bg-black border border-gray-800 w-full"></label>
-                        <label class="text-red-500">วันลง (PUB): <input type="date" id="date-pub"
+                        <label class="text-red-500">วันลง (PUB):
+                             <input type="date" id="date-pub"
                                 class="bg-black border border-gray-800 w-full"></label>
                     </div>
                 </div>
@@ -264,7 +265,6 @@
     </footer>
 
     <script type="module">
-
  // 1. Firebase SDK Imports
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
@@ -286,7 +286,20 @@
     const analytics = getAnalytics(app);
     const db = getFirestore(app);
 
-    // --- ระบบสำรองข้อมูล Cloud (Background Sync) ---
+    // --- ตัวแปรและสถานะระบบ ---
+    let missions = JSON.parse(localStorage.getItem('yt_missions_v3')) || [];
+    let viewDate = new Date();
+    const monthNamesThai = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+
+    // --- Helper: ฟังก์ชันแปลงวันที่เป็นรูปแบบไทย (ว/ด/ป) ---
+    window.formatThaiDate = function (dateStr) {
+        if (!dateStr) return '-';
+        // const [y, m, d] = dateStr.split('-');
+        const [y, m, d] = dateStr.split('-');
+        return `${d}/${m}/${parseInt(y) + 543}`;
+    };
+
+    // --- ระบบสำรองข้อมูล Cloud ---
     window.syncToCloud = async function () {
         try {
             const currentScript = localStorage.getItem('yt_current_script_th') || "";
@@ -298,30 +311,22 @@
                 lastUpdated: new Date().toISOString(),
                 sessionID: document.getElementById('session-id').innerText
             });
-
-            addLog("CLOUD: สำรองข้อมูลไปยัง Firebase สำเร็จ");
+            addLog("CLOUD: สำรองข้อมูลไปยัง Firebase สำเร็จ"); 
         } catch (e) {
             console.error("Firebase Sync Error: ", e);
-            addLog("CLOUD_ERROR: ไม่สามารถเชื่อมต่อฐานข้อมูลได้");
+            addLog("CLOUD_ERROR: ไม่สามารถเชื่อมต่อฐานข้อมูลได้"); 
         }
     };
 
-    // --- ตัวแปรและสถานะระบบ ---
-    let missions = JSON.parse(localStorage.getItem('yt_missions_v3')) || [];
-    let viewDate = new Date();
-    const monthNamesThai = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
-
-    // --- เริ่มต้นระบบ ---
+    // --- เริ่มต้นระบบเมื่อโหลดหน้าเว็บ ---
     window.onload = () => {
         document.getElementById('session-id').innerText = Math.random().toString(36).substring(7).toUpperCase();
         renderMissions();
         renderCalendar();
 
-        // โหลดสคริปต์ล่าสุดจาก LocalStorage
         const savedScript = localStorage.getItem('yt_current_script_th');
         if (savedScript) document.getElementById('main-script').value = savedScript;
 
-        // มาตรวัดและนาฬิกา
         setInterval(() => {
             document.getElementById('clock').innerText = new Date().toLocaleTimeString('th-TH');
             const bar1 = document.getElementById('audio-bar-1');
@@ -329,22 +334,7 @@
         }, 1000);
     };
 
-    // --- ฟังก์ชัน Global สำหรับปุ่มใน HTML ---
-    window.switchTab = function (mode) {
-        const scriptTab = document.getElementById('tab-script');
-        const calTab = document.getElementById('tab-calendar');
-        const scriptCont = document.getElementById('content-script');
-        const calCont = document.getElementById('content-calendar');
-
-        if (mode === 'script') {
-            scriptTab.classList.add('tab-active'); calTab.classList.remove('tab-active');
-            scriptCont.classList.remove('hidden'); calCont.classList.add('hidden');
-        } else {
-            calTab.classList.add('tab-active'); scriptTab.classList.remove('tab-active');
-            calCont.classList.remove('hidden'); scriptCont.classList.add('hidden');
-        }
-    };
-
+    // --- ระบบจัดการภารกิจ (Add / Edit / Delete) ---
     window.addEnhancedIdea = function () {
         const title = document.getElementById('mission-name').value;
         const rec = document.getElementById('date-rec').value;
@@ -354,13 +344,61 @@
         if (title) {
             const mission = { id: Date.now(), title, rec, edit, pub, status: "PLANNING" };
             missions.push(mission);
-            localStorage.setItem('yt_missions_v3', JSON.stringify(missions));
-            renderMissions();
-            renderCalendar();
-            addLog(`อนุมัติภารกิจ: ${title}`);
+            updateAndSync();
+            addLog(`อนุมัติภารกิจ: ${title}`); 
             document.getElementById('mission-name').value = "";
-            window.syncToCloud(); // ซิงค์หลังเพิ่มงานทันที
         }
+    };
+
+    window.editMission = function (id) {
+        const mission = missions.find(m => m.id === id);
+        if (mission) {
+            document.getElementById('mission-name').value = mission.title;
+            document.getElementById('date-rec').value = mission.rec;
+            document.getElementById('date-edit').value = mission.edit;
+            document.getElementById('date-pub').value = mission.pub;
+
+            missions = missions.filter(m => m.id !== id);
+            addLog(`SYSTEM: กำลังแก้ไขภารกิจ "${mission.title}"`); 
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
+    window.deleteMission = function (id) {
+        if (confirm("ยืนยันการลบภารกิจนี้?")) {
+            missions = missions.filter(m => m.id !== id);
+            updateAndSync();
+            addLog("SYSTEM: ลบภารกิจเรียบร้อยแล้ว"); 
+        }
+    };
+
+    function updateAndSync() {
+        localStorage.setItem('yt_missions_v3', JSON.stringify(missions));
+        renderMissions();
+        renderCalendar();
+        window.syncToCloud();
+    }
+
+    // --- การแสดงผล UI ---
+    window.renderMissions = function () {
+        const list = document.getElementById('idea-list');
+        if (!list) return;
+        list.innerHTML = missions.map(m => `
+        <div class="bg-black/40 border border-green-900/30 p-2 text-[10px] rounded mb-2 group relative">
+            <div class="flex justify-between items-start">
+                <p class="text-green-400 font-bold">${m.title}</p>
+                <div class="flex gap-2">
+                    <button onclick="editMission(${m.id})" class="text-gray-500 hover:text-yellow-400">แก้ไข</button>
+                    <button onclick="deleteMission(${m.id})" class="text-gray-500 hover:text-red-500">ลบ</button>
+                </div>
+            </div>
+            <div class="flex flex-wrap gap-2 opacity-80 mt-1 text-[9px]">
+                <span class="text-blue-400">อัด: ${window.formatThaiDate(m.rec)}</span> 
+                <span class="text-yellow-400">ตัด: ${window.formatThaiDate(m.edit)}</span> 
+                <span class="text-red-400">ลง: ${window.formatThaiDate(m.pub)}</span>
+            </div>
+        </div>
+    `).join('');
     };
 
     window.renderCalendar = function () {
@@ -380,77 +418,52 @@
             const cell = document.createElement('div');
             cell.className = "cal-day";
             const dateStr = `${viewDate.getFullYear()}-${String(viewDate.getMonth() + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
-
             cell.innerHTML = `<span>${i}</span><div class="flex mt-1 flex-wrap"></div>`;
             const container = cell.querySelector('.flex');
 
             missions.forEach(m => {
-                if (m.rec === dateStr) container.innerHTML += `<span class="dot bg-blue-500" title="REC: ${m.title}"></span>`;
-                if (m.edit === dateStr) container.innerHTML += `<span class="dot bg-yellow-500" title="EDIT: ${m.title}"></span>`;
-                if (m.pub === dateStr) container.innerHTML += `<span class="dot bg-red-500" title="PUB: ${m.title}"></span>`;
+                if (m.rec === dateStr) container.innerHTML += `<span class="dot bg-blue-500"></span>`;
+                if (m.edit === dateStr) container.innerHTML += `<span class="dot bg-yellow-500"></span>`;
+                if (m.pub === dateStr) container.innerHTML += `<span class="dot bg-red-500"></span>`;
             });
-
             grid.appendChild(cell);
         }
     };
 
-    window.prevMonth = () => { viewDate.setMonth(viewDate.getMonth() - 1); renderCalendar(); };
-    window.nextMonth = () => { viewDate.setMonth(viewDate.getMonth() + 1); renderCalendar(); };
+    // --- ระบบ Tab และ Log ---
+    window.switchTab = (mode) => {
+        const scriptCont = document.getElementById('content-script');
+        const calCont = document.getElementById('content-calendar');
+        if (mode === 'script') {
+            scriptCont.classList.remove('hidden'); calCont.classList.add('hidden');
+        } else {
+            calCont.classList.remove('hidden'); scriptCont.classList.add('hidden');
+        }
+    };
+
+    window.addLog = (msg) => {
+        const l = document.getElementById('logs');
+        if (l) l.innerHTML = `<div>[${new Date().toLocaleTimeString()}] > ${msg}</div>` + l.innerHTML;
+    };
 
     // --- Script Engine ---
     window.injectTemplate = function (type) {
         const area = document.getElementById('main-script');
         const start = area.selectionStart;
         const end = area.selectionEnd;
-        const oldText = area.value;
-
         const templates = {
-            hook: `\n[🪝 HOOK: 0-10 SECONDS]\n- วิชวล: (โชว์ผลลัพธ์สุดท้าย / ฉากที่ตื่นเต้นที่สุด)\n- คำพูด: "คุณเคยสงสัยไหมว่า... (ปัญหา)? วันนี้ผมจะโชว์วิธีการ... (ทางแก้)!"\n- Checklist: [ ] ขยี้จุดเจ็บ [ ] โชว์ความว้าว\n--------------------\n`,
-            problem: `\n[⚠️ PROBLEM & AGITATION]\n- คำพูด: "หลายคนพยายามจะ... แต่ก็ต้องเจอกับ... ซึ่งมันน่าหงุดหงิดใช่ไหมครับ?"\n- Checklist: [ ] ใส่สถิติ/ความจริง [ ] เน้นย้ำความเสียดาย\n--------------------\n`,
-            intro: `\n[👋 LOGO & INTRO: 10-25 SECONDS]\n- กราฟิก: (ชื่อรายการ / กราฟิกเคลื่อนไหว)\n- คำพูด: "สวัสดีครับผม... ยินดีต้อนรับสู่ช่อง... วันนี้เราอยู่กับหัวข้อ..."\n--------------------\n`,
-            body: `\n[📝 MAIN CONTENT: THE MEAT]\n- ส่วนที่ 1: (ใส่เนื้อหาสำคัญที่สุดก่อน)\n- ส่วนที่ 2: (รายละเอียดปลีกย่อย)\n--------------------\n`,
-            visual: `\n[🎬 VISUAL NOTES / B-ROLL PLAN]\n- ฉากที่ต้องถ่าย: 1. (ภาพหน้าจอ) 2. (ภาพ Close-up)\n- เพลงประกอบ: (ระบุอารมณ์เพลง)\n--------------------\n`,
-            engagement: `\n[💬 MID-ROLL ENGAGEMENT]\n- คำถาม: "ใครเคยเจอแบบนี้คอมเมนต์เลข 1 หน่อยครับ!"\n- กิจกรรม: "อย่าลืมกดไลก์เป็นกำลังใจให้นะครับ"\n--------------------\n`,
-            summary: `\n[📊 SUMMARY & KEY TAKEAWAY]\n- สรุปสั้นๆ: 1. ... 2. ...\n--------------------\n`,
-            cta: `\n[🚀 FINAL CTA & END SCREEN]\n- การกระทำ: "คลิปถัดไปที่แนะนำคือ..."\n- คำพูด: "ขอบคุณที่รับชม สวัสดีครับ"\n--------------------\n`
+            hook: `\n[🪝 HOOK]\n- วิชวล: (โชว์ผลลัพธ์)\n- Script: "คุณรู้ไหมว่า..."\n--------------------\n`,
+            problem: `\n[⚠️ PROBLEM]\n- ขยี้ปัญหา: "หลายคนเจอแบบนี้..."\n--------------------\n`,
+            body: `\n[📝 CONTENT]\n- หัวข้อหลัก:\n--------------------\n`,
+            cta: `\n[🚀 CTA]\n- ปิดท้าย: "กดติดตามเพื่อ..."\n--------------------\n`
         };
-
-        const textToInject = templates[type] || "";
-        area.value = oldText.substring(0, start) + textToInject + oldText.substring(end);
-        area.selectionStart = area.selectionEnd = start + textToInject.length;
+        const text = templates[type] || "";
+        area.value = area.value.substring(0, start) + text + area.value.substring(end);
         area.focus();
-
-        localStorage.setItem('yt_current_script_th', area.value);
-        addLog(`ENGINE: ติดตั้งโมดูล ${type.toUpperCase()} สำเร็จ`);
+        localStorage.setItem('yt_current_script_th', area.value); 
     };
 
-    window.renderMissions = function () {
-        const list = document.getElementById('idea-list');
-        if (!list) return;
-        list.innerHTML = missions.map(m => `
-        <div class="bg-black/40 border border-green-900/30 p-2 text-[10px] rounded mb-2">
-            <p class="text-green-400 font-bold">${m.title}</p>
-            <div class="flex gap-2 opacity-60">
-                <span>R: ${m.rec || '-'}</span> <span>E: ${m.edit || '-'}</span> <span class="text-red-500">P: ${m.pub || '-'}</span>
-            </div>
-        </div>
-    `).join('');
-    };
-
-    window.addLog = function (msg) {
-        const l = document.getElementById('logs');
-        if (!l) return;
-        l.innerHTML = `<div>[${new Date().toLocaleTimeString()}] > ${msg}</div>` + l.innerHTML;
-    };
-
-    // ดักจับการ Save เพื่อซิงค์ Firebase
-    document.addEventListener('click', function (e) {
-        if (e.target && (e.target.innerText === 'บันทึกข้อมูล' || e.target.getAttribute('onclick') === 'saveMission()')) {
-            setTimeout(window.syncToCloud, 500);
-        }
-    });
-
-    // บันทึกสคริปต์ลง LocalStorage ขณะพิมพ์
+    // Event Listeners สำหรับ Auto-save
     document.getElementById('main-script').addEventListener('input', (e) => {
         localStorage.setItem('yt_current_script_th', e.target.value);
     });
