@@ -1,0 +1,460 @@
+ 
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ศูนย์ควบคุมการบิน YouTube V3 - Integrated System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Anuphan:wght@300;500;700&display=swap');
+
+        body {
+            background-color: #050505;
+            color: #33ff33;
+            font-family: 'Anuphan', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .cockpit-panel {
+            background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
+            border: 2px solid #333;
+            position: relative;
+        }
+
+        .led-green {
+            box-shadow: 0 0 10px #00ff00;
+            background-color: #00ff00;
+        }
+
+        .led-red {
+            box-shadow: 0 0 10px #ff0000;
+            background-color: #ff0000;
+        }
+
+        .btn-cockpit {
+            background: #222;
+            border: 1px solid #444;
+            transition: all 0.1s ease;
+            box-shadow: 0 4px 0 #111;
+        }
+
+        .btn-cockpit:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #111;
+        }
+
+        .grid-bg {
+            background-image: radial-gradient(rgba(51, 255, 51, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        /* สไตล์ปฏิทินใหม่ */
+        .cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            background: #222;
+            border: 1px solid #444;
+        }
+
+        .cal-day {
+            background: #0a0a0a;
+            min-height: 50px;
+            padding: 4px;
+            font-size: 10px;
+            border: 1px solid #1a1a1a;
+        }
+
+        .cal-today {
+            border: 1px solid #33ff33;
+            background: #112211;
+        }
+
+        .dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 2px;
+        }
+
+        .tab-active {
+            color: #33ff33;
+            border-bottom: 2px solid #33ff33;
+            background: rgba(51, 255, 51, 0.1);
+        }
+    </style>
+</head>
+
+<body class="p-4 grid-bg">
+    <!-- คงส่วนประกอบเดิม: Scanline & Overlay -->
+    <div class="scanline"></div>
+    <div class="crt-overlay"></div>
+
+    <header class="mb-6 flex justify-between items-end border-b-2 border-green-900/50 pb-4">
+        <div>
+            <h1 class="text-3xl font-black italic tracking-tighter text-green-400">แผงควบคุมภารกิจ // V3.0 (HYBRID)</h1>
+            <p class="text-[10px] text-green-700 opacity-80 uppercase tracking-widest">รหัสเซสชัน: <span
+                    id="session-id">LOADING...</span></p>
+        </div>
+        <div class="flex gap-8 text-[12px]">
+            <div class="text-right">
+                <p class="text-green-800 uppercase">เวลามาตรฐาน</p>
+                <p id="clock">00:00:00</p>
+            </div>
+            <div class="text-right">
+                <p class="text-green-800 uppercase">สถานะระบบ</p>
+                <p class="text-green-400">ONLINE</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="grid grid-cols-12 gap-4">
+        <!-- แผงซ้าย: คงเดิม + เพิ่ม Input วันที่ -->
+        <div class="col-span-12 lg:col-span-3 space-y-4">
+            <div class="cockpit-panel p-4 rounded-lg">
+                <span class="text-xs font-bold text-green-500 uppercase block mb-2">กำหนดภารกิจใหม่</span>
+                <div class="space-y-2 mb-4">
+                    <input type="text" id="mission-name" placeholder="ชื่อวิดีโอ..."
+                        class="w-full bg-black border border-green-900 p-2 text-xs text-green-400">
+                    <div class="grid grid-cols-1 gap-1 text-[9px]">
+                        <label class="text-blue-500">วันอัด (REC): <input type="date" id="date-rec"
+                                class="bg-black border border-gray-800 w-full"></label>
+                        <label class="text-yellow-500">วันตัด (EDIT): <input type="date" id="date-edit"
+                                class="bg-black border border-gray-800 w-full"></label>
+                        <label class="text-red-500">วันลง (PUB): <input type="date" id="date-pub"
+                                class="bg-black border border-gray-800 w-full"></label>
+                    </div>
+                </div>
+                <button onclick="addEnhancedIdea()"
+                    class="w-full btn-cockpit py-2 text-xs font-bold text-green-400 border-green-800 hover:bg-green-900/20">
+                    <i class="fas fa-plus mr-2"></i>สร้างภารกิจใหม่
+                </button>
+                <div class="mt-4 space-y-3 max-h-[250px] overflow-y-auto pr-2" id="idea-list">
+                    <!-- รายการภารกิจเดิมจะอยู่ที่นี่ -->
+                </div>
+            </div>
+
+            <!-- มาตรวัดเสียงเดิม -->
+            <div class="cockpit-panel p-4 rounded-lg">
+                <span class="text-xs font-bold text-green-500 uppercase block mb-3">ระดับการสื่อสาร (Live)</span>
+                <div class="space-y-2">
+                    <div class="h-4 bg-black border border-gray-800 relative overflow-hidden">
+                        <div id="audio-bar-1"
+                            class="h-full bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 w-[0%] transition-all duration-100">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- แผงกลาง: ปรับปรุงให้มี Tabs สลับระหว่าง สคริปต์ และ ปฏิทิน -->
+        <div class="col-span-12 lg:col-span-6 space-y-4">
+            <div class="cockpit-panel rounded-lg min-h-[550px] flex flex-col p-4 shadow-[0_0_50px_rgba(0,255,0,0.03)]">
+                <!-- Tab Headers -->
+                <div class="flex border-b border-green-900/30 mb-4 text-[10px] font-bold uppercase">
+                    <button id="tab-script" onclick="switchTab('script')"
+                        class="px-6 py-2 tab-active">โมดูลสคริปต์</button>
+                    <button id="tab-calendar" onclick="switchTab('calendar')"
+                        class="px-6 py-2 text-green-900">ปฏิทินภารกิจ (1 ปี)</button>
+                </div>
+
+                <!-- Content 1: ระบบเขียนสคริปต์เดิม + ปุ่มเทมเพลต -->
+                <div id="content-script" class="flex flex-col flex-grow">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-[10px] text-green-800 tracking-widest font-black uppercase">Main Script
+                            Buffer</span>
+            <div class="flex flex-wrap gap-2 mb-4 p-2 border-b border-green-900/20">
+                <!-- ระดับ 1: โครงสร้างหลัก -->
+                <button onclick="injectTemplate('hook')"
+                    class="text-[8px] border border-blue-500 px-2 py-1 text-blue-400 hover:bg-blue-500/20 font-bold">🪝 HOOK
+                    (หยุดคนดู)</button>
+                <button onclick="injectTemplate('problem')"
+                    class="text-[8px] border border-red-500 px-2 py-1 text-red-400 hover:bg-red-500/20 font-bold">⚠️ PROBLEM
+                    (ขยี้ปัญหา)</button>
+                <button onclick="injectTemplate('intro')"
+                    class="text-[8px] border border-purple-500 px-2 py-1 text-purple-400 hover:bg-purple-500/20 font-bold">👋 INTRO
+                    (เปิดตัว)</button>
+            
+                <!-- ระดับ 2: เนื้อหาและเทคนิค -->
+                <button onclick="injectTemplate('body')"
+                    class="text-[8px] border border-yellow-500 px-2 py-1 text-yellow-400 hover:bg-yellow-500/20 font-bold">📝
+                    CONTENT (เนื้อหาหลัก)</button>
+                <button onclick="injectTemplate('visual')"
+                    class="text-[8px] border border-cyan-500 px-2 py-1 text-cyan-400 hover:bg-cyan-500/20 font-bold">🎬
+                    VISUAL/B-ROLL (ช็อตภาพ)</button>
+                <button onclick="injectTemplate('engagement')"
+                    class="text-[8px] border border-pink-500 px-2 py-1 text-pink-400 hover:bg-pink-500/20 font-bold">💬 ENGAGEMENT
+                    (ชวนคุย)</button>
+            
+                <!-- ระดับ 3: ปิดจบ -->
+                <button onclick="injectTemplate('summary')"
+                    class="text-[8px] border border-orange-500 px-2 py-1 text-orange-400 hover:bg-orange-500/20 font-bold">📊
+                    SUMMARY (สรุป)</button>
+                <button onclick="injectTemplate('cta')"
+                    class="text-[8px] border border-green-500 px-2 py-1 text-green-400 hover:bg-green-500/20 font-bold">🚀 CTA
+                    (ปิดคลิป)</button>
+            </div>
+                    </div>
+                    <textarea id="main-script"
+                        class="w-full flex-grow bg-black/60 border-2 border-green-900/40 rounded p-4 text-green-400 text-sm resize-none"
+                        spellcheck="false"></textarea>
+                </div>
+
+                <!-- Content 2: ระบบปฏิทินรายเดือน -->
+                <div id="content-calendar" class="hidden flex-grow animate-fadeIn">
+                    <div class="flex justify-between items-center mb-2">
+                        <button onclick="prevMonth()" class="text-green-500 text-xs">◀ ย้อน</button>
+                        <span id="current-month-label" class="text-sm font-bold text-green-400">เมษายน 2569</span>
+                        <button onclick="nextMonth()" class="text-green-500 text-xs">ถัดไป ▶</button>
+                    </div>
+                    <div class="cal-grid" id="calendar-body">
+                        <!-- ปฏิทินจะถูกวาดตรงนี้ -->
+                    </div>
+                    <div class="mt-4 flex gap-4 text-[8px] justify-center">
+                        <span><span class="dot bg-blue-500"></span> วันอัดคลิป</span>
+                        <span><span class="dot bg-yellow-500"></span> วันตัดต่อ</span>
+                        <span><span class="dot bg-red-500"></span> วันลงคลิป</span>
+                    </div>
+                </div>
+
+                <!-- ปุ่มควบคุมเดิม -->
+                <div class="grid grid-cols-6 gap-2 mt-4">
+                    <button onclick="toggleRecording()"
+                        class="btn-cockpit h-14 rounded flex flex-col items-center justify-center text-red-600"><i
+                            class="fas fa-circle text-lg"></i><span class="text-[8px]">REC</span></button>
+                    <button onclick="saveMission()"
+                        class="btn-cockpit h-14 rounded flex flex-col items-center justify-center text-purple-400"><i
+                            class="fas fa-save text-lg"></i><span class="text-[8px]">SAVE</span></button>
+                    <button onclick="exportScript()"
+                        class="btn-cockpit h-14 rounded flex flex-col items-center justify-center text-blue-400"><i
+                            class="fas fa-download text-lg"></i><span class="text-[8px]">TXT</span></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- แผงขวา: Checklist และสถิติเดิม -->
+        <div class="col-span-12 lg:col-span-3 space-y-4">
+            <div class="cockpit-panel p-4 rounded-lg">
+                <span class="text-xs font-bold text-green-500 uppercase block mb-3">ตรวจสอบการบิน</span>
+                <div class="space-y-2 text-[10px]" id="checklist-container">
+                    <!-- รายการ Checklist เดิม -->
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" class="mission-check">
+                        ไมโครโฟนพร้อม</label>
+                    <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" class="mission-check">
+                        แสงไฟพร้อม</label>
+                </div>
+            </div>
+            <!-- กราฟจำลองเดิม -->
+            <div class="cockpit-panel p-4 rounded-lg">
+                <div class="mt-4 h-24 flex items-end gap-1 px-1 border-b border-green-900/20">
+                    <div class="bg-green-500/40 w-full h-[40%]"></div>
+                    <div class="bg-green-500/80 w-full h-[70%]"></div>
+                    <div class="bg-green-500 w-full h-[50%]"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer Log เดิม -->
+    <footer class="mt-4 cockpit-panel p-2 rounded h-20 overflow-hidden shadow-inner text-[9px] text-green-900 font-mono"
+        id="logs">
+        <div>[SYSTEM]: ระบบเริ่มต้นสมบูรณ์... ทุกโมดูลออนไลน์</div>
+    </footer>
+
+    <script type="module">
+
+ // 1. Firebase SDK Imports
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // 2. Firebase Configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyAHd60VAO__hpRlV0Ne0meDy7qRcEaAlnU",
+        authDomain: "yt-90eb3.firebaseapp.com",
+        projectId: "yt-90eb3",
+        storageBucket: "yt-90eb3.firebasestorage.app",
+        messagingSenderId: "622222071571",
+        appId: "1:622222071571:web:af77604f4f45db960eece6",
+        measurementId: "G-FR0VTD4BMJ"
+    };
+
+    // 3. Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const db = getFirestore(app);
+
+    // --- ระบบสำรองข้อมูล Cloud (Background Sync) ---
+    window.syncToCloud = async function () {
+        try {
+            const currentScript = localStorage.getItem('yt_current_script_th') || "";
+            const currentMissions = localStorage.getItem('yt_missions_v3') || "[]";
+
+            await setDoc(doc(db, "mission_control", "latest_backup"), {
+                script: currentScript,
+                missions: JSON.parse(currentMissions),
+                lastUpdated: new Date().toISOString(),
+                sessionID: document.getElementById('session-id').innerText
+            });
+
+            addLog("CLOUD: สำรองข้อมูลไปยัง Firebase สำเร็จ");
+        } catch (e) {
+            console.error("Firebase Sync Error: ", e);
+            addLog("CLOUD_ERROR: ไม่สามารถเชื่อมต่อฐานข้อมูลได้");
+        }
+    };
+
+    // --- ตัวแปรและสถานะระบบ ---
+    let missions = JSON.parse(localStorage.getItem('yt_missions_v3')) || [];
+    let viewDate = new Date();
+    const monthNamesThai = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+
+    // --- เริ่มต้นระบบ ---
+    window.onload = () => {
+        document.getElementById('session-id').innerText = Math.random().toString(36).substring(7).toUpperCase();
+        renderMissions();
+        renderCalendar();
+
+        // โหลดสคริปต์ล่าสุดจาก LocalStorage
+        const savedScript = localStorage.getItem('yt_current_script_th');
+        if (savedScript) document.getElementById('main-script').value = savedScript;
+
+        // มาตรวัดและนาฬิกา
+        setInterval(() => {
+            document.getElementById('clock').innerText = new Date().toLocaleTimeString('th-TH');
+            const bar1 = document.getElementById('audio-bar-1');
+            if (bar1) bar1.style.width = (Math.random() * 60) + '%';
+        }, 1000);
+    };
+
+    // --- ฟังก์ชัน Global สำหรับปุ่มใน HTML ---
+    window.switchTab = function (mode) {
+        const scriptTab = document.getElementById('tab-script');
+        const calTab = document.getElementById('tab-calendar');
+        const scriptCont = document.getElementById('content-script');
+        const calCont = document.getElementById('content-calendar');
+
+        if (mode === 'script') {
+            scriptTab.classList.add('tab-active'); calTab.classList.remove('tab-active');
+            scriptCont.classList.remove('hidden'); calCont.classList.add('hidden');
+        } else {
+            calTab.classList.add('tab-active'); scriptTab.classList.remove('tab-active');
+            calCont.classList.remove('hidden'); scriptCont.classList.add('hidden');
+        }
+    };
+
+    window.addEnhancedIdea = function () {
+        const title = document.getElementById('mission-name').value;
+        const rec = document.getElementById('date-rec').value;
+        const edit = document.getElementById('date-edit').value;
+        const pub = document.getElementById('date-pub').value;
+
+        if (title) {
+            const mission = { id: Date.now(), title, rec, edit, pub, status: "PLANNING" };
+            missions.push(mission);
+            localStorage.setItem('yt_missions_v3', JSON.stringify(missions));
+            renderMissions();
+            renderCalendar();
+            addLog(`อนุมัติภารกิจ: ${title}`);
+            document.getElementById('mission-name').value = "";
+            window.syncToCloud(); // ซิงค์หลังเพิ่มงานทันที
+        }
+    };
+
+    window.renderCalendar = function () {
+        const grid = document.getElementById('calendar-body');
+        const label = document.getElementById('current-month-label');
+        if (!grid || !label) return;
+
+        grid.innerHTML = "";
+        label.innerText = `${monthNamesThai[viewDate.getMonth()]} ${viewDate.getFullYear() + 543}`;
+
+        const daysInMonth = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 0).getDate();
+        const firstDay = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1).getDay();
+
+        for (let i = 0; i < firstDay; i++) grid.appendChild(document.createElement('div'));
+
+        for (let i = 1; i <= daysInMonth; i++) {
+            const cell = document.createElement('div');
+            cell.className = "cal-day";
+            const dateStr = `${viewDate.getFullYear()}-${String(viewDate.getMonth() + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+
+            cell.innerHTML = `<span>${i}</span><div class="flex mt-1 flex-wrap"></div>`;
+            const container = cell.querySelector('.flex');
+
+            missions.forEach(m => {
+                if (m.rec === dateStr) container.innerHTML += `<span class="dot bg-blue-500" title="REC: ${m.title}"></span>`;
+                if (m.edit === dateStr) container.innerHTML += `<span class="dot bg-yellow-500" title="EDIT: ${m.title}"></span>`;
+                if (m.pub === dateStr) container.innerHTML += `<span class="dot bg-red-500" title="PUB: ${m.title}"></span>`;
+            });
+
+            grid.appendChild(cell);
+        }
+    };
+
+    window.prevMonth = () => { viewDate.setMonth(viewDate.getMonth() - 1); renderCalendar(); };
+    window.nextMonth = () => { viewDate.setMonth(viewDate.getMonth() + 1); renderCalendar(); };
+
+    // --- Script Engine ---
+    window.injectTemplate = function (type) {
+        const area = document.getElementById('main-script');
+        const start = area.selectionStart;
+        const end = area.selectionEnd;
+        const oldText = area.value;
+
+        const templates = {
+            hook: `\n[🪝 HOOK: 0-10 SECONDS]\n- วิชวล: (โชว์ผลลัพธ์สุดท้าย / ฉากที่ตื่นเต้นที่สุด)\n- คำพูด: "คุณเคยสงสัยไหมว่า... (ปัญหา)? วันนี้ผมจะโชว์วิธีการ... (ทางแก้)!"\n- Checklist: [ ] ขยี้จุดเจ็บ [ ] โชว์ความว้าว\n--------------------\n`,
+            problem: `\n[⚠️ PROBLEM & AGITATION]\n- คำพูด: "หลายคนพยายามจะ... แต่ก็ต้องเจอกับ... ซึ่งมันน่าหงุดหงิดใช่ไหมครับ?"\n- Checklist: [ ] ใส่สถิติ/ความจริง [ ] เน้นย้ำความเสียดาย\n--------------------\n`,
+            intro: `\n[👋 LOGO & INTRO: 10-25 SECONDS]\n- กราฟิก: (ชื่อรายการ / กราฟิกเคลื่อนไหว)\n- คำพูด: "สวัสดีครับผม... ยินดีต้อนรับสู่ช่อง... วันนี้เราอยู่กับหัวข้อ..."\n--------------------\n`,
+            body: `\n[📝 MAIN CONTENT: THE MEAT]\n- ส่วนที่ 1: (ใส่เนื้อหาสำคัญที่สุดก่อน)\n- ส่วนที่ 2: (รายละเอียดปลีกย่อย)\n--------------------\n`,
+            visual: `\n[🎬 VISUAL NOTES / B-ROLL PLAN]\n- ฉากที่ต้องถ่าย: 1. (ภาพหน้าจอ) 2. (ภาพ Close-up)\n- เพลงประกอบ: (ระบุอารมณ์เพลง)\n--------------------\n`,
+            engagement: `\n[💬 MID-ROLL ENGAGEMENT]\n- คำถาม: "ใครเคยเจอแบบนี้คอมเมนต์เลข 1 หน่อยครับ!"\n- กิจกรรม: "อย่าลืมกดไลก์เป็นกำลังใจให้นะครับ"\n--------------------\n`,
+            summary: `\n[📊 SUMMARY & KEY TAKEAWAY]\n- สรุปสั้นๆ: 1. ... 2. ...\n--------------------\n`,
+            cta: `\n[🚀 FINAL CTA & END SCREEN]\n- การกระทำ: "คลิปถัดไปที่แนะนำคือ..."\n- คำพูด: "ขอบคุณที่รับชม สวัสดีครับ"\n--------------------\n`
+        };
+
+        const textToInject = templates[type] || "";
+        area.value = oldText.substring(0, start) + textToInject + oldText.substring(end);
+        area.selectionStart = area.selectionEnd = start + textToInject.length;
+        area.focus();
+
+        localStorage.setItem('yt_current_script_th', area.value);
+        addLog(`ENGINE: ติดตั้งโมดูล ${type.toUpperCase()} สำเร็จ`);
+    };
+
+    window.renderMissions = function () {
+        const list = document.getElementById('idea-list');
+        if (!list) return;
+        list.innerHTML = missions.map(m => `
+        <div class="bg-black/40 border border-green-900/30 p-2 text-[10px] rounded mb-2">
+            <p class="text-green-400 font-bold">${m.title}</p>
+            <div class="flex gap-2 opacity-60">
+                <span>R: ${m.rec || '-'}</span> <span>E: ${m.edit || '-'}</span> <span class="text-red-500">P: ${m.pub || '-'}</span>
+            </div>
+        </div>
+    `).join('');
+    };
+
+    window.addLog = function (msg) {
+        const l = document.getElementById('logs');
+        if (!l) return;
+        l.innerHTML = `<div>[${new Date().toLocaleTimeString()}] > ${msg}</div>` + l.innerHTML;
+    };
+
+    // ดักจับการ Save เพื่อซิงค์ Firebase
+    document.addEventListener('click', function (e) {
+        if (e.target && (e.target.innerText === 'บันทึกข้อมูล' || e.target.getAttribute('onclick') === 'saveMission()')) {
+            setTimeout(window.syncToCloud, 500);
+        }
+    });
+
+    // บันทึกสคริปต์ลง LocalStorage ขณะพิมพ์
+    document.getElementById('main-script').addEventListener('input', (e) => {
+        localStorage.setItem('yt_current_script_th', e.target.value);
+    });
+    </script>
+</body>
+
+</html>

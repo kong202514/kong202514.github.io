@@ -1,0 +1,250 @@
+ !DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creator Intelligence Cockpit</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&family=Prompt:wght@300;400;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a0c10;
+            --panel-bg: rgba(16, 20, 28, 0.8);
+            --accent-green: #10b981;
+            --border-color: #1e293b;
+        }
+
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: var(--bg-dark);
+            color: #e2e8f0;
+            overflow: hidden;
+        }
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .mfd-panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-btn {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 10px 15px;
+            font-size: 13px;
+            color: #94a3b8;
+            transition: all 0.2s;
+            border-radius: 6px;
+        }
+
+        .nav-btn:hover,
+        .nav-btn.active {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent-green);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 10px;
+        }
+
+        .scanline {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: rgba(16, 185, 129, 0.1);
+            animation: scan 4s linear infinite;
+            top: 0;
+            pointer-events: none;
+        }
+
+        @keyframes scan {
+            0% {
+                top: -10%;
+            }
+
+            100% {
+                top: 110%;
+            }
+        }
+    </style>
+</head>
+
+<body class="h-screen flex flex-col p-3">
+
+    <!-- Header -->
+    <header class="flex items-center justify-between px-4 py-2 mfd-panel rounded-lg mb-3">
+        <div class="flex items-center space-x-6">
+            <div class="flex items-center space-x-3">
+                <div
+                    class="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center font-bold text-black text-sm">
+                    C</div>
+                <div>
+                    <h1 class="text-xs font-bold leading-none">CREATOR_COMMAND</h1>
+                    <p class="text-[10px] text-slate-500 mono">VER 2.5.0</p>
+                </div>
+            </div>
+            <div class="hidden md:flex items-center space-x-8 text-[10px] mono">
+                <div><span class="text-slate-500">UPTIME:</span> <span id="sysUptime"
+                        class="text-blue-400">00:00:00</span></div>
+            </div>
+        </div>
+        <button
+            class="bg-green-600/20 text-green-500 border border-green-600/30 px-3 py-1 rounded text-[10px] font-bold hover:bg-green-600 hover:text-white transition">+
+            NEW_CONTENT</button>
+    </header>
+
+    <div class="flex-1 grid grid-cols-12 gap-3 overflow-hidden">
+
+        <!-- [เพิ่มส่วนที่คุณต้องการ] Sidebar -->
+        <aside class="col-span-2 flex flex-col space-y-3 overflow-y-auto custom-scrollbar">
+            <div class="mfd-panel rounded-lg p-4 flex-1">
+                <p class="text-[10px] font-bold text-slate-500 mb-4 tracking-widest uppercase">ระบบนำทาง</p>
+                <nav class="space-y-1">
+                    <button class="nav-btn active"><i data-lucide="layout-dashboard" class="mr-3" size="16"></i>
+                        ภาพรวมแผนงาน</button>
+                    <button class="nav-btn"><i data-lucide="video" class="mr-3" size="16"></i> วิดีโอทั้งหมด</button>
+                    <button class="nav-btn"><i data-lucide="calendar-days" class="mr-3" size="16"></i>
+                        ปฏิทินคอนเทนต์</button>
+                    <button class="nav-btn"><i data-lucide="lightbulb" class="mr-3" size="16"></i> คลังไอเดีย</button>
+                    <button class="nav-btn"><i data-lucide="bar-chart-3" class="mr-3" size="16"></i>
+                        รายงานสถิติ</button>
+                </nav>
+
+                <div class="mt-8">
+                    <p class="text-[10px] font-bold text-slate-500 mb-3 tracking-widest uppercase">ขั้นตอนการผลิต</p>
+                    <div id="productionStatus" class="space-y-3">
+                        <!-- ตัวเลขจะถูกดึงจาก Logic ด้านล่าง -->
+                        <div class="flex justify-between items-center">
+                            <span class="text-[11px] text-slate-400">เขียนบท</span>
+                            <span id="count-script" class="text-[10px] mono text-blue-400">0 วิดีโอ</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-[11px] text-slate-400">กำลังถ่ายทำ</span>
+                            <span id="count-filming" class="text-[10px] mono text-amber-400">0 วิดีโอ</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-[11px] text-slate-400">ตัดต่อ/ตรวจ</span>
+                            <span id="count-editing" class="text-[10px] mono text-green-400">0 วิดีโอ</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="col-span-7 flex flex-col space-y-3 overflow-hidden">
+            <div class="mfd-panel rounded-lg p-5 flex flex-col flex-1 overflow-hidden relative">
+                <div class="scanline"></div>
+                <h2 class="text-sm font-bold flex items-center uppercase mb-4">
+                    <i data-lucide="list-todo" class="mr-2 text-green-500" size="18"></i> PRODUCTION_PIPELINE
+                </h2>
+                <div id="pipelineList" class="flex-1 overflow-y-auto custom-scrollbar space-y-3">
+                    <!-- รายการคอนเทนต์จะมาแสดงที่นี่ -->
+                </div>
+            </div>
+        </main>
+
+        <!-- Rights Side Panel (SEO/Marketing) -->
+        <aside class="col-span-3 mfd-panel rounded-lg p-5 flex flex-col overflow-hidden">
+            <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4">SEO_OPTIMIZER</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[10px] text-slate-500 block mb-1 uppercase">Recommended Title</label>
+                    <div class="bg-black/40 border border-slate-800 p-2 rounded text-[11px] text-green-400">
+                        วิธีทำ Dashboard ขั้นเทพด้วย HTML/CSS 2024
+                    </div>
+                </div>
+                <div>
+                    <label class="text-[10px] text-slate-500 block mb-1 uppercase">Key Performance Tags</label>
+                    <div class="flex flex-wrap gap-1">
+                        <span class="bg-slate-800 text-[9px] px-2 py-0.5 rounded border border-slate-700">#coding</span>
+                        <span
+                            class="bg-slate-800 text-[9px] px-2 py-0.5 rounded border border-slate-700">#dashboard</span>
+                        <span class="bg-slate-800 text-[9px] px-2 py-0.5 rounded border border-slate-700">#uiux</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Footer Status -->
+    <footer
+        class="h-8 mfd-panel rounded-lg mt-3 flex items-center justify-between px-4 text-[10px] mono uppercase text-slate-500">
+        <div>SYSTEM_STATUS: <span class="text-green-500">OPERATIONAL</span></div>
+        <div class="text-amber-500 animate-pulse">Live: 124.5K SUBS REACHED</div>
+    </footer>
+
+    <script>
+        // Data Mockup
+        const videoData = [
+            { title: "Dashboard UI Tutorial", status: "editing", progress: 85 },
+            { title: "Review New Lens", status: "filming", progress: 40 },
+            { title: "SEO Guide 2024", status: "scripting", progress: 20 },
+            { title: "Vlog Day 1", status: "scripting", progress: 10 },
+            { title: "Unboxing Keyboard", status: "editing", progress: 95 },
+            { title: "Gaming Setup", status: "scripting", progress: 5 }
+        ];
+
+        // Initialize Icons
+        lucide.createIcons();
+
+        // Update Uptime
+        const startTime = Date.now();
+        setInterval(() => {
+            const diff = Math.floor((Date.now() - startTime) / 1000);
+            const h = Math.floor(diff / 3600).toString().padStart(2, '0');
+            const m = Math.floor((diff % 3600) / 60).toString().padStart(2, '0');
+            const s = (diff % 60).toString().padStart(2, '0');
+            document.getElementById('sysUptime').innerText = `${h}:${m}:${s}`;
+        }, 1000);
+
+        // Render Sidebar Counts & Pipeline
+        function initApp() {
+            // Count logic
+            const counts = { scripting: 0, filming: 0, editing: 0 };
+            const list = document.getElementById('pipelineList');
+
+            list.innerHTML = '';
+            videoData.forEach(v => {
+                counts[v.status]++;
+
+                // Add to Pipeline UI
+                list.innerHTML += `
+                    <div class="bg-slate-900/40 border border-slate-800 p-3 rounded-lg flex justify-between items-center">
+                        <div>
+                            <div class="text-[12px] font-semibold">${v.title}</div>
+                            <div class="text-[9px] text-slate-500 mono uppercase">${v.status} - ${v.progress}%</div>
+                        </div>
+                        <div class="w-24 bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                            <div class="bg-green-500 h-full" style="width: ${v.progress}%"></div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Update Sidebar Display
+            document.getElementById('count-script').innerText = `${counts.scripting} วิดีโอ`;
+            document.getElementById('count-filming').innerText = `${counts.filming} วิดีโอ`;
+            document.getElementById('count-editing').innerText = `${counts.editing} วิดีโอ`;
+        }
+
+        initApp();
+    </script>
+</body>
+
+</html>
