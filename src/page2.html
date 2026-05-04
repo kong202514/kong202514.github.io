@@ -4,246 +4,496 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Creator Intelligence Cockpit</title>
+    <title>YT MISSION CONTROL V3.2 - COMPLETE SYSTEM</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <link
-        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&family=Prompt:wght@300;400;600&display=swap"
-        rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        :root {
-            --bg-dark: #0a0c10;
-            --panel-bg: rgba(16, 20, 28, 0.8);
-            --accent-green: #10b981;
-            --border-color: #1e293b;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Anuphan:wght@300;500;700&display=swap');
 
         body {
-            font-family: 'Prompt', sans-serif;
-            background-color: var(--bg-dark);
-            color: #e2e8f0;
-            overflow: hidden;
+            background-color: #050505;
+            color: #33ff33;
+            font-family: 'Anuphan', sans-serif;
+            overflow-x: hidden;
         }
 
-        .mono {
-            font-family: 'JetBrains Mono', monospace;
+        .cockpit-panel {
+            background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
+            border: 1px solid #333;
+            position: relative;
+            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.5);
         }
 
-        .mfd-panel {
-            background: var(--panel-bg);
-            border: 1px solid var(--border-color);
-            backdrop-filter: blur(10px);
+        .btn-cockpit {
+            background: #222;
+            border: 1px solid #444;
+            transition: all 0.1s ease;
+            box-shadow: 0 3px 0 #111;
         }
 
-        .nav-btn {
-            display: flex;
-            align-items: center;
+        .btn-cockpit:active {
+            transform: translateY(1px);
+            box-shadow: 0 1px 0 #111;
+        }
+
+        .grid-bg {
+            background-image: radial-gradient(rgba(51, 255, 51, 0.05) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        .cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            background: #333;
+        }
+
+        .cal-day {
+            background: #0a0a0a;
+            min-height: 65px;
+            padding: 5px;
+            font-size: 11px;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .tab-active {
+            color: #33ff33;
+            border-bottom: 2px solid #33ff33;
+            background: rgba(51, 255, 51, 0.05);
+        }
+
+        /* Mic Monitor Styles */
+        .mic-monitor-bg {
+            background: radial-gradient(circle at center, #001a00 0%, #000000 100%);
+            border: 1px solid #004400;
+        }
+
+        .meter-segment {
+            height: 4px;
             width: 100%;
-            padding: 10px 15px;
-            font-size: 13px;
-            color: #94a3b8;
-            transition: all 0.2s;
-            border-radius: 6px;
+            margin-bottom: 2px;
+            background: #111;
+            transition: background 0.1s;
         }
 
-        .nav-btn:hover,
-        .nav-btn.active {
-            background: rgba(16, 185, 129, 0.1);
-            color: var(--accent-green);
+        .meter-active-green {
+            background: #00ff00;
+            box-shadow: 0 0 5px #00ff00;
         }
 
-        .custom-scrollbar::-webkit-scrollbar {
+        .meter-active-yellow {
+            background: #ffff00;
+            box-shadow: 0 0 5px #ffff00;
+        }
+
+        .meter-active-red {
+            background: #ff0000;
+            box-shadow: 0 0 10px #ff0000;
+        }
+
+        ::-webkit-scrollbar {
             width: 4px;
         }
 
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #334155;
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #33ff33;
             border-radius: 10px;
-        }
-
-        .scanline {
-            position: absolute;
-            width: 100%;
-            height: 2px;
-            background: rgba(16, 185, 129, 0.1);
-            animation: scan 4s linear infinite;
-            top: 0;
-            pointer-events: none;
-        }
-
-        @keyframes scan {
-            0% {
-                top: -10%;
-            }
-
-            100% {
-                top: 110%;
-            }
         }
     </style>
 </head>
 
-<body class="h-screen flex flex-col p-3">
-
-    <!-- Header -->
-    <header class="flex items-center justify-between px-4 py-2 mfd-panel rounded-lg mb-3">
-        <div class="flex items-center space-x-6">
-            <div class="flex items-center space-x-3">
-                <div
-                    class="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center font-bold text-black text-sm">
-                    C</div>
-                <div>
-                    <h1 class="text-xs font-bold leading-none">CREATOR_COMMAND</h1>
-                    <p class="text-[10px] text-slate-500 mono">VER 2.5.0</p>
-                </div>
+<body class="p-4 grid-bg">
+    <header class="mb-6 flex justify-between items-end border-b border-green-900/50 pb-4">
+        <div>
+            <h1 class="text-2xl font-black italic tracking-tighter text-green-400">YOUTUBE MISSION CONTROL // V3.2</h1>
+            <p class="text-[10px] text-green-700 uppercase tracking-widest">System Status: <span
+                    class="text-green-400">Operational</span></p>
+        </div>
+        <div class="flex gap-6 text-[11px] font-mono">
+            <div class="text-right border-r border-green-900 pr-6">
+                <p class="text-green-800">ภารกิจทั้งหมด</p>
+                <p id="stat-total" class="text-white text-lg">0</p>
             </div>
-            <div class="hidden md:flex items-center space-x-8 text-[10px] mono">
-                <div><span class="text-slate-500">UPTIME:</span> <span id="sysUptime"
-                        class="text-blue-400">00:00:00</span></div>
+            <div class="text-right">
+                <p class="text-green-800">เวลาปัจจุบัน</p>
+                <p id="clock" class="text-green-400 text-lg">00:00:00</p>
             </div>
         </div>
-        <button
-            class="bg-green-600/20 text-green-500 border border-green-600/30 px-3 py-1 rounded text-[10px] font-bold hover:bg-green-600 hover:text-white transition">+
-            NEW_CONTENT</button>
     </header>
 
-    <div class="flex-1 grid grid-cols-12 gap-3 overflow-hidden">
+    <main class="grid grid-cols-12 gap-4">
+        <!-- LEFT PANEL: PLANNING -->
+        <div class="col-span-12 lg:col-span-3 space-y-4">
+            <div class="cockpit-panel p-4 rounded-lg">
+                <span class="text-[10px] font-bold text-green-500 uppercase block mb-3 border-b border-green-900/30">New
+                    Mission</span>
+                <div class="space-y-3">
+                    <input type="text" id="mission-name" placeholder="ชื่อวิดีโอ..."
+                        class="w-full bg-black border border-green-900/50 p-2 text-xs text-green-400 focus:outline-none focus:border-green-400">
 
-        <!-- [เพิ่มส่วนที่คุณต้องการ] Sidebar -->
-        <aside class="col-span-2 flex flex-col space-y-3 overflow-y-auto custom-scrollbar">
-            <div class="mfd-panel rounded-lg p-4 flex-1">
-                <p class="text-[10px] font-bold text-slate-500 mb-4 tracking-widest uppercase">ระบบนำทาง</p>
-                <nav class="space-y-1">
-                    <button class="nav-btn active"><i data-lucide="layout-dashboard" class="mr-3" size="16"></i>
-                        ภาพรวมแผนงาน</button>
-                    <button class="nav-btn"><i data-lucide="video" class="mr-3" size="16"></i> วิดีโอทั้งหมด</button>
-                    <button class="nav-btn"><i data-lucide="calendar-days" class="mr-3" size="16"></i>
-                        ปฏิทินคอนเทนต์</button>
-                    <button class="nav-btn"><i data-lucide="lightbulb" class="mr-3" size="16"></i> คลังไอเดีย</button>
-                    <button class="nav-btn"><i data-lucide="bar-chart-3" class="mr-3" size="16"></i>
-                        รายงานสถิติ</button>
-                </nav>
-
-                <div class="mt-8">
-                    <p class="text-[10px] font-bold text-slate-500 mb-3 tracking-widest uppercase">ขั้นตอนการผลิต</p>
-                    <div id="productionStatus" class="space-y-3">
-                        <!-- ตัวเลขจะถูกดึงจาก Logic ด้านล่าง -->
-                        <div class="flex justify-between items-center">
-                            <span class="text-[11px] text-slate-400">เขียนบท</span>
-                            <span id="count-script" class="text-[10px] mono text-blue-400">0 วิดีโอ</span>
+                    <div class="space-y-2">
+                        <div class="flex flex-col gap-1">
+                            <label class="text-[9px] text-blue-400 font-bold uppercase">Rec Date</label>
+                            <input type="date" id="date-rec"
+                                class="bg-black border border-gray-800 p-1 text-[10px] text-white">
                         </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-[11px] text-slate-400">กำลังถ่ายทำ</span>
-                            <span id="count-filming" class="text-[10px] mono text-amber-400">0 วิดีโอ</span>
+                        <div class="flex flex-col gap-1">
+                            <label class="text-[9px] text-yellow-400 font-bold uppercase">Edit Date</label>
+                            <input type="date" id="date-edit"
+                                class="bg-black border border-gray-800 p-1 text-[10px] text-white">
                         </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-[11px] text-slate-400">ตัดต่อ/ตรวจ</span>
-                            <span id="count-editing" class="text-[10px] mono text-green-400">0 วิดีโอ</span>
+                        <div class="flex flex-col gap-1">
+                            <label class="text-[9px] text-red-400 font-bold uppercase">Pub Date</label>
+                            <input type="date" id="date-pub"
+                                class="bg-black border border-gray-800 p-1 text-[10px] text-white">
                         </div>
                     </div>
+
+                    <button onclick="addEnhancedIdea()"
+                        class="w-full btn-cockpit py-3 text-xs font-bold text-green-400 hover:bg-green-400/10">
+                        <i class="fas fa-rocket mr-2"></i>บันทึกเข้าแผนงาน
+                    </button>
                 </div>
             </div>
-        </aside>
 
-        <!-- Main Content -->
-        <main class="col-span-7 flex flex-col space-y-3 overflow-hidden">
-            <div class="mfd-panel rounded-lg p-5 flex flex-col flex-1 overflow-hidden relative">
-                <div class="scanline"></div>
-                <h2 class="text-sm font-bold flex items-center uppercase mb-4">
-                    <i data-lucide="list-todo" class="mr-2 text-green-500" size="18"></i> PRODUCTION_PIPELINE
-                </h2>
-                <div id="pipelineList" class="flex-1 overflow-y-auto custom-scrollbar space-y-3">
-                    <!-- รายการคอนเทนต์จะมาแสดงที่นี่ -->
+            <div class="cockpit-panel p-4 rounded-lg">
+                <span class="text-[10px] font-bold text-green-500 uppercase block mb-3">Mission Log</span>
+                <div class="space-y-2 max-h-[250px] overflow-y-auto pr-2" id="idea-list"></div>
+            </div>
+        </div>
+
+        <!-- CENTER PANEL: SCRIPT & CALENDAR -->
+        <div class="col-span-12 lg:col-span-6 space-y-4">
+            <div class="cockpit-panel rounded-lg min-h-[600px] flex flex-col p-4">
+                <div class="flex border-b border-green-900/30 mb-4 font-bold uppercase text-[11px]">
+                    <button id="tab-script" onclick="switchTab('script')"
+                        class="px-6 py-2 tab-active transition-all">Script Engine</button>
+                    <button id="tab-calendar" onclick="switchTab('calendar')"
+                        class="px-6 py-2 text-green-900 hover:text-green-400 transition-all">Calendar View</button>
+                </div>
+
+                <div id="content-script" class="flex flex-col flex-grow">
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <button onclick="injectTemplate('hook')"
+                            class="text-[9px] border border-blue-500 px-2 py-1 text-blue-400 hover:bg-blue-500/20">🪝
+                            HOOK</button>
+                        <button onclick="injectTemplate('problem')"
+                            class="text-[9px] border border-red-500 px-2 py-1 text-red-400 hover:bg-red-500/20">⚠️
+                            PROBLEM</button>
+                        <button onclick="injectTemplate('body')"
+                            class="text-[9px] border border-yellow-500 px-2 py-1 text-yellow-400 hover:bg-yellow-500/20">📝
+                            CONTENT</button>
+                        <button onclick="injectTemplate('visual')"
+                            class="text-[9px] border border-cyan-500 px-2 py-1 text-cyan-400 hover:bg-cyan-500/20">🎬
+                            VISUAL</button>
+                        <button onclick="injectTemplate('cta')"
+                            class="text-[9px] border border-green-500 px-2 py-1 text-green-400 hover:bg-green-500/20">🚀
+                            CTA</button>
+                    </div>
+                    <textarea id="main-script" placeholder="Write your script here..."
+                        class="w-full flex-grow bg-black/40 border border-green-900/40 rounded p-4 text-green-400 text-sm font-mono focus:outline-none"></textarea>
+                </div>
+
+                <div id="content-calendar" class="hidden flex-grow">
+                    <div class="flex justify-between items-center mb-4">
+                        <button onclick="changeMonth(-1)"
+                            class="text-green-500 px-2 hover:bg-green-500/10 rounded">◀</button>
+                        <span id="calendar-label" class="text-lg font-bold text-green-400">Month Year</span>
+                        <button onclick="changeMonth(1)"
+                            class="text-green-500 px-2 hover:bg-green-500/10 rounded">▶</button>
+                    </div>
+                    <div class="cal-grid" id="calendar-body"></div>
+                </div>
+
+                <div class="grid grid-cols-4 gap-2 mt-4">
+                    <button onclick="saveToLocal()"
+                        class="btn-cockpit py-2 rounded text-green-400 text-[10px] font-bold"><i
+                            class="fas fa-save mb-1 block text-lg"></i>SAVE ALL</button>
+                    <button onclick="exportScript()"
+                        class="btn-cockpit py-2 rounded text-blue-400 text-[10px] font-bold"><i
+                            class="fas fa-file-export mb-1 block text-lg"></i>EXPORT</button>
+                    <button onclick="clearAllMissions()"
+                        class="btn-cockpit py-2 rounded text-red-500 text-[10px] font-bold"><i
+                            class="fas fa-trash mb-1 block text-lg"></i>CLEAR</button>
+                    <button onclick="window.print()"
+                        class="btn-cockpit py-2 rounded text-purple-400 text-[10px] font-bold"><i
+                            class="fas fa-print mb-1 block text-lg"></i>PRINT</button>
                 </div>
             </div>
-        </main>
+        </div>
 
-        <!-- Rights Side Panel (SEO/Marketing) -->
-        <aside class="col-span-3 mfd-panel rounded-lg p-5 flex flex-col overflow-hidden">
-            <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4">SEO_OPTIMIZER</h3>
-            <div class="space-y-4">
-                <div>
-                    <label class="text-[10px] text-slate-500 block mb-1 uppercase">Recommended Title</label>
-                    <div class="bg-black/40 border border-slate-800 p-2 rounded text-[11px] text-green-400">
-                        วิธีทำ Dashboard ขั้นเทพด้วย HTML/CSS 2024
+        <!-- RIGHT PANEL: AUDIO & CHECKLIST -->
+        <div class="col-span-12 lg:col-span-3 space-y-4">
+            <!-- MIC ANALYSER -->
+            <div class="cockpit-panel p-4 rounded-lg space-y-3">
+                <div class="flex justify-between items-center border-b border-green-900/30 pb-2">
+                    <span class="text-[10px] font-bold text-green-500 uppercase italic">Mic Analyser V1</span>
+                    <div id="mic-led" class="w-2 h-2 rounded-full bg-red-900"></div>
+                </div>
+
+                <div class="grid grid-cols-12 gap-2 h-24 mic-monitor-bg p-2 rounded relative">
+                    <canvas id="mic-waveform" class="col-span-10 w-full h-full"></canvas>
+                    <div id="peak-meter" class="col-span-2 flex flex-col-reverse h-full py-1">
+                        <div class="meter-segment"></div>
+                        <div class="meter-segment"></div>
+                        <div class="meter-segment"></div>
+                        <div class="meter-segment"></div>
+                        <div class="meter-segment"></div>
+                        <div class="meter-segment"></div>
+                        <div class="meter-segment"></div>
+                        <div class="meter-segment"></div>
+                        <div class="meter-segment"></div>
+                        <div class="meter-segment"></div>
                     </div>
                 </div>
-                <div>
-                    <label class="text-[10px] text-slate-500 block mb-1 uppercase">Key Performance Tags</label>
-                    <div class="flex flex-wrap gap-1">
-                        <span class="bg-slate-800 text-[9px] px-2 py-0.5 rounded border border-slate-700">#coding</span>
-                        <span
-                            class="bg-slate-800 text-[9px] px-2 py-0.5 rounded border border-slate-700">#dashboard</span>
-                        <span class="bg-slate-800 text-[9px] px-2 py-0.5 rounded border border-slate-700">#uiux</span>
-                    </div>
+
+                <div class="flex flex-col gap-2">
+                    <select id="mic-select"
+                        class="bg-black border border-green-900 text-[9px] text-green-500 p-1 w-full focus:outline-none"></select>
+                    <button onclick="toggleMic()" id="mic-btn"
+                        class="btn-cockpit py-1 text-[10px] text-green-400 font-bold rounded">START TEST</button>
+                    <p id="mic-db-label" class="text-[8px] font-mono text-green-800 text-center uppercase">Signal: Idle
+                    </p>
                 </div>
             </div>
-        </aside>
-    </div>
 
-    <!-- Footer Status -->
-    <footer
-        class="h-8 mfd-panel rounded-lg mt-3 flex items-center justify-between px-4 text-[10px] mono uppercase text-slate-500">
-        <div>SYSTEM_STATUS: <span class="text-green-500">OPERATIONAL</span></div>
-        <div class="text-amber-500 animate-pulse">Live: 124.5K SUBS REACHED</div>
+            <!-- CHECKLIST -->
+            <div class="cockpit-panel p-4 rounded-lg">
+                <span
+                    class="text-[10px] font-bold text-green-500 uppercase block mb-3 border-b border-green-900/30">Pre-Flight
+                    Check</span>
+                <div class="space-y-3 text-[11px]" id="checklist">
+                    <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox"
+                            class="accent-green-500"> เช็คเสียงไมค์ (เข้า/ไม่พีค)</label>
+                    <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox"
+                            class="accent-green-500"> เช็คแสง (หน้าสว่าง/เงาไม่บัง)</label>
+                    <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox"
+                            class="accent-green-500"> เช็คพื้นหลัง (สะอาด/ไม่มีขยะ)</label>
+                    <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox"
+                            class="accent-green-500"> เช็คแบตเตอรี่กล้อง/อุปกรณ์</label>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="mt-4 cockpit-panel p-2 rounded h-16 overflow-hidden text-[10px] font-mono text-green-900" id="logs">
+        <div>[SYSTEM]: Initializing YT Control System... Standby.</div>
     </footer>
 
     <script>
-        // Data Mockup
-        const videoData = [
-            { title: "Dashboard UI Tutorial", status: "editing", progress: 85 },
-            { title: "Review New Lens", status: "filming", progress: 40 },
-            { title: "SEO Guide 2024", status: "scripting", progress: 20 },
-            { title: "Vlog Day 1", status: "scripting", progress: 10 },
-            { title: "Unboxing Keyboard", status: "editing", progress: 95 },
-            { title: "Gaming Setup", status: "scripting", progress: 5 }
-        ];
+        // --- DATA & STATE ---
+        let missions = JSON.parse(localStorage.getItem('yt_missions_complete')) || [];
+        let viewDate = new Date();
+        const monthNames = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
 
-        // Initialize Icons
-        lucide.createIcons();
+        // Mic State
+        let audioContext, analyser, microphone, isMicRunning = false, animationId;
 
-        // Update Uptime
-        const startTime = Date.now();
-        setInterval(() => {
-            const diff = Math.floor((Date.now() - startTime) / 1000);
-            const h = Math.floor(diff / 3600).toString().padStart(2, '0');
-            const m = Math.floor((diff % 3600) / 60).toString().padStart(2, '0');
-            const s = (diff % 60).toString().padStart(2, '0');
-            document.getElementById('sysUptime').innerText = `${h}:${m}:${s}`;
-        }, 1000);
+        // --- CORE INITIALIZATION ---
+        window.onload = () => {
+            renderMissions();
+            renderCalendar();
+            initMicSelection();
+            const savedScript = localStorage.getItem('yt_script_complete');
+            if (savedScript) document.getElementById('main-script').value = savedScript;
 
-        // Render Sidebar Counts & Pipeline
-        function initApp() {
-            // Count logic
-            const counts = { scripting: 0, filming: 0, editing: 0 };
-            const list = document.getElementById('pipelineList');
+            setInterval(() => {
+                document.getElementById('clock').innerText = new Date().toLocaleTimeString('th-TH');
+            }, 1000);
+        };
 
-            list.innerHTML = '';
-            videoData.forEach(v => {
-                counts[v.status]++;
+        // --- MISSION MANAGEMENT ---
+        function addEnhancedIdea() {
+            const name = document.getElementById('mission-name').value;
+            const rec = document.getElementById('date-rec').value;
+            const edit = document.getElementById('date-edit').value;
+            const pub = document.getElementById('date-pub').value;
 
-                // Add to Pipeline UI
-                list.innerHTML += `
-                    <div class="bg-slate-900/40 border border-slate-800 p-3 rounded-lg flex justify-between items-center">
-                        <div>
-                            <div class="text-[12px] font-semibold">${v.title}</div>
-                            <div class="text-[9px] text-slate-500 mono uppercase">${v.status} - ${v.progress}%</div>
-                        </div>
-                        <div class="w-24 bg-slate-800 h-1.5 rounded-full overflow-hidden">
-                            <div class="bg-green-500 h-full" style="width: ${v.progress}%"></div>
-                        </div>
-                    </div>
-                `;
-            });
+            if (!name) return alert("กรุณาใส่ชื่อภารกิจ");
 
-            // Update Sidebar Display
-            document.getElementById('count-script').innerText = `${counts.scripting} วิดีโอ`;
-            document.getElementById('count-filming').innerText = `${counts.filming} วิดีโอ`;
-            document.getElementById('count-editing').innerText = `${counts.editing} วิดีโอ`;
+            missions.push({ id: Date.now(), title: name, rec, edit, pub });
+            saveToLocal();
+            document.getElementById('mission-name').value = "";
+            addLog(`MISSION: เพิ่มวิดีโอใหม่ "${name}" ลงในระบบแผนงาน`);
         }
 
-        initApp();
+        function deleteMission(id) {
+            missions = missions.filter(m => m.id !== id);
+            saveToLocal();
+        }
+
+        function saveToLocal() {
+            localStorage.setItem('yt_missions_complete', JSON.stringify(missions));
+            localStorage.setItem('yt_script_complete', document.getElementById('main-script').value);
+            renderMissions();
+            renderCalendar();
+        }
+
+        function renderMissions() {
+            const container = document.getElementById('idea-list');
+            document.getElementById('stat-total').innerText = missions.length;
+            container.innerHTML = missions.map(m => `
+                <div class="bg-black/60 border border-green-900/20 p-2 rounded mb-2 group">
+                    <div class="flex justify-between items-start">
+                        <span class="text-green-400 font-bold text-[10px] truncate w-3/4">${m.title}</span>
+                        <button onclick="deleteMission(${m.id})" class="text-red-900 hover:text-red-500 text-[9px]">ลบ</button>
+                    </div>
+                    <div class="grid grid-cols-3 gap-1 text-[8px] font-mono mt-1 opacity-60">
+                        <div class="text-blue-400">R: ${m.rec?.split('-')[2] || '--'}</div>
+                        <div class="text-yellow-400">E: ${m.edit?.split('-')[2] || '--'}</div>
+                        <div class="text-red-400">P: ${m.pub?.split('-')[2] || '--'}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // --- CALENDAR LOGIC ---
+        function renderCalendar() {
+            const body = document.getElementById('calendar-body');
+            const label = document.getElementById('calendar-label');
+            body.innerHTML = "";
+            label.innerText = `${monthNames[viewDate.getMonth()]} ${viewDate.getFullYear() + 543}`;
+
+            const daysInMonth = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 0).getDate();
+            const firstDay = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1).getDay();
+
+            for (let i = 0; i < firstDay; i++) body.innerHTML += `<div class="cal-day opacity-5"></div>`;
+            for (let i = 1; i <= daysInMonth; i++) {
+                const dateStr = `${viewDate.getFullYear()}-${String(viewDate.getMonth() + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                let dots = "";
+                missions.forEach(m => {
+                    if (m.rec === dateStr) dots += `<span class="dot bg-blue-500"></span>`;
+                    if (m.edit === dateStr) dots += `<span class="dot bg-yellow-500"></span>`;
+                    if (m.pub === dateStr) dots += `<span class="dot bg-red-500"></span>`;
+                });
+                body.innerHTML += `<div class="cal-day border border-green-900/10"><span>${i}</span><div class="flex gap-1 mt-1">${dots}</div></div>`;
+            }
+        }
+
+        function changeMonth(dir) { viewDate.setMonth(viewDate.getMonth() + dir); renderCalendar(); }
+
+        // --- MIC ANALYSER LOGIC ---
+        async function initMicSelection() {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const micSelect = document.getElementById('mic-select');
+            const audioInputs = devices.filter(d => d.kind === 'audioinput');
+            micSelect.innerHTML = audioInputs.map(d => `<option value="${d.deviceId}">${d.label || 'Unknown Mic'}</option>`).join('');
+        }
+
+        async function toggleMic() {
+            if (isMicRunning) {
+                if (audioContext) audioContext.close();
+                isMicRunning = false;
+                cancelAnimationFrame(animationId);
+                document.getElementById('mic-btn').innerText = "START TEST";
+                document.getElementById('mic-led').classList.replace('bg-green-400', 'bg-red-900');
+                resetMeter();
+            } else {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: document.getElementById('mic-select').value } });
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    analyser = audioContext.createAnalyser();
+                    analyser.fftSize = 256;
+                    microphone = audioContext.createMediaStreamSource(stream);
+                    microphone.connect(analyser);
+                    isMicRunning = true;
+                    document.getElementById('mic-btn').innerText = "STOP TEST";
+                    document.getElementById('mic-led').classList.replace('bg-red-900', 'bg-green-400');
+                    drawWaveform();
+                    addLog("MIC: ภาคขยายเสียงทำงานปกติ");
+                } catch (e) { addLog("MIC_ERROR: ไม่สามารถเข้าถึงไมค์ได้"); }
+            }
+        }
+
+        function drawWaveform() {
+            if (!isMicRunning) return;
+            const canvas = document.getElementById('mic-waveform');
+            const ctx = canvas.getContext('2d');
+            const buffer = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(buffer);
+            analyser.getByteTimeDomainData(dataArray);
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.lineWidth = 2; ctx.strokeStyle = '#33ff33';
+            ctx.beginPath();
+            let x = 0, slice = canvas.width / buffer;
+            for (let i = 0; i < buffer; i++) {
+                let v = dataArray[i] / 128.0, y = v * canvas.height / 2;
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                x += slice;
+            }
+            ctx.lineTo(canvas.width, canvas.height / 2); ctx.stroke();
+
+            // Meter logic
+            let sum = 0;
+            for (let i = 0; i < buffer; i++) sum += Math.abs(dataArray[i] - 128);
+            updateMeter(sum / buffer);
+            animationId = requestAnimationFrame(drawWaveform);
+        }
+
+        function updateMeter(lvl) {
+            const segs = document.querySelectorAll('.meter-segment');
+            const count = Math.min(Math.floor(lvl / 4), 10);
+            segs.forEach((s, i) => {
+                s.className = 'meter-segment';
+                if (i < count) {
+                    if (i < 6) s.classList.add('meter-active-green');
+                    else if (i < 9) s.classList.add('meter-active-yellow');
+                    else s.classList.add('meter-active-red');
+                }
+            });
+            document.getElementById('mic-db-label').innerText = count > 8 ? "Signal: PEAK!" : "Signal: OK";
+        }
+
+        function resetMeter() {
+            document.querySelectorAll('.meter-segment').forEach(s => s.className = 'meter-segment');
+            document.getElementById('mic-db-label').innerText = "Signal: Idle";
+        }
+
+        // --- UTILS ---
+        function injectTemplate(type) {
+            const area = document.getElementById('main-script');
+            const t = {
+                hook: "\n[🪝 HOOK]\n🎬: (Show result/problem)\n🎙️: \"เคยเจอแบบนี้ไหมครับ...\"\n",
+                problem: "\n[⚠️ PROBLEM]\n🎙️: \"หลายคนพลาดตรงที่...\"\n",
+                body: "\n[📝 CONTENT]\n🎙️: \"วิธีแก้คือ 1... 2... 3...\"\n",
+                visual: "\n[🎬 VISUAL]\n🎬: (Insert B-Roll/Graphic here)\n",
+                cta: "\n[🚀 CTA]\n🎙️: \"ถ้าชอบอย่าลืมกด Subscribe เจอกันคลิปหน้าครับ\"\n"
+            };
+            const pos = area.selectionStart;
+            area.value = area.value.slice(0, pos) + t[type] + area.value.slice(pos);
+            area.focus();
+        }
+
+        function switchTab(mode) {
+            document.getElementById('content-script').classList.toggle('hidden', mode !== 'script');
+            document.getElementById('content-calendar').classList.toggle('hidden', mode !== 'calendar');
+            document.getElementById('tab-script').className = mode === 'script' ? 'px-6 py-2 tab-active' : 'px-6 py-2 text-green-900';
+            document.getElementById('tab-calendar').className = mode === 'calendar' ? 'px-6 py-2 tab-active' : 'px-6 py-2 text-green-900';
+        }
+
+        function addLog(m) {
+            const l = document.getElementById('logs');
+            l.innerHTML = `<div>[${new Date().toLocaleTimeString()}] > ${m}</div>` + l.innerHTML;
+        }
+
+        function exportScript() {
+            const b = new Blob([document.getElementById('main-script').value], { type: 'text/plain' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(b); a.download = "script.txt"; a.click();
+        }
+
+        function clearAllMissions() { if (confirm("ลบทั้งหมด?")) { missions = []; saveToLocal(); } }
     </script>
 </body>
 
