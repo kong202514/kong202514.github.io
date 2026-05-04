@@ -1,217 +1,93 @@
- !DOCTYPE html>
+ 
 <html lang="th">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YT MISSION CONTROL V4.0 - FIREBASE & AUDIO FIX</title>
+    <title>ศูนย์ควบคุมการบิน YouTube</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Anuphan:wght@300;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Kanit:wght@300;400;600&display=swap');
+
+        :root {
+            --cockpit-bg: #1a1c1e;
+            --panel-bg: #2a2d31;
+            --neon-green: #00ff41;
+            --warning-orange: #ff9f00;
+        }
 
         body {
-            background-color: #050505;
-            color: #33ff33;
-            font-family: 'Anuphan', sans-serif;
-            overflow-x: hidden;
+            font-family: 'Kanit', sans-serif;
+            background-color: var(--cockpit-bg);
+            color: #e0e0e0;
         }
 
-        .cockpit-panel {
-            background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
-            border: 1px solid #333;
+        .glass-panel {
+            background: var(--panel-bg);
+            border: 2px solid #3f444a;
+            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.5), 0 5px 15px rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+        }
+
+        .crt-screen {
+            background: #0a0c0e;
+            border: 1px solid var(--neon-green);
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.2);
             position: relative;
+            overflow: hidden;
         }
 
-        .btn-cockpit {
-            background: #222;
-            border: 1px solid #444;
-            transition: all 0.1s ease;
-            box-shadow: 0 3px 0 #111;
-            cursor: pointer;
+        .crt-screen::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
+            z-index: 2;
+            background-size: 100% 4px, 3px 100%;
+            pointer-events: none;
         }
 
-        .btn-cockpit:active {
-            transform: translateY(1px);
-            box-shadow: 0 1px 0 #111;
+        .flight-btn {
+            background: linear-gradient(145deg, #3a3f44, #26292d);
+            border: 1px solid #1a1c1e;
+            box-shadow: 3px 3px 6px #15171a, -1px -1px 3px #4a5158;
+            transition: all 0.2s;
+            font-weight: bold;
         }
 
-        .grid-bg {
-            background-image: radial-gradient(rgba(51, 255, 51, 0.05) 1px, transparent 1px);
-            background-size: 30px 30px;
+        .flight-btn:active {
+            box-shadow: inset 2px 2px 5px #15171a;
+            transform: translateY(2px);
         }
 
-        .cal-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 2px;
-            background: #333;
+        .flight-btn-red {
+            border-bottom: 4px solid #b91c1c;
         }
 
-        .cal-day {
-            background: #0a0a0a;
-            min-height: 65px;
-            padding: 5px;
-            font-size: 11px;
+        .flight-btn-green {
+            border-bottom: 4px solid var(--neon-green);
+            color: var(--neon-green);
         }
 
-        .dot {
-            width: 6px;
-            height: 6px;
+        .status-light {
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
             display: inline-block;
-        }
-
-        .tab-active {
-            color: #33ff33;
-            border-bottom: 2px solid #33ff33;
-            background: rgba(51, 255, 51, 0.05);
-        }
-
-        .mic-monitor-bg {
-            background: #000;
-            border: 1px solid #004400;
-        }
-
-        .meter-segment {
-            height: 4px;
-            width: 100%;
-            margin-bottom: 2px;
-            background: #111;
-        }
-
-        .meter-active-green {
-            background: #00ff00;
-            box-shadow: 0 0 5px #00ff00;
-        }
-
-        .meter-active-yellow {
-            background: #ffff00;
-            box-shadow: 0 0 5px #ffff00;
-        }
-
-        .meter-active-red {
-            background: #ff0000;
-            box-shadow: 0 0 10px #ff0000;
-        }
-
-        ::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #33ff33;
+            margin-right: 8px;
+            box-shadow: 0 0 5px currentColor;
         }
     </style>
-</head>
 
-<body class="p-4 grid-bg">
-
-    <header class="mb-6 flex justify-between items-end border-b border-green-900/50 pb-4">
-        <div>
-            <h1 class="text-2xl font-black italic tracking-tighter text-green-400">YT MISSION CONTROL // CLOUD V4</h1>
-            <p class="text-[10px] text-green-700 uppercase tracking-widest">Storage: <span
-                    class="text-blue-400">Firebase Firestore</span></p>
-        </div>
-        <div class="flex gap-6 text-[11px] font-mono">
-            <div class="text-right">
-                <p class="text-green-800">ภารกิจ</p>
-                <p id="stat-total" class="text-white text-lg">0</p>
-            </div>
-            <div class="text-right">
-                <p class="text-green-800">TIME</p>
-                <p id="clock" class="text-green-400 text-lg">00:00:00</p>
-            </div>
-        </div>
-    </header>
-
-    <main class="grid grid-cols-12 gap-4">
-        <!-- LEFT: INPUT -->
-        <div class="col-span-12 lg:col-span-3 space-y-4">
-            <div class="cockpit-panel p-4 rounded-lg">
-                <span class="text-[10px] font-bold text-green-500 uppercase block mb-3 border-b border-green-900/30">New
-                    Mission</span>
-                <div class="space-y-3">
-                    <input type="text" id="mission-name" placeholder="ชื่อวิดีโอ..."
-                        class="w-full bg-black border border-green-900/50 p-2 text-xs text-green-400 focus:outline-none">
-                    <div class="space-y-2">
-                        <input type="date" id="date-rec"
-                            class="w-full bg-black border border-gray-800 p-1 text-[10px] text-white">
-                        <input type="date" id="date-pub"
-                            class="w-full bg-black border border-gray-800 p-1 text-[10px] text-white">
-                    </div>
-                    <button id="btn-add-mission"
-                        class="w-full btn-cockpit py-3 text-xs font-bold text-green-400 hover:bg-green-400/10">RECORD
-                        MISSION</button>
-                </div>
-            </div>
-            <div class="cockpit-panel p-4 rounded-lg">
-                <span class="text-[10px] font-bold text-green-500 uppercase block mb-3">Logs</span>
-                <div class="space-y-2 max-h-[200px] overflow-y-auto pr-2" id="idea-list"></div>
-            </div>
-        </div>
-
-        <!-- CENTER: SCRIPT & CALENDAR -->
-        <div class="col-span-12 lg:col-span-6 space-y-4">
-            <div class="cockpit-panel rounded-lg min-h-[550px] flex flex-col p-4">
-                <div class="flex border-b border-green-900/30 mb-4 font-bold uppercase text-[11px]">
-                    <button id="tab-script-btn" class="px-6 py-2 tab-active">Script Engine</button>
-                    <button id="tab-calendar-btn" class="px-6 py-2 text-green-900">Calendar</button>
-                </div>
-                <div id="content-script" class="flex flex-col flex-grow">
-                    <textarea id="main-script" placeholder="เริ่มเขียนสคริปต์..."
-                        class="w-full flex-grow bg-black/40 border border-green-900/40 rounded p-4 text-green-400 text-sm font-mono focus:outline-none"></textarea>
-                </div>
-                <div id="content-calendar" class="hidden flex-grow">
-                    <div class="cal-grid" id="calendar-body"></div>
-                </div>
-                <div class="grid grid-cols-2 gap-2 mt-4">
-                    <button id="btn-save-all" class="btn-cockpit py-2 rounded text-green-400 text-[10px] font-bold">SAVE
-                        TO CLOUD</button>
-                    <button id="btn-clear" class="btn-cockpit py-2 rounded text-red-500 text-[10px] font-bold">CLEAR
-                        DATA</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- RIGHT: AUDIO -->
-        <div class="col-span-12 lg:col-span-3 space-y-4">
-            <div class="cockpit-panel p-4 rounded-lg space-y-3">
-                <div class="flex justify-between items-center border-b border-green-900/30 pb-2">
-                    <span class="text-[10px] font-bold text-green-500 italic">MIC ANALYSER</span>
-                    <div id="mic-led" class="w-2 h-2 rounded-full bg-red-900"></div>
-                </div>
-                <div class="grid grid-cols-12 gap-2 h-24 mic-monitor-bg p-2 rounded overflow-hidden">
-                    <canvas id="mic-waveform" class="col-span-10 w-full h-full"></canvas>
-                    <div id="peak-meter" class="col-span-2 flex flex-col-reverse h-full">
-                        <div class="meter-segment"></div>
-                        <div class="meter-segment"></div>
-                        <div class="meter-segment"></div>
-                        <div class="meter-segment"></div>
-                        <div class="meter-segment"></div>
-                        <div class="meter-segment"></div>
-                        <div class="meter-segment"></div>
-                        <div class="meter-segment"></div>
-                        <div class="meter-segment"></div>
-                        <div class="meter-segment"></div>
-                    </div>
-                </div>
-                <select id="mic-select"
-                    class="w-full bg-black border border-green-900 text-[9px] text-green-500 p-1 focus:outline-none"></select>
-                <button id="btn-toggle-mic" class="w-full btn-cockpit py-1 text-[10px] text-green-400 font-bold">START
-                    TEST</button>
-                <p id="mic-db-label" class="text-[8px] font-mono text-green-800 text-center">SIGNAL: IDLE</p>
-            </div>
-        </div>
-    </main>
-
-    <footer id="logs" class="mt-4 cockpit-panel p-2 rounded h-16 overflow-y-auto text-[9px] font-mono text-green-900">
-    </footer>
-
-    <!-- FIREBASE MODULE SCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, deleteDoc, doc, updateDoc, onSnapshot, query, orderBy }
+            from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAHd60VAO__hpRlV0Ne0meDy7qRcEaAlnU",
@@ -226,169 +102,253 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // State
-        window.missions = [];
-        let isMicRunning = false, audioCtx, analyser, animId, source;
+        let currentCategoryId = null;
+        let currentTopicId = null;
 
-        // UI Helpers
-        const addLog = (m) => {
-            const l = document.getElementById('logs');
-            l.innerHTML = `<div>[${new Date().toLocaleTimeString()}] > ${m}</div>` + l.innerHTML;
+        const categoryList = document.getElementById('categoryList');
+        const topicList = document.getElementById('topicList');
+        const scriptEditor = document.getElementById('scriptEditor');
+        const editorTextarea = document.getElementById('editorTextarea');
+
+        window.addCategory = async () => {
+            const name = prompt("ระบุชื่อหมวดหมู่ใหม่:");
+            if (name) await addDoc(collection(db, "categories"), { name, createdAt: Date.now() });
         };
 
-        const renderMissions = () => {
-            const container = document.getElementById('idea-list');
-            document.getElementById('stat-total').innerText = window.missions.length;
-            container.innerHTML = window.missions.map((m, i) => `
-                <div class="bg-black/60 border border-green-900/20 p-2 rounded mb-2 text-[10px]">
-                    <div class="flex justify-between">
-                        <span class="text-green-400 font-bold">${m.title}</span>
-                        <button onclick="window.delMission(${i})" class="text-red-900 hover:text-red-500">ลบ</button>
-                    </div>
-                </div>
-            `).join('');
-        };
-
-        // Mission Logic
-        document.getElementById('btn-add-mission').onclick = () => {
-            const title = document.getElementById('mission-name').value;
-            const rec = document.getElementById('date-rec').value;
-            if (!title) return;
-            window.missions.push({ title, rec });
-            document.getElementById('mission-name').value = "";
-            renderMissions();
-            addLog(`LOCAL: เพิ่มภารกิจ "${title}"`);
-        };
-
-        window.delMission = (i) => {
-            window.missions.splice(i, 1);
-            renderMissions();
-        };
-
-        // Firebase Sync
-        document.getElementById('btn-save-all').onclick = async () => {
-            const script = document.getElementById('main-script').value;
-            try {
-                addLog("CLOUD: กำลังบันทึก...");
-                await setDoc(doc(db, "mission_control", "user_data"), {
-                    missions: window.missions,
-                    script: script,
-                    updatedAt: new Date().toISOString()
-                });
-                addLog("CLOUD: บันทึกข้อมูลสำเร็จ");
-            } catch (e) { addLog("CLOUD_ERROR: " + e.message); }
-        };
-
-        const loadCloudData = async () => {
-            try {
-                const snap = await getDoc(doc(db, "mission_control", "user_data"));
-                if (snap.exists()) {
-                    const data = snap.data();
-                    window.missions = data.missions || [];
-                    document.getElementById('main-script').value = data.script || "";
-                    renderMissions();
-                    addLog("CLOUD: โหลดข้อมูลล่าสุดแล้ว");
-                }
-            } catch (e) { addLog("CLOUD_ERROR: โหลดไม่สำเร็จ"); }
-        };
-
-        // Audio Engine (Fixed UI Overlap)
-        document.getElementById('btn-toggle-mic').onclick = async () => {
-            if (isMicRunning) {
-                stopMic();
-            } else {
-                startMic();
+        window.deleteCategory = async (id, e) => {
+            e.stopPropagation();
+            if (confirm("ยืนยันการลบหมวดหมู่นี้? ข้อมูลภายในจะหายไปทั้งหมด")) {
+                await deleteDoc(doc(db, "categories", id));
+                if (currentCategoryId === id) { currentCategoryId = null; renderTopics(); }
             }
         };
 
-        async function startMic() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    audio: { deviceId: document.getElementById('mic-select').value ? { exact: document.getElementById('mic-select').value } : undefined }
+        window.addTopic = async () => {
+            if (!currentCategoryId) return alert("กรุณาเลือกหมวดหมู่ก่อน");
+            const title = prompt("ชื่อหัวข้อวิดีโอ (ภารกิจ):");
+            if (title) {
+                await addDoc(collection(db, `categories/${currentCategoryId}/topics`), {
+                    title, script: "", createdAt: Date.now()
                 });
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                analyser = audioCtx.createAnalyser();
-                analyser.fftSize = 256;
-                source = audioCtx.createMediaStreamSource(stream);
-                source.connect(analyser);
-                isMicRunning = true;
-                document.getElementById('btn-toggle-mic').innerText = "STOP TEST";
-                document.getElementById('mic-led').className = "w-2 h-2 rounded-full bg-green-400 shadow-[0_0_8px_#33ff33]";
-                draw();
-                addLog("AUDIO: ไมค์ทำงาน");
-            } catch (e) { addLog("AUDIO_ERROR: " + e.message); }
-        }
-
-        function stopMic() {
-            isMicRunning = false;
-            cancelAnimationFrame(animId);
-            if (audioCtx) audioCtx.close();
-            document.getElementById('btn-toggle-mic').innerText = "START TEST";
-            document.getElementById('mic-led').className = "w-2 h-2 rounded-full bg-red-900";
-            const canvas = document.getElementById('mic-waveform');
-            canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
-            document.querySelectorAll('.meter-segment').forEach(s => s.className = 'meter-segment');
-        }
-
-        function draw() {
-            if (!isMicRunning) return;
-            const canvas = document.getElementById('mic-waveform');
-            const ctx = canvas.getContext('2d');
-            const data = new Uint8Array(analyser.frequencyBinCount);
-            analyser.getByteTimeDomainData(data);
-
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.lineWidth = 2; ctx.strokeStyle = '#33ff33';
-            ctx.beginPath();
-            let x = 0, slice = canvas.width / data.length;
-            for (let i = 0; i < data.length; i++) {
-                let v = data[i] / 128.0, y = v * canvas.height / 2;
-                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-                x += slice;
             }
-            ctx.lineTo(canvas.width, canvas.height / 2); ctx.stroke();
+        };
 
-            let sum = 0;
-            for (let i = 0; i < data.length; i++) sum += Math.abs(data[i] - 128);
-            let avg = sum / data.length;
-            const segments = document.querySelectorAll('.meter-segment');
-            const active = Math.min(Math.floor(avg / 4), 10);
-            segments.forEach((s, i) => {
-                s.className = 'meter-segment';
-                if (i < active) {
-                    if (i < 6) s.classList.add('meter-active-green');
-                    else if (i < 9) s.classList.add('meter-active-yellow');
-                    else s.classList.add('meter-active-red');
-                }
+        window.deleteTopic = async (id, e) => {
+            e.stopPropagation();
+            if (confirm("ยกเลิกภารกิจ (ลบหัวข้อ) ใช่หรือไม่?")) {
+                await deleteDoc(doc(db, `categories/${currentCategoryId}/topics`, id));
+                if (currentTopicId === id) closeEditor();
+            }
+        };
+
+        window.openEditor = (topicId, initialScript) => {
+            currentTopicId = topicId;
+            editorTextarea.value = initialScript;
+            scriptEditor.classList.remove('hidden');
+        };
+
+        window.closeEditor = () => { scriptEditor.classList.add('hidden'); currentTopicId = null; };
+
+        window.saveScript = async () => {
+            if (!currentTopicId) return;
+            const topicRef = doc(db, `categories/${currentCategoryId}/topics`, currentTopicId);
+            await updateDoc(topicRef, { script: editorTextarea.value });
+            alert("บันทึกข้อมูลเข้าสู่ระบบเรียบร้อย");
+        };
+
+        window.insertText = (text) => {
+            const start = editorTextarea.selectionStart;
+            const end = editorTextarea.selectionEnd;
+            const fullText = editorTextarea.value;
+            const textToInsert = text + '\n';
+            editorTextarea.value = fullText.substring(0, start) + textToInsert + fullText.substring(end);
+            const newCursorPos = start + textToInsert.length;
+            editorTextarea.setSelectionRange(newCursorPos, newCursorPos);
+            editorTextarea.focus();
+        };
+
+        onSnapshot(query(collection(db, "categories"), orderBy("createdAt", "desc")), (snapshot) => {
+            categoryList.innerHTML = "";
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                const isActive = currentCategoryId === doc.id;
+                const div = document.createElement('div');
+                div.className = `p-4 mb-3 glass-panel cursor-pointer flex justify-between items-center transition-all ${isActive ? 'border-green-500 bg-gray-800' : 'hover:bg-gray-700'}`;
+                div.onclick = () => { currentCategoryId = doc.id; renderTopics(); };
+                div.innerHTML = `
+                    <span class="flex items-center text-sm font-bold">
+                        <span class="status-light ${isActive ? 'bg-green-500' : 'bg-gray-500'}"></span>
+                        ${data.name}
+                    </span>
+                    <button onclick="deleteCategory('${doc.id}', event)" class="text-red-500"><i class="fas fa-times-circle"></i></button>
+                `;
+                categoryList.appendChild(div);
             });
-            animId = requestAnimationFrame(draw);
+        });
+
+        async function renderTopics() {
+            if (!currentCategoryId) {
+                topicList.innerHTML = "<div class='text-center p-10 text-gray-600 font-mono'>[ ระบบพร้อมใช้งาน: กรุณาเลือกหมวดหมู่ ]</div>";
+                return;
+            }
+            onSnapshot(query(collection(db, `categories/${currentCategoryId}/topics`), orderBy("createdAt", "desc")), (snapshot) => {
+                topicList.innerHTML = "";
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const div = document.createElement('div');
+                    div.className = "p-5 glass-panel mb-4 flex justify-between items-center group hover:border-orange-500 transition-colors";
+                    div.innerHTML = `
+                        <div>
+                            <h4 class="font-bold text-lg text-orange-400 font-mono">> ${data.title}</h4>
+                            <p class="text-[10px] text-gray-500 mt-1 uppercase">บันทึกเมื่อ: ${new Date(data.createdAt).toLocaleString('th-TH')}</p>
+                        </div>
+                        <div class="flex gap-3">
+                            <button onclick="openEditor('${docSnap.id}', \`${data.script.replace(/`/g, '\\`')}\`)" class="flight-btn flight-btn-green px-4 py-2 text-xs rounded">เริ่มเขียนสคริปต์</button>
+                            <button onclick="deleteTopic('${docSnap.id}', event)" class="flight-btn px-3 py-2 text-red-500 rounded text-xs"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                    `;
+                    topicList.appendChild(div);
+                });
+            });
         }
-
-        // Init
-        const initMics = async () => {
-            const devices = await navigator.mediaDevices.enumerateDevices();
-            const mics = devices.filter(d => d.kind === 'audioinput');
-            document.getElementById('mic-select').innerHTML = mics.map(m => `<option value="${m.deviceId}">${m.label || 'Mic'}</option>`).join('');
-        };
-
-        // Tab Logic
-        document.getElementById('tab-script-btn').onclick = () => {
-            document.getElementById('content-script').classList.remove('hidden');
-            document.getElementById('content-calendar').classList.add('hidden');
-            document.getElementById('tab-script-btn').className = "px-6 py-2 tab-active";
-            document.getElementById('tab-calendar-btn').className = "px-6 py-2 text-green-900";
-        };
-        document.getElementById('tab-calendar-btn').onclick = () => {
-            document.getElementById('content-script').classList.add('hidden');
-            document.getElementById('content-calendar').classList.remove('hidden');
-            document.getElementById('tab-calendar-btn').className = "px-6 py-2 tab-active";
-            document.getElementById('tab-script-btn').className = "px-6 py-2 text-green-900";
-        };
-
-        setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
-        initMics();
-        loadCloudData();
     </script>
+</head>
+
+<body class="h-screen flex flex-col overflow-hidden">
+
+    <!-- ส่วนหัวคอนโซล -->
+    <header class="p-4 bg-[#121417] border-b-4 border-[#333] flex justify-between items-center shadow-2xl">
+        <div class="flex items-center gap-4">
+            <div
+                class="w-10 h-10 rounded bg-red-600 flex items-center justify-center shadow-[0_0_15px_rgba(220,38,38,0.5)]">
+                <i class="fab fa-youtube text-white text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-lg font-black tracking-tighter text-white">YT-DECK แผงควบคุม</h1>
+                <p class="text-[10px] text-green-500 font-mono">สถานะระบบ: ออนไลน์</p>
+            </div>
+        </div>
+        <div class="flex gap-8 text-[10px] font-mono text-gray-500">
+            <div class="text-center">
+                <p>ระดับความสูง</p>
+                <p class="text-white">แผนงานคอนเทนต์</p>
+            </div>
+            <div class="text-center">
+                <p>พลังงาน</p>
+                <p class="text-white">ความคิดสร้างสรรค์ 100%</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex flex-1 overflow-hidden p-2 gap-2">
+        <!-- แถบด้านข้าง: หมวดหมู่ -->
+        <aside class="w-72 flex flex-col">
+            <div class="p-2 text-[10px] font-bold text-gray-500 flex justify-between">
+                <span>การจัดการหมวดหมู่</span>
+                <button onclick="addCategory()" class="text-green-500"><i class="fas fa-plus-square"></i>
+                    เพิ่มใหม่</button>
+            </div>
+            <div id="categoryList" class="flex-1 overflow-y-auto pr-1"></div>
+        </aside>
+
+        <!-- จอแสดงผลหลัก: หัวข้อ -->
+        <section class="flex-1 flex flex-col">
+            <div class="p-2 flex justify-between items-center">
+                <span class="text-[10px] font-bold text-gray-500">แผงแสดงภารกิจวิดีโอ</span>
+                <button onclick="addTopic()" class="flight-btn flight-btn-green px-6 py-2 rounded text-sm">
+                    <i class="fas fa-plus mr-2"></i>สร้างภารกิจใหม่
+                </button>
+            </div>
+            <div id="topicList" class="flex-1 overflow-y-auto crt-screen p-6 rounded-lg">
+                <!-- รายการหัวข้อจะแสดงที่นี่ -->
+            </div>
+        </section>
+    </main>
+
+    <!-- ระบบช่วยเขียนสคริปต์ (Cockpit Interface) -->
+    <div id="scriptEditor" class="hidden fixed inset-0 bg-[#0a0c0e] z-50 flex flex-col p-4">
+        <div class="glass-panel p-4 mb-4 flex justify-between items-center border-orange-500">
+            <div class="flex items-center">
+                <div class="status-light bg-orange-500 animate-pulse"></div>
+                <h3 class="font-bold text-orange-400">โมดูลเขียนสคริปต์ : ควบคุมด้วยตนเอง</h3>
+            </div>
+            <div class="flex gap-4">
+                <button onclick="saveScript()"
+                    class="flight-btn flight-btn-green px-8 py-2 rounded-full">ยืนยันการบันทึก</button>
+                <button onclick="closeEditor()"
+                    class="flight-btn px-8 py-2 rounded-full text-red-400">ปิดหน้าต่าง</button>
+            </div>
+        </div>
+
+        <div class="flex flex-1 gap-4 overflow-hidden">
+            <!-- ปุ่มช่วยเขียน 20 ปุ่ม -->
+            <div
+                class="w-80 glass-panel p-4 overflow-y-auto grid grid-cols-1 gap-2 content-start border-r-4 border-gray-900 bg-[#222]">
+                <p class="text-[10px] font-bold text-green-500 mb-2 border-b border-green-900 pb-1">ช่วงเปิดตัว (HOOK)
+                </p>
+                <button onclick="insertText('🔥 [Hook]: คุณเคยสงสัยไหมว่า...')"
+                    class="flight-btn p-2 text-[11px] text-left rounded">01. เปิดด้วยคำถาม</button>
+                <button onclick="insertText('🚀 [Hook]: วันนี้เราจะพาไปดูสิ่งที่ไม่มีใครบอกคุณ...')"
+                    class="flight-btn p-2 text-[11px] text-left rounded">02. เปิดด้วยความลับ</button>
+                <button onclick="insertText('👋 [Intro]: สวัสดีครับ ผม... ยินดีต้อนรับสู่ช่อง...')"
+                    class="flight-btn p-2 text-[11px] text-left rounded">03. ทักทายทางการ</button>
+                <button onclick="insertText('📌 [Topic]: เนื้อหาในวันนี้คือเรื่อง...')"
+                    class="flight-btn p-2 text-[11px] text-left rounded">04. แจ้งหัวข้อ</button>
+
+                <p class="text-[10px] font-bold text-orange-400 my-2 border-b border-orange-900 pb-1">เนื้อหาหลัก
+                    (CONTENT)</p>
+                <button onclick="insertText('✅ [Point 1]: ประเด็นที่หนึ่งที่น่าสนใจคือ...')"
+                    class="flight-btn p-2 text-[11px] text-left rounded">05. หัวข้อหลัก 1</button>
+                <button onclick="insertText('💡 [Tip]: เทคนิคพิเศษสำหรับเรื่องนี้คือ...')"
+                    class="flight-btn p-2 text-[11px] text-left rounded">06. แชร์เทคนิค</button>
+                <button onclick="insertText('📊 [Data]: จากสถิติล่าสุดพบว่า...')"
+                    class="flight-btn p-2 text-[11px] text-left rounded">07. อ้างอิงสถิติ</button>
+                <button onclick="insertText('⚠️ [Warning]: สิ่งที่คุณต้องระวังมากที่สุดคือ...')"
+                    class="flight-btn p-2 text-[11px] text-left rounded">08. ข้อควรระวัง</button>
+                <button onclick="insertText('🔄 [Example]: ขอยกตัวอย่างให้เห็นภาพคือ...')"
+                    class="flight-btn p-2 text-[11px] text-left rounded">09. ยกตัวอย่างประกอบ</button>
+                <button onclick="insertText('🛠️ [Tutorial]: ขั้นตอนการทำเริ่มจาก...')"
+                    class="flight-btn p-2 text-[11px] text-left rounded">10. เริ่มขั้นตอนการสอน</button>
+
+                <p class="text-[10px] font-bold text-blue-400 my-2 border-b border-blue-900 pb-1">การสื่อสาร (CTA)</p>
+                <button onclick="insertText('💬 [Question]: ใครเคยเจอแบบนี้บ้าง คอมเมนต์บอกกันหน่อย...')"
+                    class="flight-btn p-2 text-[11px] text-left rounded">11. ถามความเห็น</button>
+                <button onclick="insertText('🔔 [CTA]: ฝากกดติดตามและกดกระดิ่งแจ้งเตือนด้วยนะ...')"
+                    class="flight-btn p-2 text-[11px] text-left rounded">12. ฝากติดตามช่อง</button>
+                <button onclick="insertText('👍 [CTA]: ถ้าชอบคลิปแบบนี้ รบกวนกด Like ให้ด้วยนะครับ...')"
+                    class="flight-btn p-2 text-[11px] text-left rounded">13. ขอกำลังใจ (Like)</button>
+                <button onclick="insertText('🎁 [Bonus]: สำหรับคนที่ดูจนจบ ผมมีของพิเศษจะบอก...')"
+                    class="flight-btn p-2 text-[11px] text-left rounded">14. บอกสิทธิพิเศษ</button>
+
+                <p class="text-[10px] font-bold text-red-500 my-2 border-b border-red-900 pb-1">ช่วงปิดท้าย (OUTRO)</p>
+                <button onclick="insertText('📝 [Summary]: สรุปสั้นๆ จากที่คุยกันวันนี้คือ...')"
+                    class="flight-btn p-2 text-[11px] text-left rounded">15. สรุปเนื้อหา</button>
+                <button onclick="insertText('🎬 [Next]: ในคลิปหน้า ผมจะมาเจาะลึกเรื่อง...')"
+                    class="flight-btn p-2 text-[11px] text-left rounded">16. ตัวอย่างคลิปหน้า</button>
+                <button onclick="insertText('👋 [Outro]: แล้วเจอกันใหม่คลิปหน้าครับ สวัสดีครับ')"
+                    class="flight-btn p-2 text-[11px] text-left rounded">17. กล่าวปิดคลิป</button>
+
+                <p class="text-[10px] font-bold text-gray-400 my-2 border-b border-gray-700 pb-1">หมายเหตุการตัดต่อ</p>
+                <button onclick="insertText('[B-Roll: แทรกภาพบรรยากาศที่... ]')"
+                    class="flight-btn p-2 text-[11px] text-left rounded border-dashed opacity-70">18.
+                    จุดแทรกภาพเสริม</button>
+                <button onclick="insertText('[Text: ขึ้นข้อความตัวหนาว่า... ]')"
+                    class="flight-btn p-2 text-[11px] text-left rounded border-dashed opacity-70">19.
+                    จุดขึ้นตัวอักษร</button>
+                <button onclick="insertText('[SFX: ใส่เสียงเอฟเฟกต์... ]')"
+                    class="flight-btn p-2 text-[11px] text-left rounded border-dashed opacity-70">20.
+                    จุดใส่เสียงประกอบ</button>
+            </div>
+
+            <!-- หน้าจอพิมพ์สคริปต์ -->
+            <div class="flex-1 crt-screen p-4 rounded-lg">
+                <textarea id="editorTextarea"
+                    class="w-full h-full bg-transparent p-4 text-green-500 font-mono text-lg focus:ring-0 resize-none outline-none leading-relaxed"
+                    placeholder="กรุณาป้อนข้อมูลภารกิจ (พิมพ์สคริปต์ของคุณที่นี่)..."></textarea>
+            </div>
+        </div>
+    </div>
+
 </body>
 
 </html>
