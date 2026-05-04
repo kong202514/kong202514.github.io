@@ -1,0 +1,371 @@
+ 
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบเขียนบทและจัดการวิดีโอ (ไทย)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&family=Sarabun:wght@300;400;600&display=swap');
+
+        :root {
+            --editor-bg: #1e1e1e;
+            --sidebar-bg: #252526;
+            --text-color: #d4d4d4;
+            --code-blue: #007acc;
+            /* ค่าเริ่มต้นฟอนต์ */
+            --base-font-size: 20px;
+            --editor-font-size: 30px;
+        }
+
+        body {
+            font-family: 'Kanit', sans-serif;
+            background-color: #121212;
+            color: var(--text-color);
+            font-size: var(--base-font-size);
+            transition: all 0.2s ease;
+        }
+
+        /* ปุ่มปรับขนาดฟอนต์ */
+        .font-ctrl-btn {
+            background: #3a3d41;
+            color: white;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            border: 1px solid #555;
+            transition: 0.2s;
+        }
+
+        .font-ctrl-btn:hover {
+            background: #007acc;
+            border-color: #fff;
+        }
+
+        /* การ์ดโปรเจกต์ */
+        .project-card {
+            background: #2d2d2d;
+            border: 2px solid #404040;
+            border-left: 10px solid var(--code-blue);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-main {
+            background: #007acc;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .btn-main:hover {
+            background: #005a9e;
+            transform: translateY(-2px);
+        }
+
+        .btn-snippet {
+            background: #33363a;
+            color: #ffcc66;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: left;
+            font-size: 0.9em;
+            border: 1px solid #444;
+            width: 100%;
+            margin-bottom: 5px;
+        }
+
+        .btn-snippet:hover {
+            background: #45494e;
+            color: #fff;
+        }
+
+        .input-thai {
+            background: #ffffff !important;
+            color: #000000 !important;
+            border: 2px solid #ddd;
+            padding: 12px;
+            border-radius: 8px;
+            width: 100%;
+            font-size: 1em;
+            font-family: 'Sarabun', sans-serif;
+        }
+
+        .input-thai:focus {
+            border-color: #007acc;
+            outline: none;
+        }
+
+        /* พื้นที่เขียนบท */
+        #editorTextarea {
+            font-size: var(--editor-font-size) !important;
+            line-height: 1.6;
+            font-family: 'Sarabun', sans-serif;
+            background: transparent;
+            color: white;
+            width: 100%;
+            height: 100%;
+            outline: none;
+            resize: none;
+        }
+
+        input[type="checkbox"] {
+            transform: scale(1.5);
+        }
+    </style>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, deleteDoc, doc, updateDoc, onSnapshot, query, orderBy }
+            from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAHd60VAO__hpRlV0Ne0meDy7qRcEaAlnU",
+            authDomain: "yt-90eb3.firebaseapp.com",
+            projectId: "yt-90eb3",
+            storageBucket: "yt-90eb3.firebasestorage.app",
+            messagingSenderId: "622222071571",
+            appId: "1:622222071571:web:af77604f4f45db960eece6",
+            measurementId: "G-FR0VTD4BMJ"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let currentCategoryId = null;
+        let currentTopicId = null;
+        let fontSizeBase = 20;
+
+        // ฟังก์ชันปรับขนาดฟอนต์ผ่าน UI
+        window.adjustFont = (amount) => {
+            fontSizeBase += amount;
+            if (fontSizeBase < 12) fontSizeBase = 12;
+            if (fontSizeBase > 60) fontSizeBase = 60;
+
+            document.documentElement.style.setProperty('--base-font-size', fontSizeBase + 'px');
+            document.documentElement.style.setProperty('--editor-font-size', (fontSizeBase * 1.5) + 'px');
+            document.getElementById('fontDisplay').innerText = fontSizeBase + 'px';
+        };
+
+        // การจัดการ Firebase (ภาษาไทย)
+        window.addCategory = async () => {
+            const name = prompt("ชื่อโฟลเดอร์ใหม่ (เช่น ซีรีส์สอนตัดต่อ):");
+            if (name) await addDoc(collection(db, "categories"), { name, createdAt: Date.now() });
+        };
+
+        window.deleteCategory = async (id, e) => {
+            e.stopPropagation();
+            if (confirm("ต้องการลบหมวดหมู่และข้อมูลทั้งหมดข้างในใช่หรือไม่?")) await deleteDoc(doc(db, "categories", id));
+        };
+
+        window.addTopic = async () => {
+            if (!currentCategoryId) return alert("กรุณาเลือกโฟลเดอร์ทางซ้ายมือก่อนครับ");
+            const title = prompt("ชื่อโปรเจกต์/หัวข้อวิดีโอ:");
+            if (title) {
+                await addDoc(collection(db, `categories/${currentCategoryId}/topics`), {
+                    title, script: "", status: "เตรียมงาน", recordDate: "", editDate: "", uploadDate: "",
+                    titles: ["", "", ""], keywords: "", thumbNote: "", gearCheck: [false, false, false, false], createdAt: Date.now()
+                });
+            }
+        };
+
+        window.selectCategory = (id) => { currentCategoryId = id; renderTopics(); };
+
+        function renderTopics() {
+            onSnapshot(query(collection(db, `categories/${currentCategoryId}/topics`), orderBy("createdAt", "desc")), (snapshot) => {
+                const list = document.getElementById('topicList');
+                list.innerHTML = "";
+                snapshot.forEach(d => {
+                    const data = d.data();
+                    list.innerHTML += `
+                        <div class="project-card">
+                            <div class="flex justify-between items-center mb-4">
+                                <div>
+                                    <h4 class="text-2xl font-bold text-white mb-2">${data.title}</h4>
+                                    <span class="text-blue-400 font-bold">สถานะ:</span> 
+                                    <select onchange="updateField('${d.id}', 'status', this.value)" class="bg-[#111] text-white p-1 rounded border border-gray-600 ml-2">
+                                        <option value="เตรียมงาน" ${data.status === 'เตรียมงาน' ? 'selected' : ''}>เตรียมงาน</option>
+                                        <option value="เขียนบท" ${data.status === 'เขียนบท' ? 'selected' : ''}>กำลังเขียนบท</option>
+                                        <option value="ถ่ายทำ" ${data.status === 'ถ่ายทำ' ? 'selected' : ''}>กำลังถ่ายทำ</option>
+                                        <option value="ตัดต่อ" ${data.status === 'ตัดต่อ' ? 'selected' : ''}>กำลังตัดต่อ</option>
+                                        <option value="เสร็จสิ้น" ${data.status === 'เสร็จสิ้น' ? 'selected' : ''}>ลงคลิปแล้ว</option>
+                                    </select>
+                                </div>
+                                <button onclick='window.openEditor("${d.id}", ${JSON.stringify(data).replace(/'/g, "&apos;")})' class="btn-main">เปิดหน้าเขียนบท</button>
+                            </div>
+                        </div>`;
+                });
+            });
+        }
+
+        window.openEditor = (topicId, data) => {
+            currentTopicId = topicId;
+            document.getElementById('editorTextarea').value = data.script || "";
+            document.getElementById('metaTitle1').value = data.titles?.[0] || "";
+            document.getElementById('metaTitle2').value = data.titles?.[1] || "";
+            document.getElementById('metaTitle3').value = data.titles?.[2] || "";
+            document.getElementById('metaKeywords').value = data.keywords || "";
+            document.getElementById('metaThumb').value = data.thumbNote || "";
+            const labels = ['เช็กกล้อง', 'เช็กไมค์', 'เช็กไฟ', 'เช็กฉาก'];
+            document.getElementById('gearList').innerHTML = labels.map((l, i) => `
+                <div class="flex items-center p-2 mb-2 bg-[#333] rounded">
+                    <input type="checkbox" ${data.gearCheck?.[i] ? 'checked' : ''} onchange="window.updateGear(${i}, this.checked)">
+                    <span class="ml-3 text-white font-medium">${l}</span>
+                </div>`).join('');
+            document.getElementById('scriptEditor').classList.remove('hidden');
+        };
+
+        window.updateField = async (topicId, field, value) => {
+            const topicRef = doc(db, `categories/${currentCategoryId}/topics`, topicId);
+            await updateDoc(topicRef, { [field]: value });
+        };
+
+        window.saveAll = async () => {
+            const topicRef = doc(db, `categories/${currentCategoryId}/topics`, currentTopicId);
+            await updateDoc(topicRef, {
+                script: document.getElementById('editorTextarea').value,
+                titles: [document.getElementById('metaTitle1').value, document.getElementById('metaTitle2').value, document.getElementById('metaTitle3').value],
+                keywords: document.getElementById('metaKeywords').value,
+                thumbNote: document.getElementById('metaThumb').value
+            });
+            alert("บันทึกสำเร็จ!");
+        };
+
+        window.insertText = (text) => {
+            const area = document.getElementById('editorTextarea');
+            const start = area.selectionStart;
+            area.value = area.value.substring(0, start) + text + "\n" + area.value.substring(area.selectionEnd);
+            area.focus();
+        };
+
+        onSnapshot(query(collection(db, "categories"), orderBy("createdAt", "desc")), (snapshot) => {
+            const list = document.getElementById('categoryList');
+            list.innerHTML = "";
+            snapshot.forEach(doc => {
+                const isActive = currentCategoryId === doc.id;
+                list.innerHTML += `
+                    <div onclick="window.selectCategory('${doc.id}')" class="px-6 py-4 cursor-pointer flex justify-between items-center ${isActive ? 'bg-[#37373d] text-white border-l-4 border-[#007acc]' : 'text-gray-400 hover:bg-[#2a2d2e]'}">
+                        <span class="font-semibold"><i class="fas fa-folder-open mr-3"></i> ${doc.data().name}</span>
+                        <button onclick="deleteCategory('${doc.id}', event)" class="text-red-500">🗑️</button>
+                    </div>`;
+            });
+        });
+    </script>
+</head>
+
+<body class="h-screen flex flex-col">
+
+    <!-- ส่วนหัว (Header) -->
+    <header class="h-20 bg-[#252526] flex justify-between items-center px-8 border-b border-[#000] shadow-xl">
+        <div class="flex items-center gap-4">
+            <i class="fab fa-youtube text-red-600 text-4xl"></i>
+            <h1 class="text-2xl font-black text-white italic tracking-widest">สตูดิโอจัดการวิดีโอ</h1>
+        </div>
+
+        <!-- ตัวควบคุมขนาดตัวหนังสือ -->
+        <div class="flex items-center gap-4 bg-[#1e1e1e] p-2 rounded-xl border border-[#444]">
+            <span class="text-sm font-bold text-gray-400">ขนาดตัวอักษร:</span>
+            <div class="flex items-center gap-3">
+                <button onclick="adjustFont(-2)" class="font-ctrl-btn">-</button>
+                <span id="fontDisplay" class="w-16 text-center font-black text-blue-400">20px</span>
+                <button onclick="adjustFont(2)" class="font-ctrl-btn">+</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        <!-- แถบด้านข้าง -->
+        <aside class="w-80 flex flex-col bg-[#252526] border-r border-black">
+            <div class="p-4">
+                <button onclick="addCategory()"
+                    class="w-full bg-white text-black py-3 font-bold rounded-lg mb-4 hover:bg-gray-200 shadow-lg">
+                    + เพิ่มโฟลเดอร์ใหม่
+                </button>
+                <p class="text-xs font-bold text-gray-500 uppercase px-2 mb-2">รายชื่อโฟลเดอร์</p>
+            </div>
+            <div id="categoryList" class="flex-1 overflow-y-auto"></div>
+        </aside>
+
+        <!-- พื้นที่หลัก -->
+        <main class="flex-1 flex flex-col p-8 overflow-y-auto bg-[#1e1e1e]">
+            <div class="flex justify-between items-center mb-8 border-b-2 border-gray-800 pb-4">
+                <h2 class="text-3xl font-black text-white">จัดการโปรเจกต์วิดีโอ</h2>
+                <button onclick="addTopic()" class="btn-main">+ สร้างวิดีโอใหม่</button>
+            </div>
+            <div id="topicList"></div>
+        </main>
+    </div>
+
+    <!-- หน้าจอเขียนบท (Editor Full Screen) -->
+    <div id="scriptEditor" class="hidden fixed inset-0 bg-[#0f0f0f] z-50 flex flex-col p-4">
+        <div class="flex justify-between items-center mb-4 bg-[#252526] p-4 rounded-xl border-b-4 border-blue-600">
+            <h3 class="text-2xl font-bold text-white">หน้าจอเขียนบทและวางแผนวิดีโอ</h3>
+            <div class="flex gap-4">
+                <button onclick="saveAll()"
+                    class="bg-green-600 px-10 py-3 rounded-lg font-bold text-white shadow-lg hover:bg-green-500">บันทึกข้อมูล</button>
+                <button onclick="document.getElementById('scriptEditor').classList.add('hidden')"
+                    class="bg-red-600 px-6 py-3 rounded-lg font-bold text-white">ปิด</button>
+            </div>
+        </div>
+
+        <div class="flex flex-1 gap-6 overflow-hidden">
+            <!-- ปุ่มตัวช่วยเขียน -->
+            <div class="w-80 flex flex-col gap-2 overflow-y-auto bg-[#1e1e1e] p-4 rounded-xl">
+                <p class="text-sm font-bold text-blue-400 mb-2 underline">ตัวช่วยเขียนบท (Snippets)</p>
+                <button onclick="insertText('🔥 [จุดเริ่ม]: เปิดด้วยปัญหาที่คนดูเจอ')" class="btn-snippet">เปิดหัวคลิป
+                    (Hook)</button>
+                <button onclick="insertText('👋 [ทักทาย]: สวัสดีครับ วันนี้เราจะมาคุยเรื่อง...')"
+                    class="btn-snippet">คำทักทาย</button>
+                <button onclick="insertText('📌 [ประเด็น]: ข้อที่ 1 ...')" class="btn-snippet">เนื้อหาหลัก</button>
+                <button onclick="insertText('💡 [ทริค]: เทคนิคพิเศษเพิ่มเติมคือ...')"
+                    class="btn-snippet">แทรกเทคนิค</button>
+                <button onclick="insertText('💬 [ถามตอบ]: เพื่อนๆ มีความคิดเห็นยังไง คอมเมนต์บอกหน่อย')"
+                    class="btn-snippet">ชวนคุย</button>
+                <button onclick="insertText('🔔 [ปิดท้าย]: ฝากกดติดตาม กดไลก์ เพื่อเป็นกำลังใจ')"
+                    class="btn-snippet">ปิดคลิป (CTA)</button>
+
+                <div class="mt-6 border-t border-gray-700 pt-4">
+                    <p class="text-sm font-bold text-orange-400 mb-2">เช็กลิสต์อุปกรณ์</p>
+                    <div id="gearList"></div>
+                </div>
+            </div>
+
+            <!-- กล่องเขียนบทและ Metadata -->
+            <div class="flex-1 flex flex-col gap-4 overflow-hidden">
+                <div class="flex-1 bg-black rounded-xl border-2 border-[#333] p-8 shadow-inner">
+                    <textarea id="editorTextarea" placeholder="// เริ่มเขียนบทพูดของคุณที่นี่..."></textarea>
+                </div>
+
+                <div class="h-72 bg-[#252526] p-6 rounded-xl grid grid-cols-2 gap-8 border-t border-gray-700">
+                    <div class="flex flex-col gap-3">
+                        <p class="text-sm font-bold text-gray-400">ไอเดียชื่อคลิป (ลองตั้ง 3 แบบ)</p>
+                        <input id="metaTitle1" class="input-thai" placeholder="แบบที่ 1 (เน้นคนคลิก)">
+                        <input id="metaTitle2" class="input-thai" placeholder="แบบที่ 2 (เน้นสาระ)">
+                        <input id="metaTitle3" class="input-thai" placeholder="แบบที่ 3 (สั้นๆ ได้ใจความ)">
+                    </div>
+                    <div class="flex flex-col gap-3">
+                        <p class="text-sm font-bold text-gray-400">SEO & บันทึกปกคลิป</p>
+                        <input id="metaKeywords" class="input-thai" placeholder="คำค้นหา (Keywords)">
+                        <textarea id="metaThumb" class="input-thai flex-1 resize-none"
+                            placeholder="โน้ตเกี่ยวกับภาพปก (เช่น ตัวหนังสือสีแดง, รูปหน้าตกใจ)"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>
