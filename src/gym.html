@@ -180,13 +180,13 @@
                     list.innerHTML += `
                         <div class="flight-card p-6 mb-4 rounded flex justify-between items-center shadow-xl">
                             <div>
-                                <span class="text-[10px] bg-orange-600 px-2 py-1 rounded text-white uppercase font-black mb-2 inline-block">สถานะ: ${data.status}</span>
+                                <span class="text-[24px] bg-[#ca7f49] px-2 py-1 rounded  text-[#00000] uppercase font-black mb-2 inline-block">สถานะ: ${data.status}</span>
                                 <h3 class="text-white font-bold text-3xl mb-1">${data.title}</h3>
-                                <p class="text-xs text-gray-500 font-mono text-white">กำหนดลง: ${data.uploadDate || 'ยังไม่ระบุ'} | รหัส: ${d.id.substring(0, 6).toUpperCase()}</p>
+                   
                             </div>
                             <button onclick='window.openEditor("${d.id}", ${JSON.stringify(data).replace(/'/g, "&apos;")})' 
                                     class="bg-[#ca7f49] hover:bg-[#e66000] text-[#00000] px-10 py-4 rounded font-black text-xl uppercase tracking-tighter shadow-lg transition-all active:scale-95">
-                                <i class="fa-solid fa-plane-up mr-2"></i> เปิดหน้าเขียนบท
+                                  เปิดหน้าเขียนบท
                             </button>
                         </div>`;
                 });
