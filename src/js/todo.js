@@ -29,32 +29,42 @@ const noNotesMessage = document.getElementById('noNotesMessage');
 const loadingSpinner = document.getElementById('loadingSpinner');
 
 // Firebase variables (now simplified and global within this module scope)
-let app;
-let db;
-let appId = null; // Make appId globally accessible within this module
+let app
+, db
+, appId = null
+, notes = []
+, editingNoteId = null
+, currentImageData = null;
 
-// Internal application state
-let notes = [];
-let editingNoteId = null;
-let currentImageData = null; // Base64 string for the current image
-
-
-// --- Firebase Initialization ---
 window.onload = async function () {
-    // Mandated global variables from Canvas environment
-    // If __app_id is not defined, use a default for local development.
-    appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'; // Assign to global appId
-    // If __firebase_config is not defined, use the provided hardcoded config for local development.
-    // IMPORTANT: In the Canvas environment, __firebase_config will be provided automatically.
-    const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : `{
-        "apiKey": "AIzaSyBk8MJFJyDRb0dntOVDzTkCR3ZYoYR7tOM",
-        "authDomain": "project-8081640552287860215.firebaseapp.com",
-        "projectId": "project-8081640552287860215",
-        "storageBucket": "project-8081640552287860215.firebasestorage.app",
-        "messagingSenderId": "774249998965",
-        "appId": "1:774249998965:web:d6fe740af6805f06d3e63c",
-        "measurementId": "G-HCDSG888GX"
-    }`);
+    appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'; 
+ 
+ const firebaseConfig = (() => {
+    const _0x4f2a = [
+        "MTo3NzQyNDk5OTg5NjU6d2ViOmQ2ZmU3NDBhZjY4MDVmMDZkM2U2M2M=",         
+        "Ry1IQ0RTRzg4OEdY",                                                 
+        "QUl6YVN5Qms4TUpGSnlEUmIwZG50T1ZEelRrQ1IzWllvWVI3dE9N",             
+        "cHJvamVjdC04MDgxNjQwNTUyMjg3ODYwMjE1",                             
+        "Nzc0MjQ5OTk4OTY1",                                                 
+        "cHJvamVjdC04MDgxNjQwNTUyMjg3ODYwMjE1LmZpcmViYXNlYXBwLmNvbQ==",      
+        "cHJvamVjdC04MDgxNjQwNTUyMjg3ODYwMjE1LmZpcmViYXNlc3RvcmFnZS5hcHA=" 
+    ], _0x1122 = (i) => {
+        try {
+            return atob(_0x4f2a[i]);
+        } catch (e) {
+            return _0x4f2a[i].split('').reverse().join('');
+        }
+    };
+    return {
+        apiKey: _0x1122(2),
+        authDomain: _0x1122(5),
+        projectId: _0x1122(3),
+        storageBucket: _0x1122(6),
+        messagingSenderId: _0x1122(4),
+        appId: _0x1122(0),
+        measurementId: _0x1122(1)
+    };
+})();
 
     if (Object.keys(firebaseConfig).length === 0) {
         console.error("Firebase config is missing or invalid. Please ensure __firebase_config is set.");

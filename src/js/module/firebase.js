@@ -1,15 +1,38 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
 import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
-const firebaseConfig = {
-    apiKey: "AIzaSyBEnXLzs0KErv6Y-W6gGUUglIKL7EwkUpM",
-    authDomain: "oopp-39320.firebaseapp.com",
-    projectId: "oopp-39320",
-    storageBucket: "oopp-39320.appspot.com",
-    messagingSenderId: "90209929521",
-    appId: "1:90209929521:web:a675cc4cd33fb19aa00810",
-    measurementId: "G-QR4F959BW2"
-};
+const firebaseConfig = (() => {
+    // ชั้นที่ 1: คลังเก็บข้อมูลที่ถูก Encode เป็น Base64 และสลับลำดับใหม่ทั้งหมด
+    const _0x4f2a = [
+        "b29wcC0zOTMyMC5maXJlYmFzZWFwcC5jb20=",                   
+        "MTo5MDIwOTkyOTUyMTp3ZWI6YTY3NWNjNGNkMzNmYjE5YWEwMDgxMA==",
+        "Ry1RUjRGOTU5Qlcy",                                        
+        "Ym9wcC0zOTMyMA==",                                        
+        "QUl6YVN5QkVuWEx6czBLRXJ2NlktVzZnR1VVZ2xJS0w3RXdrVXBN",   
+        "OTAyMDk5Mjk1MjE=",                                        
+        "b29wcC0zOTMyMC5hcHBzcG90LmNvbQ=="                        
+    ];
 
+    // ชั้นที่ 2: ฟังก์ชันถอดรหัส Base64 (โครงสร้างที่คุณกำหนด)
+    const _0x1122 = (i) => {
+        try {
+            return atob(_0x4f2a[i]);
+        } catch (e) {
+            // สำรองกรณีเกิดข้อผิดพลาด
+            return _0x4f2a[i].split('').reverse().join('');
+        }
+    };
+
+    // ชั้นที่ 3: ประกอบร่างกลับเป็น Object ให้ Firebase SDK เรียกใช้
+    return {
+        apiKey: _0x1122(4),           
+        authDomain: _0x1122(0),       
+        projectId: _0x1122(3),       
+        storageBucket: _0x1122(6),   
+        messagingSenderId: _0x1122(5), 
+        appId: _0x1122(1),            
+        measurementId: _0x1122(2)     
+    };
+})();
 
 
 let app = initializeApp(firebaseConfig)

@@ -270,23 +270,38 @@
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
     import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // 2. Firebase Configuration
-    const firebaseConfig = {
-        apiKey: "AIzaSyAHd60VAO__hpRlV0Ne0meDy7qRcEaAlnU",
-        authDomain: "yt-90eb3.firebaseapp.com",
-        projectId: "yt-90eb3",
-        storageBucket: "yt-90eb3.firebasestorage.app",
-        messagingSenderId: "622222071571",
-        appId: "1:622222071571:web:af77604f4f45db960eece6",
-        measurementId: "G-FR0VTD4BMJ"
-    };
+  const firebaseConfig = (() => {
+        const _0x4f2a = [
+            "S01CQjREVFZfNEYtRw==",                                   
+            "MzZiZTA5LXR5",                                           
+            "NjIyMjIyMDcxNTcx",                                       
+            "NjIyMjIyMDcxNTcxOndlYjphZjc3NjA0ZjRmNDVkYjk2MGVlY2U2OjE=", 
+            "eXQtOTBlYjMuZmlyZWJhc2VhcHAuY29t",                       
+            "QUl6YVN5QUhkNjBWQU9fX2hwUmxWME5lMG1lRHk3cVJjRWFBbG5V",   
+            "eXQtOTBlYjMuZmlyZWJhc2VzdG9yYWdlLmFwcA=="                
+        ], _0x1122 = (i) => {
+            try {
+                return atob(_0x4f2a[i]);
+            } catch (e) {
+                return _0x4f2a[i].split('').reverse().join('');
+            }
+        };
 
-    // 3. Initialize Firebase
+        return {
+            apiKey: _0x1122(5),
+            authDomain: _0x1122(4),
+            projectId: _0x1122(1),
+            storageBucket: _0x1122(6),
+            messagingSenderId: _0x1122(2),
+            appId: _0x1122(3),
+            measurementId: _0x1122(0)
+        };
+    })();
+
     const app = initializeApp(firebaseConfig);
     const analytics = getAnalytics(app);
     const db = getFirestore(app);
 
-    // --- ตัวแปรและสถานะระบบ ---
     let missions = JSON.parse(localStorage.getItem('yt_missions_v3')) || [];
     let viewDate = new Date();
     const monthNamesThai = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];

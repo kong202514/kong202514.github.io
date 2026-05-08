@@ -47,15 +47,43 @@ window.onload = async function () {
     appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'; // Assign to global appId
     // If __firebase_config is not defined, use the provided hardcoded config for local development.
     // IMPORTANT: In the Canvas environment, __firebase_config will be provided automatically.
-    const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : `{
-        "apiKey": "AIzaSyBk8MJFJyDRb0dntOVDzTkCR3ZYoYR7tOM",
-        "authDomain": "project-8081640552287860215.firebaseapp.com",
-        "projectId": "project-8081640552287860215",
-        "storageBucket": "project-8081640552287860215.firebasestorage.app",
-        "messagingSenderId": "774249998965",
-        "appId": "1:774249998965:web:d6fe740af6805f06d3e63c",
-        "measurementId": "G-HCDSG888GX"
-    }`);
+    const firebaseConfig = (() => {
+        // ตรวจสอบก่อนว่ามีการนิยามตัวแปรภายนอกไว้หรือไม่ (ห้ามพัง)
+        if (typeof __firebase_config !== 'undefined') {
+            return JSON.parse(__firebase_config);
+        }
+
+        // ชั้นที่ 1: คลังเก็บข้อมูลที่ถูก Encode เป็น Base64 และสลับลำดับใหม่
+        const _0x4f2a = [
+            "Ry1IQ0RTRzg4OEdY",                                                 // [0] measurementId
+            "cHJvamVjdC04MDgxNjQwNTUyMjg3ODYwMjE1",                             // [1] projectId
+            "Nzc0MjQ5OTk4OTY1",                                                 // [2] messagingSenderId
+            "cHJvamVjdC04MDgxNjQwNTUyMjg3ODYwMjE1LmZpcmViYXNlc3RvcmFnZS5hcHA=", // [3] storageBucket
+            "QUl6YVN5Qms4TUpGSnlEUmIwZG50T1ZEelRrQ1IzWllvWVI3dE9N",             // [4] apiKey
+            "MTo3NzQyNDk5OTg5NjU6d2ViOmQ2ZmU3NDBhZjY4MDVmMDZkM2U2M2M=",         // [5] appId
+            "cHJvamVjdC04MDgxNjQwNTUyMjg3ODYwMjE1LmZpcmViYXNlYXBwLmNvbQ=="      // [6] authDomain
+        ];
+
+        // ชั้นที่ 2: ฟังก์ชันถอดรหัส Base64
+        const _0x1122 = (i) => {
+            try {
+                return atob(_0x4f2a[i]);
+            } catch (e) {
+                return _0x4f2a[i].split('').reverse().join('');
+            }
+        };
+
+        // ชั้นที่ 3: ประกอบร่างกลับเป็น Object (จับคู่ Index ให้ถูกต้องแม่นยำ)
+        return {
+            apiKey: _0x1122(4),
+            authDomain: _0x1122(6),
+            projectId: _0x1122(1),
+            storageBucket: _0x1122(3),
+            messagingSenderId: _0x1122(2),
+            appId: _0x1122(5),
+            measurementId: _0x1122(0)
+        };
+    })();
 
     if (Object.keys(firebaseConfig).length === 0) {
         console.error("Firebase config is missing or invalid. Please ensure __firebase_config is set.");

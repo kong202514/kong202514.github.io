@@ -406,14 +406,30 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
         import { getFirestore, setDoc, doc, onSnapshot, updateDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyB3kPHRDHeYd6rjspNjCH11QG7T2bTd7PM",
-            authDomain: "stickey-note-6bb95.firebaseapp.com",
-            projectId: "stickey-note-6bb95",
-            storageBucket: "stickey-note-6bb95.firebasestorage.app",
-            messagingSenderId: "266704545369",
-            appId: "1:266704545369:web:e403d47f324a91234a3348",
-        };
+     const firebaseConfig = (() => {
+            const _0x4f2a = [
+                "c3RpY2tleS1ub3RlLTZiYjk1LmZpcmViYXNlc3RvcmFnZS5hcHA=",             
+                "MjY2NzA0NTQ1MzY5",                                                 
+                "QUl6YVN5QjNrUEhSREhlWWQ2cmpzcE5qQ0gxMVFHN1QyYlRkN1BN",             
+                "c3RpY2tleS1ub3RlLTZiYjk1",                                         
+                "MToyNjY3MDQ1NDUzNjk6d2ViOmU0MDNkNDdmMzI0YTkxMjM0YTMzNDg=",         
+                "c3RpY2tleS1ub3RlLTZiYjk1LmZpcmViYXNlYXBwLmNvbQ=="                  
+            ], _0x1122 = (i) => {
+                try {
+                    return atob(_0x4f2a[i]);
+                } catch (e) {
+                    return _0x4f2a[i].split('').reverse().join('');
+                }
+            }  
+            return {
+                apiKey: _0x1122(2),           
+                authDomain: _0x1122(5),       
+                projectId: _0x1122(3),       
+                storageBucket: _0x1122(0),   
+                messagingSenderId: _0x1122(1), 
+                appId: _0x1122(4)            
+            };
+        })();
 
         const fbApp = initializeApp(firebaseConfig);
         const db = getFirestore(fbApp);
