@@ -200,7 +200,7 @@
             // --- 👋 INTRODUCTION (เปิดตัว) ---
             3: "👋 [Intro - Persona]: สวัสดีครับผม [ชื่อ] ยินดีต้อนรับเข้าสู่ช่อง [ชื่อช่อง]",
             4: "📌 [Intro - Topic]: วันนี้เราจะมาเจาะลึกเรื่อง [หัวข้อหลัก]",
-            4.5: "---------------------",
+            4.3: "---------------------",
             5: "✅ [Point]: ประเด็นที่สำคัญคือ [ชื่อประเด็น] เพราะว่า...",
             24: "💎 [Intro - Value]: สิ่งที่คุณจะได้จากคลิปนี้คือ [ระบุประโยชน์]",
             33: "📜 [Intro - Story]: จุดเริ่มต้นของเรื่องนี้มันเริ่มมาจากที่ผม...",
@@ -504,7 +504,7 @@
                         2: "Hook: ความลับ",
                         3: "Intro: แนะนำตัว",
                         4: "Intro: หัวข้อหลัก",
-                        4.5: "------------------ ",
+                        4.1: "------------------ ",
                         5: "Point: ประเด็นสำคัญ",
                         6: "Trick: เคล็ดลับ",
                         7: "Data: สถิติ",
@@ -561,9 +561,9 @@
                     snippetLabels.forEach((label, i) => {
                         const id = templateIds[i];
                         sc.innerHTML += `
-        <button onclick="insertText(${id})" class="btn-snippet">
-            <span class="text-orange-600 mr-2 font-mono">${id.toString().padStart(2, '0')}</span> ${label}
-        </button>`;
+    <button onclick="insertText('${id}')" class="btn-snippet">
+        <span class="text-orange-600 mr-2 font-mono">${id.toString().includes('.') ? id : id.toString().padStart(2, '0')}</span> ${label}
+    </button>`;
                     });
                 </script>
             </div>
