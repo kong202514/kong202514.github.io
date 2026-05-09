@@ -1,4 +1,5 @@
- html lang="th">
+ 
+<html lang="th">
 
 <head>
     <meta charset="UTF-8">
@@ -21,7 +22,7 @@
         body {
             font-family: 'Kanit', sans-serif;
             background-color: var(--cockpit-bg);
-            color: #02060b;
+            color: #ffffff;
             -webkit-font-smoothing: antialiased;
         }
 
@@ -101,6 +102,54 @@
             background: #30363d;
             border-radius: 5px;
         }
+
+        /* Microphone Test Styles - Aviation Theme */
+        .mic-test-panel {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: #161b22;
+            padding: 5px 15px;
+            border: 1px solid #30363d;
+            border-radius: 4px;
+        }
+
+        .meter-bg {
+            width: 120px;
+            height: 12px;
+            background: #000;
+            border: 1px solid #444;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #volume-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #22c55e, #facc15, #ef4444);
+            transition: width 0.05s ease;
+        }
+
+        .mic-btn {
+            background: #30363d;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 2px;
+            text-transform: uppercase;
+            transition: all 0.2s;
+        }
+
+        .mic-btn:hover:not(:disabled) {
+            background: var(--safety-orange);
+            color: #000;
+        }
+
+        .mic-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
     </style>
 
     <script type="module">
@@ -174,7 +223,6 @@
             if (name) await addDoc(collection(db, "categories"), { name, createdAt: Date.now() });
         };
 
-        // --- NEW: Edit Category Function ---
         window.editCategory = async (id, oldName, event) => {
             event.stopPropagation();
             const newName = prompt("แก้ไขชื่อโฟลเดอร์หลัก:", oldName);
@@ -194,9 +242,8 @@
             }
         };
 
-        // --- NEW: Edit Topic Title Function ---
         window.editTopicTitle = async (topicId, oldTitle) => {
-            const newTitle = prompt("แก้ไขชื่อวิดีโอ:", oldTitle);
+            const newTitle = prompt("แก้ไขชื่อวิดีโอภารกิจ:", oldTitle);
             if (newTitle && newTitle !== oldTitle) {
                 const topicRef = doc(db, `categories/${currentCategoryId}/topics`, topicId);
                 await updateDoc(topicRef, { title: newTitle });
@@ -209,18 +256,17 @@
         };
 
         function renderTopics() {
-            if (!currentCategoryId) return;
             onSnapshot(query(collection(db, `categories/${currentCategoryId}/topics`), orderBy("createdAt", "desc")), (snapshot) => {
                 const list = document.getElementById('topicList'); list.innerHTML = "";
                 snapshot.forEach(d => {
                     const data = d.data();
                     list.innerHTML += `
-                        <div class="flight-card p-6 mb-4 rounded flex justify-between items-center shadow-xl border-l-4 border-l-orange-500">
-                            <div class="flex-1">
-                                <span class="text-[12px] bg-[#ca7f49] px-2 py-0.5 rounded text-black uppercase font-black mb-2 inline-block">สถานะ: ${data.status}</span>
+                        <div class="flight-card p-6 mb-4 rounded flex justify-between items-center shadow-xl border-l-4 border-orange-500">
+                            <div>
+                                <span class="text-[14px] bg-[#ca7f49] px-2 py-0.5 rounded text-black uppercase font-black mb-2 inline-block">สถานะ: ${data.status}</span>
                                 <h3 class="text-white font-bold text-3xl mb-1">${data.title}</h3>
                                 <button onclick="editTopicTitle('${d.id}', '${data.title.replace(/'/g, "\\'")}')" 
-                                        class="text-gray-500 hover:text-warning-yellow text-sm font-bold uppercase transition-colors">
+                                        class="text-gray-500 hover:text-warning-yellow text-xs font-bold uppercase transition-all">
                                     <i class="fa-solid fa-pen-to-square mr-1"></i> แก้ไขชื่อภารกิจ
                                 </button>
                             </div>
@@ -263,7 +309,6 @@
             alert("บันทึกข้อมูลเรียบร้อย!");
         };
 
-        // Render Categories with Edit Button
         onSnapshot(query(collection(db, "categories"), orderBy("createdAt", "desc")), (snapshot) => {
             const list = document.getElementById('categoryList'); list.innerHTML = "";
             snapshot.forEach(docSnap => {
@@ -272,17 +317,74 @@
                 list.innerHTML += `
                 <div onclick="window.selectCategory('${docSnap.id}')" 
                     class="px-6 py-4 cursor-pointer transition-all border-b border-[#30363d] flex items-center justify-between group ${isActive ? 'bg-orange-600 text-white font-bold' : 'text-gray-400 hover:bg-[#161b22]'}">
-                    <div class="flex items-center">
-                        <i class="fa-solid fa-map-location-dot mr-3"></i> 
-                        <span class="truncate w-40">${data.name}</span>
+                    <div class="flex items-center overflow-hidden">
+                        <i class="fa-solid fa-map-location-dot mr-3 flex-shrink-0"></i> 
+                        <span class="truncate">${data.name}</span>
                     </div>
                     <button onclick="editCategory('${docSnap.id}', '${data.name.replace(/'/g, "\\'")}', event)" 
-                            class="opacity-0 group-hover:opacity-100 p-2 hover:text-warning-yellow transition-all">
+                            class="opacity-0 group-hover:opacity-100 p-2 hover:text-warning-yellow transition-all flex-shrink-0">
                         <i class="fa-solid fa-pen-nib text-sm"></i>
                     </button>
                 </div>`;
             });
         });
+
+        // --- Microphone System Logic ---
+        let audioContext, analyser, animationId;
+
+        window.toggleMic = async () => {
+            const startBtn = document.getElementById('start-btn');
+            const stopBtn = document.getElementById('stop-btn');
+            const volumeBar = document.getElementById('volume-bar');
+            const statusText = document.getElementById('status-label');
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                statusText.innerText = "MIC ACTIVE";
+                statusText.style.color = "#22c55e";
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                const source = audioContext.createMediaStreamSource(stream);
+                analyser.fftSize = 256;
+                source.connect(analyser);
+
+                const bufferLength = analyser.frequencyBinCount;
+                const dataArray = new Uint8Array(bufferLength);
+
+                const updateVolume = () => {
+                    analyser.getByteFrequencyData(dataArray);
+                    let sum = 0;
+                    for (let i = 0; i < bufferLength; i++) sum += dataArray[i];
+                    const average = sum / bufferLength;
+                    volumeBar.style.width = Math.min(average * 1.5, 100) + "%";
+                    animationId = requestAnimationFrame(updateVolume);
+                };
+                updateVolume();
+                window.localStream = stream;
+            } catch (err) {
+                alert("Cannot access microphone.");
+            }
+        };
+
+        window.stopMic = () => {
+            const startBtn = document.getElementById('start-btn');
+            const stopBtn = document.getElementById('stop-btn');
+            const statusText = document.getElementById('status-label');
+            const volumeBar = document.getElementById('volume-bar');
+
+            if (window.localStream) {
+                window.localStream.getTracks().forEach(track => track.stop());
+                cancelAnimationFrame(animationId);
+                volumeBar.style.width = "0%";
+                statusText.innerText = "MIC READY";
+                statusText.style.color = "#ca7f49";
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+            }
+        };
     </script>
 </head>
 
@@ -294,10 +396,19 @@
             <h1 class="text-xl font-black uppercase tracking-[0.2em] text-white">ระบบควบคุม <span
                     class="text-orange-500">YT-AVIATION</span></h1>
         </div>
-        <div class="flex items-center gap-6">
-            <span class="text-[10px] font-mono text-radar-green font-bold uppercase"><i
-                    class="fa-solid fa-circle animate-pulse"></i> เรดาร์ออนไลน์</span>
-            <span class="text-[10px] font-mono text-gray-500 font-bold uppercase">นครราชสีมา, ประเทศไทย</span>
+
+        <div class="mic-test-panel">
+            <div class="flex flex-col">
+                <span id="status-label" class="text-[9px] font-black tracking-widest text-orange-500 uppercase">MIC
+                    READY</span>
+                <div class="meter-bg">
+                    <div id="volume-bar"></div>
+                </div>
+            </div>
+            <div class="flex gap-1">
+                <button id="start-btn" onclick="toggleMic()" class="mic-btn">Test</button>
+                <button id="stop-btn" onclick="stopMic()" class="mic-btn" disabled>Stop</button>
+            </div>
         </div>
     </header>
 
@@ -355,9 +466,9 @@
                 </div>
                 <div id="snippetContainer"></div>
                 <script>
-                    const labels = ["เปิดตัว (Hook)", "ความลับ", "แนะนำตัว", "หัวข้อหลัก", "ประเด็นสำคัญ", "ทริคเสริม", "สถิติ/ข้อมูล", "คำเตือน", "ยกตัวอย่าง", "วิธีทำ", "ถาม-ตอบ", "กดติดตาม", "กดไลก์", "ของแจก", "สรุปเนื้อหา", "คลิปถัดไป", "คำขอบคุณ", "แทรกภาพ", "ขึ้นตัวอักษร", "เปลี่ยนเพลง"];
+                    const snippetLabels = ["เปิดตัว (Hook)", "ความลับ", "แนะนำตัว", "หัวข้อหลัก", "ประเด็นสำคัญ", "ทริคเสริม", "สถิติ/ข้อมูล", "คำเตือน", "ยกตัวอย่าง", "วิธีทำ", "ถาม-ตอบ", "กดติดตาม", "กดไลก์", "ของแจก", "สรุปเนื้อหา", "คลิปถัดไป", "คำขอบคุณ", "แทรกภาพ", "ขึ้นตัวอักษร", "เปลี่ยนเพลง"];
                     const sc = document.getElementById('snippetContainer');
-                    labels.forEach((l, i) => {
+                    snippetLabels.forEach((l, i) => {
                         sc.innerHTML += `<button onclick="insertText(${i + 1})" class="btn-snippet"><span class="text-orange-600 mr-2 font-mono">${(i + 1).toString().padStart(2, '0')}</span> ${l}</button>`;
                     });
                 </script>
@@ -372,36 +483,40 @@
                         placeholder="// เริ่มต้นพิมพ์บทวิดีโอที่นี่..."></textarea>
                 </div>
 
-                <div class="h-80 bg-[#161b22] border-t-4 border-[#30363d] p-8 grid grid-cols-3 gap-12 shadow-inner">
+                <div
+                    class="h-80 bg-[#161b22] border-t-4 border-[#30363d] p-8 grid grid-cols-3 gap-12 shadow-inner overflow-y-auto">
                     <div class="flex flex-col gap-4">
                         <span class="section-label">กำหนดการเดินทาง</span>
                         <div class="space-y-4">
                             <div class="flex items-center gap-4">
                                 <span class="text-[11px] w-24 text-gray-500 font-bold uppercase">วันถ่ายทำ:</span>
-                                <input type="date" id="recordDate" class="input-dark flex-1 p-2 rounded">
+                                <input type="date" id="recordDate" class="input-dark flex-1 p-2 rounded text-sm">
                             </div>
                             <div class="flex items-center gap-4">
                                 <span class="text-[11px] w-24 text-gray-500 font-bold uppercase">วันตัดต่อ:</span>
-                                <input type="date" id="editDate" class="input-dark flex-1 p-2 rounded">
+                                <input type="date" id="editDate" class="input-dark flex-1 p-2 rounded text-sm">
                             </div>
                             <div class="flex items-center gap-4">
                                 <span class="text-[11px] w-24 text-gray-500 font-bold uppercase">วันลงคลิป:</span>
-                                <input type="date" id="uploadDate" class="input-dark flex-1 p-2 rounded">
+                                <input type="date" id="uploadDate" class="input-dark flex-1 p-2 rounded text-sm">
                             </div>
                         </div>
                     </div>
                     <div class="flex flex-col gap-4">
                         <span class="section-label text-warning-yellow">ตัวเลือกชื่อคลิป (Titles)</span>
-                        <input id="metaTitle1" class="input-dark p-3 rounded shadow-inner"
+                        <input id="metaTitle1" class="input-dark p-3 rounded shadow-inner text-sm"
                             placeholder="ชื่อที่ 1 (ดีที่สุด)">
-                        <input id="metaTitle2" class="input-dark p-3 rounded shadow-inner" placeholder="ชื่อที่ 2">
-                        <input id="metaTitle3" class="input-dark p-3 rounded shadow-inner" placeholder="ชื่อที่ 3">
+                        <input id="metaTitle2" class="input-dark p-3 rounded shadow-inner text-sm"
+                            placeholder="ชื่อที่ 2">
+                        <input id="metaTitle3" class="input-dark p-3 rounded shadow-inner text-sm"
+                            placeholder="ชื่อที่ 3">
                     </div>
-                    <div class="flex flex-col gap-4 text-white">
+                    <div class="flex flex-col gap-4">
                         <span class="section-label text-radar-green">บันทึกช่วยจำ & SEO</span>
-                        <input id="metaKeywords" class="input-dark p-3 rounded" placeholder="คำค้นหา (Keywords)">
-                        <textarea id="metaThumb" class="input-dark flex-1 p-3 rounded resize-none text-sm text-white"
-                            placeholder="โน้ตเกี่ยวกับปกคลิป หรือข้อมูลสำคัญอื่นๆ..."></textarea>
+                        <input id="metaKeywords" class="input-dark p-3 rounded text-sm"
+                            placeholder="คำค้นหา (Keywords)">
+                        <textarea id="metaThumb" class="input-dark flex-1 p-3 rounded resize-none text-sm"
+                            placeholder="โน้ตเกี่ยวกับปกคลิป..."></textarea>
                     </div>
                 </div>
             </div>
