@@ -1,5 +1,4 @@
-DOCTYPE html>
-<html lang="th">
+ html lang="th">
 
 <head>
     <meta charset="UTF-8">
@@ -175,6 +174,15 @@ DOCTYPE html>
             if (name) await addDoc(collection(db, "categories"), { name, createdAt: Date.now() });
         };
 
+        // --- NEW: Edit Category Function ---
+        window.editCategory = async (id, oldName, event) => {
+            event.stopPropagation();
+            const newName = prompt("แก้ไขชื่อโฟลเดอร์หลัก:", oldName);
+            if (newName && newName !== oldName) {
+                await updateDoc(doc(db, "categories", id), { name: newName });
+            }
+        };
+
         window.addTopic = async () => {
             if (!currentCategoryId) return alert("โปรดเลือกโฟลเดอร์ก่อนสร้างภารกิจ");
             const title = prompt("ชื่อหัวข้อวิดีโอ:");
@@ -186,22 +194,38 @@ DOCTYPE html>
             }
         };
 
-        window.selectCategory = (id) => { currentCategoryId = id; renderTopics(); };
+        // --- NEW: Edit Topic Title Function ---
+        window.editTopicTitle = async (topicId, oldTitle) => {
+            const newTitle = prompt("แก้ไขชื่อวิดีโอ:", oldTitle);
+            if (newTitle && newTitle !== oldTitle) {
+                const topicRef = doc(db, `categories/${currentCategoryId}/topics`, topicId);
+                await updateDoc(topicRef, { title: newTitle });
+            }
+        };
+
+        window.selectCategory = (id) => {
+            currentCategoryId = id;
+            renderTopics();
+        };
 
         function renderTopics() {
+            if (!currentCategoryId) return;
             onSnapshot(query(collection(db, `categories/${currentCategoryId}/topics`), orderBy("createdAt", "desc")), (snapshot) => {
                 const list = document.getElementById('topicList'); list.innerHTML = "";
                 snapshot.forEach(d => {
                     const data = d.data();
                     list.innerHTML += `
-                        <div class="flight-card p-6 mb-4 rounded flex justify-between items-center shadow-xl">
-                            <div>
-                                <span class="text-[24px] bg-[#ca7f49] px-2 py-1 rounded  text-[#00000] uppercase font-black mb-2 inline-block">สถานะ: ${data.status}</span>
+                        <div class="flight-card p-6 mb-4 rounded flex justify-between items-center shadow-xl border-l-4 border-l-orange-500">
+                            <div class="flex-1">
+                                <span class="text-[12px] bg-[#ca7f49] px-2 py-0.5 rounded text-black uppercase font-black mb-2 inline-block">สถานะ: ${data.status}</span>
                                 <h3 class="text-white font-bold text-3xl mb-1">${data.title}</h3>
-                   
+                                <button onclick="editTopicTitle('${d.id}', '${data.title.replace(/'/g, "\\'")}')" 
+                                        class="text-gray-500 hover:text-warning-yellow text-sm font-bold uppercase transition-colors">
+                                    <i class="fa-solid fa-pen-to-square mr-1"></i> แก้ไขชื่อภารกิจ
+                                </button>
                             </div>
                             <button onclick='window.openEditor("${d.id}", ${JSON.stringify(data).replace(/'/g, "&apos;")})' 
-                                    class="bg-[#ca7f49] hover:bg-[#e66000] text-[#00000] px-10 py-4 rounded font-black text-xl uppercase tracking-tighter shadow-lg transition-all active:scale-95">
+                                    class="bg-[#ca7f49] hover:bg-[#e66000] text-black px-10 py-4 rounded font-black text-xl uppercase tracking-tighter shadow-lg transition-all active:scale-95">
                                   เปิดหน้าเขียนบท
                             </button>
                         </div>`;
@@ -239,13 +263,23 @@ DOCTYPE html>
             alert("บันทึกข้อมูลเรียบร้อย!");
         };
 
+        // Render Categories with Edit Button
         onSnapshot(query(collection(db, "categories"), orderBy("createdAt", "desc")), (snapshot) => {
             const list = document.getElementById('categoryList'); list.innerHTML = "";
-            snapshot.forEach(doc => {
-                const isActive = currentCategoryId === doc.id;
-                list.innerHTML += `<div onclick="window.selectCategory('${doc.id}')" 
-                    class="px-6 py-4 cursor-pointer transition-all border-b border-[#30363d] flex items-center text-lg ${isActive ? 'bg-orange-600 text-white font-bold' : 'text-gray-400 hover:bg-[#161b22]'}">
-                    <i class="fa-solid fa-map-location-dot mr-3"></i> ${doc.data().name}
+            snapshot.forEach(docSnap => {
+                const data = docSnap.data();
+                const isActive = currentCategoryId === docSnap.id;
+                list.innerHTML += `
+                <div onclick="window.selectCategory('${docSnap.id}')" 
+                    class="px-6 py-4 cursor-pointer transition-all border-b border-[#30363d] flex items-center justify-between group ${isActive ? 'bg-orange-600 text-white font-bold' : 'text-gray-400 hover:bg-[#161b22]'}">
+                    <div class="flex items-center">
+                        <i class="fa-solid fa-map-location-dot mr-3"></i> 
+                        <span class="truncate w-40">${data.name}</span>
+                    </div>
+                    <button onclick="editCategory('${docSnap.id}', '${data.name.replace(/'/g, "\\'")}', event)" 
+                            class="opacity-0 group-hover:opacity-100 p-2 hover:text-warning-yellow transition-all">
+                        <i class="fa-solid fa-pen-nib text-sm"></i>
+                    </button>
                 </div>`;
             });
         });
