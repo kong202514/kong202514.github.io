@@ -510,7 +510,14 @@
                         this.parent.autoSave();
                     };
                 }
+                contentEl.onkeydown = (e) => {
+                    if (e.key === 'Tab') {
+                        e.preventDefault(); // ป้องกันไม่ให้ focus หลุดออกจากกล่อง
 
+                        // ใช้คำสั่ง insertText เพื่อให้รองรับ Undo/Redo ของ Browser ตามปกติ
+                        document.execCommand('insertText', false, '    '); // ใส่ Space 4 ตัว (หรือเปลี่ยนเป็น '\t' ได้)
+                    }
+                };
                 if (mdToggleBtn) {
                     mdToggleBtn.onclick = (e) => {
                         this.isPreview = !this.isPreview;
