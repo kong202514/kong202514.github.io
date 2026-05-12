@@ -1,0 +1,409 @@
+ <!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Article Studio Ultimate - 50 Templates</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap');
+        
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: #0f0f0f;
+            color: #e5e5e5;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            background-color: #1a1a1a;
+            border-right: 1px solid #333;
+            width: 320px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .template-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .section-title {
+            font-size: 10px;
+            font-weight: 800;
+            color: #ff6b00;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin: 20px 10px 10px 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .template-btn {
+            width: 100%;
+            text-align: left;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            transition: all 0.2s;
+            color: #aaa;
+            display: flex;
+            align-items: center;
+            margin-bottom: 2px;
+        }
+
+        .template-btn:hover {
+            background-color: #2d2d2d;
+            color: #fff;
+        }
+
+        .template-btn i {
+            margin-right: 10px;
+            width: 16px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .article-list-container {
+            border-top: 1px solid #333;
+            background: #141414;
+            height: 250px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .article-item {
+            padding: 10px 15px;
+            font-size: 13px;
+            border-bottom: 1px solid #222;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #999;
+        }
+
+        .article-item:hover { background: #222; color: #fff; }
+        .article-item.active { background: #2a2a2a; color: #ff6b00; border-left: 3px solid #ff6b00; }
+
+        .main-editor {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .editor-container {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            background-color: #0f0f0f;
+            display: flex;
+            justify-content: center;
+        }
+
+        textarea#mainContent {
+            width: 100%;
+            max-width: 850px;
+            height: 100%;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #ffffff;
+            font-size: 18px;
+            line-height: 1.8;
+            resize: none;
+        }
+
+        .top-nav {
+            background-color: #1a1a1a;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            border-bottom: 1px solid #333;
+        }
+
+        .status-pill { font-size: 11px; padding: 2px 8px; border-radius: 10px; background: #333; color: #888; }
+        .status-pill.saving { color: #ff6b00; }
+        .status-pill.saved { color: #22c55e; }
+
+        .title-input-minimal {
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid #333;
+            color: #fff;
+            font-size: 14px;
+            padding: 5px 0;
+            width: 250px;
+            outline: none;
+        }
+
+        .title-input-minimal:focus {
+            border-bottom-color: #ff6b00;
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #1a1a1a; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+    </style>
+</head>
+<body class="flex">
+
+    <aside class="sidebar">
+        <div class="p-5 border-b border-[#333] flex justify-between items-center">
+            <h1 class="text-white font-bold text-lg"><i class="fas fa-feather-alt text-orange-500 mr-2"></i> ARTICLE 50</h1>
+            <button onclick="createNewArticle()" class="bg-orange-600 text-white text-[10px] px-2 py-1 rounded hover:bg-orange-500 transition uppercase font-bold">
+                <i class="fas fa-plus mr-1"></i> New
+            </button>
+        </div>
+        
+        <div class="template-scroll no-scrollbar">
+            <!-- 1. บทนำ & Hook -->
+            <div class="section-title">1. บทนำ & การเปิดเรื่อง (Hook)</div>
+            <button onclick="insertText('คุณเคยสงสัยไหมว่าทำไม [ปัญหา] ถึงเป็นเรื่องที่แก้ไม่ตกสักที?')" class="template-btn"><i class="fas fa-question-circle"></i> คำถามเปิดประเด็น</button>
+            <button onclick="insertText('รู้หรือไม่ว่า [สถิติ]% ของคนส่วนใหญ่พลาดเรื่อง [หัวข้อ] ไปอย่างน่าเสียดาย')" class="template-btn"><i class="fas fa-chart-bar"></i> เปิดด้วยสถิติ</button>
+            <button onclick="insertText('หยุด! ถ้าคุณกำลังจะทำ [กิจกรรม] คุณต้องอ่านบทความนี้ก่อน')" class="template-btn"><i class="fas fa-hand-paper"></i> คำเตือนหยุดอ่าน</button>
+            <button onclick="insertText('เรื่องที่ผมกำลังจะเล่าต่อไปนี้ เปลี่ยนชีวิตผมไปตลอดกาล...')" class="template-btn"><i class="fas fa-history"></i> เปิดด้วยเรื่องเล่า</button>
+            <button onclick="insertText('ในโลกที่ [สถานการณ์ปัจจุบัน] การรู้เรื่อง [หัวข้อ] คือความได้เปรียบ')" class="template-btn"><i class="fas fa-globe"></i> เปิดด้วยบริบทโลก</button>
+            <button onclick="insertText('หลายคนเชื่อว่า [ความเชื่อผิดๆ] แต่ความจริงแล้วมันคือ...')" class="template-btn"><i class="fas fa-eye-slash"></i> ทำลายความเชื่อเดิม</button>
+            <button onclick="insertText('นี่คือทางลัดที่สั้นที่สุดสำหรับคนที่อยากสำเร็จในด้าน [ด้านที่ต้องการ]')" class="template-btn"><i class="fas fa-bolt"></i> เปิดด้วยทางลัด</button>
+            <button onclick="insertText('หากคุณมีเวลาเพียง 5 นาที บทความนี้จะสรุปทุกอย่างเกี่ยวกับ [หัวข้อ]')" class="template-btn"><i class="fas fa-clock"></i> สัญญาเรื่องเวลา</button>
+            <button onclick="insertText('ผมไม่ได้มาขายฝัน แต่มาขายความจริงเกี่ยวกับ [หัวข้อ]')" class="template-btn"><i class="fas fa-bullseye"></i> เน้นความจริงใจ</button>
+            <button onclick="insertText('เคยรู้สึกไหมว่ายิ่งพยายามเรื่อง [หัวข้อ] เท่าไหร่ ก็ยิ่งถอยหลังเท่านั้น?')" class="template-btn"><i class="fas fa-frown"></i> เข้าใจความรู้สึก</button>
+
+            <!-- 2. เนื้อหาหลัก -->
+            <div class="section-title">2. เนื้อหาหลัก (Body Content)</div>
+            <button onclick="insertText('## 1. [หัวข้อย่อยแรก]\nรายละเอียดหลักของประเด็นนี้คือ...')" class="template-btn"><i class="fas fa-heading"></i> เพิ่มหัวข้อ H2</button>
+            <button onclick="insertText('### [ประเด็นย่อย]\nเจาะลึกลงไปในส่วนของ...')" class="template-btn"><i class="fas fa-stream"></i> เพิ่มหัวข้อ H3</button>
+            <button onclick="insertText('* ประเด็นที่หนึ่ง: [ข้อมูล]\n* ประเด็นที่สอง: [ข้อมูล]\n* ประเด็นที่สาม: [ข้อมูล]')" class="template-btn"><i class="fas fa-list-ul"></i> รายการสัญลักษณ์ (Bullet)</button>
+            <button onclick="insertText('1. ขั้นตอนแรก: [วิธีทำ]\n2. ขั้นตอนต่อไป: [วิธีทำ]')" class="template-btn"><i class="fas fa-list-ol"></i> ลำดับขั้นตอน (Steps)</button>
+            <button onclick="insertText('[ข้อความอ้างอิงจากผู้เชี่ยวชาญ/คนดัง]')" class="template-btn"><i class="fas fa-quote-left"></i> กล่องคำพูดอ้างอิง</button>
+            <button onclick="insertText('**หมายเหตุ:** [ข้อควรระวังหรือข้อมูลเพิ่มเติม]')" class="template-btn"><i class="fas fa-exclamation-circle"></i> ใส่หมายเหตุ</button>
+            <button onclick="insertText('| หัวข้อ | รายละเอียด |\n|-------|----------|\n| [A] | [ข้อมูล] |')" class="template-btn"><i class="fas fa-table"></i> ตารางเปรียบเทียบ</button>
+            <button onclick="insertText('เปรียบเรื่องนี้ได้เหมือนกับ [การเปรียบเทียบ] ที่ต้องมี...')" class="template-btn"><i class="fas fa-exchange-alt"></i> การเปรียบเทียบ (Analogy)</button>
+            <button onclick="insertText('จากกรณีศึกษาของ [บริษัท/บุคคล] เราพบว่า...')" class="template-btn"><i class="fas fa-briefcase"></i> กรณีศึกษาจริง</button>
+            <button onclick="insertText('ผู้เชี่ยวชาญหลายท่านให้ความเห็นตรงกันว่า...')" class="template-btn"><i class="fas fa-user-md"></i> ความเห็นผู้เชี่ยวชาญ</button>
+            <button onclick="insertText('ทำไมเรื่องนี้ถึงสำคัญ? คำตอบคือมันมีผลต่อ [ผลกระทบ]')" class="template-btn"><i class="fas fa-lightbulb"></i> ทำไมถึงสำคัญ</button>
+            <button onclick="insertText('ข้อดีของเรื่องนี้คือ 1... 2... ในขณะที่ข้อเสียคือ...')" class="template-btn"><i class="fas fa-balance-scale"></i> ข้อดี-ข้อเสีย</button>
+            <button onclick="insertText('เทคนิคนี้เรียกว่า [ชื่อเทคนิค] ซึ่งได้รับความนิยมใน...')" class="template-btn"><i class="fas fa-microchip"></i> แนะนำเทคนิค</button>
+            <button onclick="insertText('ภาพประกอบ: [อธิบายรูปภาพที่ควรมีตรงนี้]')" class="template-btn"><i class="fas fa-image"></i> จุดวางรูปภาพ</button>
+            <button onclick="insertText('---')" class="template-btn"><i class="fas fa-minus"></i> เส้นแบ่งส่วน (Divider)</button>
+
+            <!-- 3. คำเชื่อม & การขยายความ -->
+            <div class="section-title">3. คำเชื่อม & การขยายความ</div>
+            <button onclick="insertText('ยิ่งไปกว่านั้น การทำแบบนี้ยังช่วยให้...')" class="template-btn"><i class="fas fa-link"></i> เพิ่มความเข้มข้น</button>
+            <button onclick="insertText('ในทางกลับกัน หากเรามองอีกมุมหนึ่ง...')" class="template-btn"><i class="fas fa-undo"></i> มองมุมกลับ</button>
+            <button onclick="insertText('ผลที่ตามมาทันทีหลังจากที่คุณทำคือ...')" class="template-btn"><i class="fas fa-arrow-right"></i> แสดงผลลัพธ์</button>
+            <button onclick="insertText('เพื่อความเข้าใจที่ชัดเจนขึ้น ลองดูตัวอย่างนี้...')" class="template-btn"><i class="fas fa-search"></i> ยกตัวอย่างขยายความ</button>
+            <button onclick="insertText('แม้ว่ามันจะดูยากในช่วงแรก แต่...')" class="template-btn"><i class="fas fa-mountain"></i> ให้กำลังใจ</button>
+            <button onclick="insertText('สอดคล้องกับแนวคิดของ [ชื่อคน/ทฤษฎี] ที่ว่า...')" class="template-btn"><i class="fas fa-link"></i> เชื่อมโยงทฤษฎี</button>
+            <button onclick="insertText('นั่นหมายความว่าคุณไม่จำเป็นต้อง...')" class="template-btn"><i class="fas fa-sign-in-alt"></i> ขยายความผลลัพธ์</button>
+            <button onclick="insertText('สรุปสั้นๆ ในส่วนนี้คือ...')" class="template-btn"><i class="fas fa-compress"></i> สรุปย่อยระหว่างทาง</button>
+            <button onclick="insertText('คำถามที่ตามมาก็คือ [คำถามใหม่]...')" class="template-btn"><i class="fas fa-question"></i> สร้างปมใหม่</button>
+            <button onclick="insertText('โดยพื้นฐานแล้ว เรื่องนี้ทำงานโดย...')" class="template-btn"><i class="fas fa-cogs"></i> อธิบายพื้นฐาน</button>
+
+            <!-- 4. บทสรุป & CTA -->
+            <div class="section-title">4. บทสรุป & การปิดท้าย (CTA)</div>
+            <button onclick="insertText('สุดท้ายนี้ ความสำเร็จไม่ได้ขึ้นอยู่กับสิ่งที่คุณรู้ แต่คือสิ่งที่คุณลงมือทำ')" class="template-btn"><i class="fas fa-flag-checkered"></i> สรุปบทเรียนสำคัญ</button>
+            <button onclick="insertText('สรุปใจความสำคัญ 3 ประเด็นที่ห้ามลืม:\n1. [A]\n2. [B]\n3. [C]')" class="template-btn"><i class="fas fa-list"></i> สรุป 3 ประเด็น</button>
+            <button onclick="insertText('หากคุณชอบบทความนี้ ฝากกดแชร์เป็นกำลังใจให้ด้วยนะครับ')" class="template-btn"><i class="fas fa-share-alt"></i> ขอแรงแชร์</button>
+            <button onclick="insertText('คุณมีความคิดเห็นอย่างไรกับเรื่องนี้? คอมเมนต์บอกผมหน่อยนะครับ')" class="template-btn"><i class="fas fa-comments"></i> ชวนคุยในคอมเมนต์</button>
+            <button onclick="insertText('สำหรับใครที่อยากเรียนรู้เรื่อง [หัวข้อ] เพิ่มเติม สามารถติดตามต่อได้ที่...')" class="template-btn"><i class="fas fa-plus-circle"></i> แนะนำช่องทางติดตาม</button>
+            <button onclick="insertText('หวังว่าบทความนี้จะเป็นกุญแจดอกสำคัญที่ช่วยปลดล็อก...')" class="template-btn"><i class="fas fa-key"></i> ปล่อยพลังบวก</button>
+            <button onclick="insertText('ขอบคุณที่อ่านจนจบครับ แล้วพบกันใหม่บทความหน้า!')" class="template-btn"><i class="fas fa-smile"></i> ขอบคุณผู้อ่าน</button>
+            <button onclick="insertText('เริ่มทำก้าวแรกตั้งแต่วันนี้ แล้วคุณจะขอบคุณตัวเองในอนาคต')" class="template-btn"><i class="fas fa-running"></i> กระตุ้นให้ทำ</button>
+            <button onclick="insertText('แหล่งอ้างอิงข้อมูล:\n1. [แหล่งที่ 1]\n2. [แหล่งที่ 2]')" class="template-btn"><i class="fas fa-book"></i> แหล่งอ้างอิง</button>
+            <button onclick="insertText('บทความหน้าเราจะมาคุยกันเรื่อง [หัวข้อถัดไป] ห้ามพลาด!')" class="template-btn"><i class="fas fa-forward"></i> สปอยล์ตอนถัดไป</button>
+        </div>
+
+        <div class="article-list-container">
+            <div class="section-title" style="margin-top: 10px;">บทความล่าสุด (Cloud)</div>
+            <div id="recentArticles" class="overflow-y-auto flex-1">
+                <div class="p-4 text-xs text-gray-500 italic text-center">กำลังเชื่อมต่อ...</div>
+            </div>
+        </div>
+    </aside>
+
+    <div class="main-editor">
+        <nav class="top-nav">
+            <div class="flex items-center space-x-6">
+                <input type="text" id="mainTitle" class="title-input-minimal" placeholder="ระบุชื่อเรื่องบทความที่นี่...">
+                <span id="cloudStatus" class="status-pill"><i class="fas fa-cloud mr-1"></i> เชื่อมต่อแล้ว</span>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button onclick="copyContent()" class="bg-orange-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-orange-500"><i class="fas fa-copy mr-2"></i> คัดลอกบทความ</button>
+                <button onclick="clearAll()" class="text-gray-400 hover:text-white px-3 py-2 text-sm">ล้างจอ</button>
+            </div>
+        </nav>
+
+        <div class="editor-container">
+            <textarea id="mainContent" placeholder="เริ่มเขียนบทความของคุณ... ทุกการพิมพ์จะบันทึกอัตโนมัติลง Cloud"></textarea>
+        </div>
+    </div>
+
+    <script type="module">
+ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, updateDoc, doc, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDzxn9g-abdHR1Q8lQ_FqsQlhQo0frR11A",
+            authDomain: "job-3-d6a57.firebaseapp.com",
+            projectId: "job-3-d6a57",
+            storageBucket: "job-3-d6a57.firebasestorage.app",
+            messagingSenderId: "496444264677",
+            appId: "1:496444264677:web:5a39734199e2932113440c",
+            measurementId: "G-ZWCBW1JWKP"
+        };
+
+        const appId = 'article-studio-ultimate'; 
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let user = null;
+        let currentDocId = null;
+        let saveTimeout = null;
+
+        const updateStatus = (status) => {
+            const el = document.getElementById('cloudStatus');
+            if(status === 'saving') el.innerHTML = '<i class="fas fa-sync fa-spin mr-1"></i> กำลังบันทึก...';
+            else if(status === 'saved') el.innerHTML = '<i class="fas fa-check mr-1 text-green-500"></i> บันทึกแล้ว';
+            else if(status === 'online') el.innerHTML = '<i class="fas fa-cloud mr-1 text-blue-400"></i> ออนไลน์';
+        };
+
+        const initAuth = async () => {
+            try {
+                await signInAnonymously(auth);
+            } catch (err) {
+                console.error("Auth Error:", err);
+            }
+        };
+
+        onAuthStateChanged(auth, (u) => {
+            user = u;
+            if(user) {
+                updateStatus('online');
+                // ดึงข้อมูล Real-time จาก Firestore
+                onSnapshot(collection(db, 'artifacts', appId, 'users', user.uid, 'articles'), (snap) => {
+                    const list = document.getElementById('recentArticles');
+                    list.innerHTML = '';
+                    
+                    if (snap.empty) {
+                        list.innerHTML = '<div class="text-[10px] text-gray-700 text-center py-2 italic">ไม่มีบทความล่าสุด</div>';
+                        return;
+                    }
+
+                    const docs = snap.docs.map(d => ({id: d.id, ...d.data()}))
+                        .sort((a,b) => (b.updatedAt?.seconds || 0) - (a.updatedAt?.seconds || 0));
+
+                    docs.forEach(data => {
+                        const item = document.createElement('div');
+                        item.className = `article-item ${currentDocId === data.id ? 'active' : ''}`;
+                        item.innerHTML = `
+                            <span class="truncate pr-2">${data.title || 'ไม่มีชื่อเรื่อง'}</span>
+                            <i class="fas fa-chevron-right text-[10px] text-gray-600"></i>
+                        `;
+                        item.onclick = () => loadArticle(data);
+                        list.appendChild(item);
+                    });
+                }, (err) => console.error("Firestore Error:", err));
+            }
+        });
+
+        window.loadArticle = (data) => {
+            currentDocId = data.id;
+            document.getElementById('mainTitle').value = data.title || '';
+            document.getElementById('mainContent').value = data.content || '';
+            updateStatus('saved');
+            // ไฮไลท์รายการที่เลือก
+            const items = document.querySelectorAll('.article-item');
+            items.forEach(el => el.classList.remove('active'));
+        };
+
+        window.createNewArticle = () => {
+            currentDocId = null;
+            document.getElementById('mainTitle').value = '';
+            document.getElementById('mainContent').value = '';
+            updateStatus('online');
+            document.getElementById('mainContent').focus();
+        };
+
+        const autoSaveCloud = () => {
+            if(!user) return;
+            updateStatus('saving');
+            clearTimeout(saveTimeout);
+            
+            saveTimeout = setTimeout(async () => {
+                const titleVal = document.getElementById('mainTitle').value.trim();
+                const contentVal = document.getElementById('mainContent').value.trim();
+                
+                if(contentVal === '' && titleVal === '') return;
+
+                const data = {
+                    title: titleVal || 'ไม่มีชื่อเรื่อง',
+                    content: contentVal,
+                    updatedAt: serverTimestamp()
+                };
+
+                try {
+                    if(currentDocId) {
+                        await updateDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'articles', currentDocId), data);
+                    } else {
+                        const res = await addDoc(collection(db, 'artifacts', appId, 'users', user.uid, 'articles'), data);
+                        currentDocId = res.id;
+                    }
+                    updateStatus('saved');
+                } catch(e) { 
+                    console.error("Save failed:", e);
+                    updateStatus('online');
+                }
+            }, 1500);
+        };
+
+        document.getElementById('mainContent').addEventListener('input', autoSaveCloud);
+        document.getElementById('mainTitle').addEventListener('input', autoSaveCloud);
+
+        initAuth();
+    </script>
+
+    <script>
+        function insertText(text) {
+            const tx = document.getElementById('mainContent');
+            const start = tx.selectionStart;
+            tx.value = tx.value.substring(0, start) + text + "\n\n" + tx.value.substring(tx.selectionEnd);
+            tx.dispatchEvent(new Event('input')); 
+            tx.focus();
+        }
+
+        function copyContent() {
+            const content = document.getElementById('mainContent').value;
+            if(!content) return;
+            
+            navigator.clipboard.writeText(content).then(() => {
+                const btn = document.querySelector('.bg-orange-600');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check mr-2"></i> คัดลอกสำเร็จ!';
+                btn.classList.replace('bg-orange-600', 'bg-green-600');
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.replace('bg-green-600', 'bg-orange-600');
+                }, 2000);
+            });
+        }
+
+        function clearAll() {
+            if(confirm('คุณต้องการล้างข้อความบนหน้าจอใช่หรือไม่? (บทความใน Cloud จะไม่ถูกลบ)')) {
+                window.createNewArticle();
+            }
+        }
+    </script>
+</body>
+</html>
