@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
@@ -84,10 +84,22 @@
             justify-content: space-between;
             align-items: center;
             color: #999;
+            transition: 0.2s;
         }
 
         .article-item:hover { background: #222; color: #fff; }
         .article-item.active { background: #2a2a2a; color: #ff6b00; border-left: 3px solid #ff6b00; }
+
+        .delete-btn {
+            color: #444;
+            padding: 4px;
+            border-radius: 4px;
+            transition: 0.2s;
+        }
+        .delete-btn:hover {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
 
         .main-editor {
             flex: 1;
@@ -246,23 +258,23 @@
         </div>
     </div>
 
+    <!-- Firebase SDKs -->
     <script type="module">
- import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, updateDoc, doc, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, updateDoc, doc, deleteDoc, serverTimestamp, onSnapshot, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Firebase Config
-        const firebaseConfig = {
-            apiKey: "AIzaSyDzxn9g-abdHR1Q8lQ_FqsQlhQo0frR11A",
+        // Firebase Configuration
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+         apiKey: "AIzaSyDzxn9g-abdHR1Q8lQ_FqsQlhQo0frR11A",
             authDomain: "job-3-d6a57.firebaseapp.com",
             projectId: "job-3-d6a57",
             storageBucket: "job-3-d6a57.firebasestorage.app",
             messagingSenderId: "496444264677",
-            appId: "1:496444264677:web:5a39734199e2932113440c",
-            measurementId: "G-ZWCBW1JWKP"
+            appId: "1:496444264677:web:5a39734199e2932113440c"
         };
 
-        const appId = 'article-studio-ultimate'; 
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'article-studio-ultimate'; 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
@@ -280,7 +292,11 @@
 
         const initAuth = async () => {
             try {
-                await signInAnonymously(auth);
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
             } catch (err) {
                 console.error("Auth Error:", err);
             }
@@ -290,8 +306,10 @@
             user = u;
             if(user) {
                 updateStatus('online');
-                // ดึงข้อมูล Real-time จาก Firestore
-                onSnapshot(collection(db, 'artifacts', appId, 'users', user.uid, 'articles'), (snap) => {
+                
+                // Real-time Data Sync following Rule 1 & 2
+                const articlesRef = collection(db, 'artifacts', appId, 'users', user.uid, 'articles');
+                onSnapshot(articlesRef, (snap) => {
                     const list = document.getElementById('recentArticles');
                     list.innerHTML = '';
                     
@@ -300,31 +318,49 @@
                         return;
                     }
 
+                    // Sort in memory (Rule 2)
                     const docs = snap.docs.map(d => ({id: d.id, ...d.data()}))
                         .sort((a,b) => (b.updatedAt?.seconds || 0) - (a.updatedAt?.seconds || 0));
 
                     docs.forEach(data => {
                         const item = document.createElement('div');
-                        item.className = `article-item ${currentDocId === data.id ? 'active' : ''}`;
+                        item.className = `article-item group ${currentDocId === data.id ? 'active' : ''}`;
                         item.innerHTML = `
-                            <span class="truncate pr-2">${data.title || 'ไม่มีชื่อเรื่อง'}</span>
-                            <i class="fas fa-chevron-right text-[10px] text-gray-600"></i>
+                            <span class="truncate flex-1 pr-2" onclick="loadArticleById('${data.id}')">${data.title || 'ไม่มีชื่อเรื่อง'}</span>
+                            <button onclick="deleteArticle(event, '${data.id}')" class="delete-btn opacity-0 group-hover:opacity-100">
+                                <i class="fas fa-trash-alt text-[11px]"></i>
+                            </button>
                         `;
-                        item.onclick = () => loadArticle(data);
                         list.appendChild(item);
+                        
+                        // Internal function to load the data into UI
+                        if(currentDocId === data.id) {
+                            document.getElementById('mainTitle').value = data.title || '';
+                            document.getElementById('mainContent').value = data.content || '';
+                        }
                     });
                 }, (err) => console.error("Firestore Error:", err));
             }
         });
 
-        window.loadArticle = (data) => {
-            currentDocId = data.id;
-            document.getElementById('mainTitle').value = data.title || '';
-            document.getElementById('mainContent').value = data.content || '';
+        window.loadArticleById = (id) => {
+            currentDocId = id;
             updateStatus('saved');
-            // ไฮไลท์รายการที่เลือก
-            const items = document.querySelectorAll('.article-item');
-            items.forEach(el => el.classList.remove('active'));
+        };
+
+        window.deleteArticle = async (e, id) => {
+            e.stopPropagation();
+            if(!user) return;
+            if(confirm('คุณต้องการลบบทความนี้อย่างถาวรใช่หรือไม่?')) {
+                try {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'articles', id));
+                    if(currentDocId === id) {
+                        window.createNewArticle();
+                    }
+                } catch(err) {
+                    console.error("Delete failed:", err);
+                }
+            }
         };
 
         window.createNewArticle = () => {
@@ -344,7 +380,10 @@
                 const titleVal = document.getElementById('mainTitle').value.trim();
                 const contentVal = document.getElementById('mainContent').value.trim();
                 
-                if(contentVal === '' && titleVal === '') return;
+                if(contentVal === '' && titleVal === '') {
+                    updateStatus('online');
+                    return;
+                }
 
                 const data = {
                     title: titleVal || 'ไม่มีชื่อเรื่อง',
@@ -364,7 +403,7 @@
                     console.error("Save failed:", e);
                     updateStatus('online');
                 }
-            }, 1500);
+            }, 1000); // 1 second debounce
         };
 
         document.getElementById('mainContent').addEventListener('input', autoSaveCloud);
@@ -373,34 +412,47 @@
         initAuth();
     </script>
 
+    <!-- General Utilities -->
     <script>
         function insertText(text) {
             const tx = document.getElementById('mainContent');
             const start = tx.selectionStart;
-            tx.value = tx.value.substring(0, start) + text + "\n\n" + tx.value.substring(tx.selectionEnd);
+            const end = tx.selectionEnd;
+            const val = tx.value;
+            tx.value = val.substring(0, start) + text + "\n\n" + val.substring(end);
             tx.dispatchEvent(new Event('input')); 
             tx.focus();
+            // Set cursor after the inserted text
+            const newCursor = start + text.length + 2;
+            tx.setSelectionRange(newCursor, newCursor);
         }
 
         function copyContent() {
             const content = document.getElementById('mainContent').value;
             if(!content) return;
             
-            navigator.clipboard.writeText(content).then(() => {
-                const btn = document.querySelector('.bg-orange-600');
-                const originalText = btn.innerHTML;
-                btn.innerHTML = '<i class="fas fa-check mr-2"></i> คัดลอกสำเร็จ!';
-                btn.classList.replace('bg-orange-600', 'bg-green-600');
-                
-                setTimeout(() => {
-                    btn.innerHTML = originalText;
-                    btn.classList.replace('bg-green-600', 'bg-orange-600');
-                }, 2000);
-            });
+            // Use standard execCommand for compatibility in iframe
+            const el = document.createElement('textarea');
+            el.value = content;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+
+            const btn = document.querySelector('button[onclick="copyContent()"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check mr-2"></i> คัดลอกสำเร็จ!';
+            btn.classList.replace('bg-orange-600', 'bg-green-600');
+            
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.classList.replace('bg-green-600', 'bg-orange-600');
+            }, 2000);
         }
 
         function clearAll() {
-            if(confirm('คุณต้องการล้างข้อความบนหน้าจอใช่หรือไม่? (บทความใน Cloud จะไม่ถูกลบ)')) {
+            const modal = confirm('คุณต้องการสร้างบทความใหม่ใช่หรือไม่? (บทความปัจจุบันที่บันทึกแล้วจะไม่หายไป)');
+            if(modal) {
                 window.createNewArticle();
             }
         }
