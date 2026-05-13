@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+   <!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
@@ -176,45 +176,88 @@
         
         <div class="template-scroll no-scrollbar">
             <div class="section-title">1. บทนำ & การเปิดเรื่อง (Hook)</div>
-            <button onclick="insertText('คุณเคยสงสัยไหมว่าทำไม [ปัญหา] ถึงเป็นเรื่องที่แก้ไม่ตกสักที?')" class="template-btn"><i class="fas fa-question-circle"></i> คำถามเปิดประเด็น</button>
-            <button onclick="insertText('รู้หรือไม่ว่า [สถิติ]% ของคนส่วนใหญ่พลาดเรื่อง [หัวข้อ] ไปอย่างน่าเสียดาย')" class="template-btn"><i class="fas fa-chart-bar"></i> เปิดด้วยสถิติ</button>
-            <button onclick="insertText('หยุด! ถ้าคุณกำลังจะทำ [กิจกรรม] คุณต้องอ่านบทความนี้ก่อน')" class="template-btn"><i class="fas fa-hand-paper"></i> คำเตือนหยุดอ่าน</button>
-            <button onclick="insertText('เรื่องที่ผมกำลังจะเล่าต่อไปนี้ เปลี่ยนชีวิตผมไปตลอดกาล...')" class="template-btn"><i class="fas fa-history"></i> เปิดด้วยเรื่องเล่า</button>
-            <button onclick="insertText('ในโลกที่ [สถานการณ์ปัจจุบัน] การรู้เรื่อง [หัวข้อ] คือความได้เปรียบ')" class="template-btn"><i class="fas fa-globe"></i> เปิดด้วยบริบทโลก</button>
-            <button onclick="insertText('หลายคนเชื่อว่า [ความเชื่อผิดๆ] แต่ความจริงแล้วมันคือ...')" class="template-btn"><i class="fas fa-eye-slash"></i> ทำลายความเชื่อเดิม</button>
-            <button onclick="insertText('นี่คือทางลัดที่สั้นที่สุดสำหรับคนที่อยากสำเร็จในด้าน [ด้านที่ต้องการ]')" class="template-btn"><i class="fas fa-bolt"></i> เปิดด้วยทางลัด</button>
-            <button onclick="insertText('หากคุณมีเวลาเพียง 5 นาที บทความนี้จะสรุปทุกอย่างเกี่ยวกับ [หัวข้อ]')" class="template-btn"><i class="fas fa-clock"></i> สัญญาเรื่องเวลา</button>
-            <button onclick="insertText('ผมไม่ได้มาขายฝัน แต่มาขายความจริงเกี่ยวกับ [หัวข้อ]')" class="template-btn"><i class="fas fa-bullseye"></i> เน้นความจริงใจ</button>
-            <button onclick="insertText('เคยรู้สึกไหมว่ายิ่งพยายามเรื่อง [หัวข้อ] เท่าไหร่ ก็ยิ่งถอยหลังเท่านั้น?')" class="template-btn"><i class="fas fa-frown"></i> เข้าใจความรู้สึก</button>
+		<button onclick="insertText('ภายใต้รอยยิ้มของ [บุคคล] คุณเคยสงสัยไหมว่าเขาซ่อน [ความรู้สึก] อะไรไว้ข้างหลัง?')" class="template-btn"><i class="fas fa-question-circle"></i> ภายใต้รอยยิ้มที่ซ่อนอยู่</button>
+		<button onclick="insertText('[สถิติ]% คือตัวเลขที่บอกว่าเราหลงลืม [คุณค่า] ไป แต่นั่นไม่ได้หมายความว่ามันหายไปตลอดกาล')" class="template-btn"><i class="fas fa-chart-bar"></i> เปิดด้วยความหมายของตัวเลข</button>
+		<button onclick="insertText('ในวันที่โลกหมุนไวเกินกว่าจะหยุดฟังกัน [หัวข้อ] คือสะพานเดียวที่ยังเชื่อมเราไว้ด้วยกัน')" class="template-btn"><i class="fas fa-hand-paper"></i> สะพานเชื่อมความเป็นมนุษย์</button>
+		<button onclick="insertText('วินาทีที่ [ตัวละคร] ตัดสินใจ [ทำบางอย่าง] เขาไม่ได้เปลี่ยนแค่เส้นทางเดิน แต่เขาเปลี่ยนวิธีมองโลก')" class="template-btn"><i class="fas fa-history"></i> วินาทีที่เปลี่ยนวิธีมองโลก</button>
+		<button onclick="insertText('ท่ามกลางความวุ่นวายของยุคสมัย เรากลับโหยหา [ความรู้สึกเชิงบวก] สิ่งที่ดูธรรมดาแต่หายากที่สุด')" class="template-btn"><i class="fas fa-globe"></i> เปิดด้วยสิ่งที่คนโหยหา</button>
+		<button onclick="insertText('เราถูกสอนมาว่าความสำเร็จต้องแลกด้วย [สิ่งของ] แต่เรื่องราวนี้จะพิสูจน์ว่าความจริงแล้ว...')" class="template-btn"><i class="fas fa-eye-slash"></i> ทำลายความเชื่อเดิม</button>
+		<button onclick="insertText('เมื่อโลกทั้งใบเงียบลง เหลือเพียงเสียงหัวใจและงานตรงหน้า... นั่นคือจุดเริ่มต้นของ [ความสำเร็จ]')" class="template-btn"><i class="fas fa-bolt"></i> เข้าสู่สภาวะ Flow</button>
+		<button onclick="insertText('บางครั้ง ความพ่ายแพ้ก็ไม่ได้หมายถึงจุดจบ แต่มันคือโอกาสที่จิตใจจะได้เบ่งบานในมุมใหม่')" class="template-btn"><i class="fas fa-clock"></i> พลังของการเติบโตใหม่</button>
+		<button onclick="insertText('ผมไม่ได้มาขายฝัน แต่มาส่งต่อความจริงของชีวิตที่กลั่นออกมาจากรอยแผลของ...')" class="template-btn"><i class="fas fa-bullseye"></i> ส่งต่อความจริงจากบาดแผล</button>
+		<button onclick="insertText('ถึงคุณที่กำลังรู้สึกว่า [ความเหนื่อยล้า] กำลังกัดกินใจ... อยากให้รู้ว่าคุณไม่ได้เดินเพียงลำพัง')" class="template-btn"><i class="fas fa-frown"></i> เข้าใจและโอบกอดความรู้สึก</button>
 
+
+        <!-- ss 2 -->
             <div class="section-title">2. เนื้อหาหลัก (Body Content)</div>
-            <button onclick="insertText('## 1. [หัวข้อย่อยแรก]\nรายละเอียดหลักของประเด็นนี้คือ...')" class="template-btn"><i class="fas fa-heading"></i> เพิ่มหัวข้อ H2</button>
-            <button onclick="insertText('### [ประเด็นย่อย]\nเจาะลึกลงไปในส่วนของ...')" class="template-btn"><i class="fas fa-stream"></i> เพิ่มหัวข้อ H3</button>
-            <button onclick="insertText('* ประเด็นที่หนึ่ง: [ข้อมูล]\n* ประเด็นที่สอง: [ข้อมูล]\n* ประเด็นที่สาม: [ข้อมูล]')" class="template-btn"><i class="fas fa-list-ul"></i> รายการสัญลักษณ์ (Bullet)</button>
-            <button onclick="insertText('1. ขั้นตอนแรก: [วิธีทำ]\n2. ขั้นตอนต่อไป: [วิธีทำ]')" class="template-btn"><i class="fas fa-list-ol"></i> ลำดับขั้นตอน (Steps)</button>
-            <button onclick="insertText('[ข้อความอ้างอิงจากผู้เชี่ยวชาญ/คนดัง]')" class="template-btn"><i class="fas fa-quote-left"></i> กล่องคำพูดอ้างอิง</button>
-            <button onclick="insertText('**หมายเหตุ:** [ข้อควรระวังหรือข้อมูลเพิ่มเติม]')" class="template-btn"><i class="fas fa-exclamation-circle"></i> ใส่หมายเหตุ</button>
-            <button onclick="insertText('| หัวข้อ | รายละเอียด |\n|-------|----------|\n| [A] | [ข้อมูล] |')" class="template-btn"><i class="fas fa-table"></i> ตารางเปรียบเทียบ</button>
-            <button onclick="insertText('เปรียบเรื่องนี้ได้เหมือนกับ [การเปรียบเทียบ] ที่ต้องมี...')" class="template-btn"><i class="fas fa-exchange-alt"></i> การเปรียบเทียบ (Analogy)</button>
-            <button onclick="insertText('จากกรณีศึกษาของ [บริษัท/บุคคล] เราพบว่า...')" class="template-btn"><i class="fas fa-briefcase"></i> กรณีศึกษาจริง</button>
-            <button onclick="insertText('ผู้เชี่ยวชาญหลายท่านให้ความเห็นตรงกันว่า...')" class="template-btn"><i class="fas fa-user-md"></i> ความเห็นผู้เชี่ยวชาญ</button>
-            <button onclick="insertText('ทำไมเรื่องนี้ถึงสำคัญ? คำตอบคือมันมีผลต่อ [ผลกระทบ]')" class="template-btn"><i class="fas fa-lightbulb"></i> ทำไมถึงสำคัญ</button>
-            <button onclick="insertText('ข้อดีของเรื่องนี้คือ 1... 2... ในขณะที่ข้อเสียคือ...')" class="template-btn"><i class="fas fa-balance-scale"></i> ข้อดี-ข้อเสีย</button>
-            <button onclick="insertText('เทคนิคนี้เรียกว่า [ชื่อเทคนิค] ซึ่งได้รับความนิยมใน...')" class="template-btn"><i class="fas fa-microchip"></i> แนะนำเทคนิค</button>
-            <button onclick="insertText('ภาพประกอบ: [อธิบายรูปภาพที่ควรมีตรงนี้]')" class="template-btn"><i class="fas fa-image"></i> จุดวางรูปภาพ</button>
-            <button onclick="insertText('---')" class="template-btn"><i class="fas fa-minus"></i> เส้นแบ่งส่วน (Divider)</button>
 
+
+            <div class="section-title">2.1 เจาะลึกอารมณ์และตัวตน  </div>
+		     <button onclick="insertText('หากลองถอดหน้ากากของ [อาชีพ/ฐานะ] ออกมา เราจะพบความจริงที่เรียบง่ายว่า...')" class="template-btn"><i class="fas fa-mask"></i> ถอดหน้ากากตัวตน</button>
+                <button onclick="insertText('ในมุมที่มืดที่สุดของหัวใจ [ตัวละคร] เคยบอกกับตัวเองว่า...')" class="template-btn"><i class="fas fa-ghost"></i> มุมมืดในใจ</button>
+                <button onclick="insertText('รอยแผลเป็นที่ [อวัยวะ/ความรู้สึก] คือเหรียญกล้าหาญที่บอกว่าเขารอดมาได้')" class="template-btn"><i class="fas fa-medal"></i> บาดแผลคือเหรียญกล้าหาญ</button>
+                <button onclick="insertText('ความกลัวที่ยิ่งใหญ่ที่สุดของเขา ไม่ใช่การล้มเหลว แต่คือการที่ต้องตื่นมาแล้วพบว่า...')" class="template-btn"><i class="fas fa-cloud-showers-heavy"></i> ความกลัวที่แท้จริง</button>
+                <button onclick="insertText('วินาทีที่น้ำตาหยดแรกไหลออกมา มันไม่ใช่เครื่องหมายของความพ่ายแพ้ แต่มันคือการปล่อยวาง')" class="template-btn"><i class="fas fa-tint"></i> ความหมายของน้ำตา</button>
+                           
+                
+
+
+                <div class="section-title">2.2. หมวดโครงสร้างการเล่าเรื่อง   </div>
+                
+                <button onclick="insertText('## ปมปัญหา: เมื่อจุดเปลี่ยนที่ไม่อยากให้เกิด กลับกลายเป็นโอกาสเดียวที่มี')" class="template-btn"><i class="fas fa-knot"></i> หัวข้อ: ปมปัญหา</button>
+                <button onclick="insertText('## การเดินทาง: ก้าวแรกที่ขาสั่น แต่หัวใจกลับบอกให้เดินต่อ')" class="template-btn"><i class="fas fa-shoe-prints"></i> หัวข้อ: การเดินทาง</button>
+                <button onclick="insertText('## บทสรุป: เมื่อมองย้อนกลับไป ความเจ็บปวดนั้นกลับกลายเป็นของขวัญที่ล้ำค่าที่สุด')" class="template-btn"><i class="fas fa-gift"></i> หัวข้อ: บทสรุปชีวิต</button>
+                <button onclick="insertText('ท่ามกลางเสียงคัดค้านจากรอบข้าง มีเพียงเสียงเล็กๆ ในใจที่กระซิบว่า “ลองอีกครั้ง”')" class="template-btn"><i class="fas fa-comment-dots"></i> เสียงในใจที่ขัดแย้ง</button>
+                <button onclick="insertText('ตัดภาพไปที่ [สถานการณ์ปัจจุบัน] ใครจะเชื่อว่าจากวันนั้นสู่มาถึงจุดนี้ได้...')" class="template-btn"><i class="fas fa-film"></i> เทคนิค Flash Forward</button>
+                
+                <div class="section-title">2. 3. หมวดจิตวิทยาและการวิเคราะห์    </div>
+                
+                <button onclick="insertText('ปรากฏการณ์ทางจิตวิทยาที่เรียกว่า [ชื่อปรากฏการณ์] กำลังอธิบายพฤติกรรมนี้ว่า...')" class="template-btn"><i class="fas fa-microscope"></i> วิเคราะห์เชิงจิตวิทยา</button>
+                <button onclick="insertText('**กับดักทางความคิด (Mental Trap):** เรามักคิดว่า [ความคิดเดิม] แต่ความจริงสัญชาตญาณเรากำลัง...')" class="template-btn"><i class="fas fa-vector-square"></i> กับดักทางความคิด</button>
+                <button onclick="insertText('ความสุขแบบ [ประเภทความสุข] อาจจะฉาบฉวย แต่ความสุขที่ยั่งยืนมักเกิดจาก...')" class="template-btn"><i class="fas fa-smile-beam"></i> วิเคราะห์ประเภทความสุข</button>
+                <button onclick="insertText('จากการสังเกตพฤติกรรมของคนที่ประสบความสำเร็จในแบบที่ยั่งยืน พวกเขามักจะมีสิ่งหนึ่งที่เหมือนกันคือ...')" class="template-btn"><i class="fas fa-user-check"></i> ถอดรหัสพฤติกรรมสำเร็จ</button>
+                <button onclick="insertText('ความลับของ [เทคนิค/Mindset] นี้ไม่ใช่เรื่องยาก แต่มันอาศัยความ สม่ำเสมอ ที่คนส่วนใหญ่ทำไม่ได้')" class="template-btn"><i class="fas fa-key"></i> ความลับคือความสม่ำเสมอ</button>
+                
+                <div class="section-title">2. 4. หมวดเปรียบเทียบและอุปมาอุปไมย     </div>
+                
+                <button onclick="insertText('ชีวิตของ [ตัวละคร] เปรียบได้กับ [สิ่งของ/ปรากฏการณ์] ที่ต้องผ่านความร้อนแรงก่อนจะ...')" class="template-btn"><i class="fas fa-fill-drip"></i> อุปมาชีวิต</button>
+                <button onclick="insertText('ความพยายามที่ไม่มีทิศทาง ก็เหมือนกับการพายเรือในอ่างที่เหนื่อยแต่ไม่ไปไหน')" class="template-btn"><i class="fas fa-anchor"></i> อุปมาความพยายาม</button>
+                <button onclick="insertText('ความสำเร็จที่ดูสวยงามเหมือนยอดภูเขาน้ำแข็ง แต่เบื้องล่างที่คุณมองไม่เห็นคือ...')" class="template-btn"><i class="fas fa-iceberg"></i> อุปมาภูเขาน้ำแข็ง</button>
+                <button onclick="insertText('จิตใจมนุษย์ก็เหมือนสวน ถ้าไม่ปลูกดอกไม้ (ความคิดบวก) วัชพืช (ความกังวล) จะขึ้นเองโดยอัตโนมัติ')" class="template-btn"><i class="fas fa-leaf"></i> อุปมาสวนแห่งจิตใจ</button>
+                
+                
+                
+                <div class="section-title">2.5. หมวดการมีส่วนร่วมและส่งท้าย     </div>
+               <button onclick="insertText('แล้วคุณล่ะ? หากวันนี้ต้องเลือกทิ้งบางอย่างไว้ข้างหลัง เพื่อก้าวเดินต่อไป คุณจะเลือกทิ้งอะไร?')" class="template-btn"><i class="fas fa-comments"></i> คำถามชวนคิดท้ายเรื่อง</button>
+                <button onclick="insertText('**Challenge:** ลองใช้เวลาเพียง 5 นาทีในวันนี้เพื่อ [กิจกรรม] แล้วสังเกตความรู้สึกที่เกิดขึ้น')" class="template-btn"><i class="fas fa-trophy"></i> คำท้าทายผู้อ่าน</button>
+                <button onclick="insertText('แชร์เรื่องราวนี้ให้คนที่คุณรัก เพื่อบอกเขาว่า คุณไม่ได้สู้เพียงลำพัง')" class="template-btn"><i class="fas fa-share-alt"></i> คำชวนแชร์เชิงอารมณ์</button>
+                <button onclick="insertText('บทความหน้า เราจะมาเจาะลึกเรื่อง [หัวข้อถัดไป] ที่จะเปลี่ยนมุมมองของคุณต่อ...')" class="template-btn"><i class="fas fa-forward"></i> ปูทางสู่บทความถัดไป</button>
+                <button onclick="insertText('สุดท้ายนี้ ความหมายของคำว่า ดีพอ ของคุณคืออะไร?')" class="template-btn"><i class="fas fa-heartbeat"></i> คำถามนิยามชีวิต</button>
+                
+                
+                
+                
+                <div class="section-title">2. 6. หมวดองค์ประกอบภาพและบรรยากาศ    </div>
+                    <button onclick="insertText('[Photo Context: ภาพถ่ายขาวดำที่เน้นแววตาของตัวละคร ท่ามกลางบรรยากาศ... ]')" class="template-btn"><i class="fas fa-camera-retro"></i> บริบทภาพขาวดำ</button>
+                    <button onclick="insertText('[Visual: กราฟิกที่แสดงความเชื่อมโยงระหว่างความเหนื่อยล้าและความสำเร็จ]')" class="template-btn"><i class="fas fa-project-diagram"></i> กราฟิกเชิงเปรียบเทียบ</button>
+                    <button onclick="insertText('[Quote Card: ข้อความสั้นๆ บนพื้นหลังเรียบง่ายเพื่อความพรีเมียม]')" class="template-btn"><i class="fas fa-id-card"></i> การ์ดคำคม</button>
+
+        <!-- ss 2 -->
+
+ 
             <div class="section-title">3. คำเชื่อม & การขยายความ</div>
-            <button onclick="insertText('ยิ่งไปกว่านั้น การทำแบบนี้ยังช่วยให้...')" class="template-btn"><i class="fas fa-link"></i> เพิ่มความเข้มข้น</button>
-            <button onclick="insertText('ในทางกลับกัน หากเรามองอีกมุมหนึ่ง...')" class="template-btn"><i class="fas fa-undo"></i> มองมุมกลับ</button>
-            <button onclick="insertText('ผลที่ตามมาทันทีหลังจากที่คุณทำคือ...')" class="template-btn"><i class="fas fa-arrow-right"></i> แสดงผลลัพธ์</button>
-            <button onclick="insertText('เพื่อความเข้าใจที่ชัดเจนขึ้น ลองดูตัวอย่างนี้...')" class="template-btn"><i class="fas fa-search"></i> ยกตัวอย่างขยายความ</button>
-            <button onclick="insertText('แม้ว่ามันจะดูยากในช่วงแรก แต่...')" class="template-btn"><i class="fas fa-mountain"></i> ให้กำลังใจ</button>
-            <button onclick="insertText('สอดคล้องกับแนวคิดของ [ชื่อคน/ทฤษฎี] ที่ว่า...')" class="template-btn"><i class="fas fa-link"></i> เชื่อมโยงทฤษฎี</button>
-            <button onclick="insertText('นั่นหมายความว่าคุณไม่จำเป็นต้อง...')" class="template-btn"><i class="fas fa-sign-in-alt"></i> ขยายความผลลัพธ์</button>
-            <button onclick="insertText('สรุปสั้นๆ ในส่วนนี้คือ...')" class="template-btn"><i class="fas fa-compress"></i> สรุปย่อยระหว่างทาง</button>
-            <button onclick="insertText('คำถามที่ตามมาก็คือ [คำถามใหม่]...')" class="template-btn"><i class="fas fa-question"></i> สร้างปมใหม่</button>
-            <button onclick="insertText('โดยพื้นฐานแล้ว เรื่องนี้ทำงานโดย...')" class="template-btn"><i class="fas fa-cogs"></i> อธิบายพื้นฐาน</button>
+        <button onclick="insertText('แต่ความน่าสนใจไม่ได้หยุดอยู่เพียงแค่นั้น เพราะสิ่งที่ลึกซึ้งไปกว่านั้นคือ...')" class="template-btn"><i class="fas fa-link"></i> เพิ่มเลเยอร์ของเรื่อง</button>
+        <button onclick="insertText('หากเราลองสวมหมวกอีกใบ แล้วมองสถานการณ์นี้ในมุมที่ต่างออกไป...')" class="template-btn"><i class="fas fa-undo"></i> พลิกมุมมอง</button>
+        <button onclick="insertText('วินาทีที่คุณเริ่มขยับ แรงกระเพื่อมแรกที่จะเกิดขึ้นในใจคุณคือ...')" class="template-btn"><i class="fas fa-arrow-right"></i> สะท้อนผลลัพธ์ทางใจ</button>
+        <button onclick="insertText('เพื่อให้เห็นภาพที่ชัดเจนขึ้น ลองจินตนาการถึงสถานการณ์ที่...')" class="template-btn"><i class="fas fa-search"></i> วาดภาพประกอบคำพูด</button>
+        <button onclick="insertText('ผมรู้ว่ามันอาจดูเหมือนยอดเขาที่สูงชันในสายตาคุณตอนเริ่ม แต่ความจริงแล้ว...')" class="template-btn"><i class="fas fa-mountain"></i> โอบกอดความกลัว</button>
+        <button onclick="insertText('แก่นความคิดนี้สอดประสานอย่างลงตัวกับ [ชื่อคน/ทฤษฎี] ที่เคยกล่าวไว้ว่า...')" class="template-btn"><i class="fas fa-link"></i> สอดประสานทฤษฎี</button>
+        <button onclick="insertText('นั่นเป็นคำตอบว่าทำไม คุณจึงสามารถปล่อยวางความกังวลเรื่อง [หัวข้อ] ไปได้เลย เพราะ...')" class="template-btn"><i class="fas fa-sign-in-alt"></i> คลายปมความกังวล</button>
+        <button onclick="insertText('ถ้าจะถอดบทเรียนสำคัญจากย่อหน้านี้ให้เหลือเพียงประโยคเดียว มันคือ...')" class="template-btn"><i class="fas fa-compress"></i> กลั่นกรองหัวใจสำคัญ</button>
+        <button onclick="insertText('แต่คำถามสำคัญที่ท้าทายหัวใจเราต่อจากนี้ก็คือ [คำถาม]...')" class="template-btn"><i class="fas fa-question"></i> ทิ้งปมให้ขบคิด</button>
+        <button onclick="insertText('หากเราลองกะเทาะเปลือกนอกออก แล้วดูที่หัวใจหลักของกลไกนี้...')" class="template-btn"><i class="fas fa-cogs"></i> กะเทาะเปลือกเนื้อหา</button>
+        <button onclick="insertText('ในขณะที่โลกกำลังมุ่งหน้าไปทาง [ทิศทางทั่วไป] แต่สิ่งที่บทเรียนนี้กำลังบอกเราคือ...')" class="template-btn"><i class="fas fa-compass"></i> ชี้เข็มทิศทวนกระแส</button>
+        <button onclick="insertText('ทั้งหมดนี้ไม่ใช่แค่เรื่องของผลลัพธ์ แต่มันคือการเดินทางเพื่อค้นพบว่า...')" class="template-btn"><i class="fas fa-road"></i> เชื่อมโยงเข้าสู่การเดินทาง</button>
 
             <div class="section-title">4. บทสรุป & CTA</div>
             <button onclick="insertText('สุดท้ายนี้ ความสำเร็จไม่ได้ขึ้นอยู่กับสิ่งที่คุณรู้ แต่คือสิ่งที่คุณลงมือทำ')" class="template-btn"><i class="fas fa-flag-checkered"></i> สรุปบทเรียนสำคัญ</button>
