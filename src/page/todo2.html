@@ -1,0 +1,183 @@
+ 
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .active-project {
+            background-color: #ffffff;
+            border-left: 4px solid #3b82f6;
+            font-weight: 600;
+            color: #1e40af;
+        }
+
+        [contenteditable]:focus {
+            outline: none;
+            background: #e0f2fe;
+            border-radius: 4px;
+            padding: 2px 4px;
+        }
+
+        .trash-btn {
+            opacity: 0;
+            transition: opacity 0.2s;
+            color: #ef4444;
+            cursor: pointer;
+        }
+
+        div:hover>.trash-btn {
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="h-16 bg-slate-900 text-white flex items-center px-8 shadow-lg z-10">
+        <h1 class="text-xl font-bold tracking-tight">TaskFlow<span class="text-blue-500">.pro</span></h1>
+    </nav>
+
+    <div class="flex-1 flex overflow-hidden">
+        <aside class="w-64 bg-slate-50 border-r border-slate-200 p-6 flex flex-col">
+            <h2 class="text-xs font-bold text-slate-400 mb-6 uppercase tracking-wider">My Projects</h2>
+            <div id="sidebarProjects" class="space-y-1 flex-1"></div>
+            <button onclick="addCategory()"
+                class="w-full py-2 text-sm bg-blue-600 text-white rounded-lg font-bold shadow-md hover:bg-blue-700 mb-2">+
+                Add Project</button>
+            <button onclick="showToday()"
+                class="w-full py-2 text-sm bg-slate-200 text-slate-700 rounded-lg font-bold hover:bg-slate-300 mb-2">📅
+                Today's Agenda</button>
+     
+        </aside>
+
+        <section class="w-1/3 border-r border-slate-200 bg-white p-8 overflow-y-auto">
+            <div id="taskList"></div>
+        </section>
+
+        <main class="flex-1 p-10 bg-slate-50 overflow-y-auto" id="detailArea">
+            <div class="text-slate-400 text-center mt-20">Select a task to edit details</div>
+        </main>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCS61si8_UocRXNATeJRMVB01viqRS9IZk",
+            authDomain: "todo-my-job.firebaseapp.com",
+            projectId: "todo-my-job",
+            storageBucket: "todo-my-job.firebasestorage.app",
+            messagingSenderId: "215636980018",
+            appId: "1:215636980018:web:13a0880ae02ba17e45272b",
+            measurementId: "G-30Y3NTXF7J"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const trashIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
+
+        window.data = JSON.parse(localStorage.getItem('taskData')) || [];
+        window.saveData = async function () { localStorage.setItem('taskData', JSON.stringify(data)); await setDoc(doc(db, "users", "myData"), { tasks: data }); render(); }
+
+        window.confirmDelete = (msg, cb) => { if (confirm(msg)) cb(); };
+        window.deleteCategory = (cId) => confirmDelete("ลบโครงการนี้ถาวร?", () => { data = data.filter(c => c.id != cId); selectedCatId = null; saveData(); });
+        window.deleteTask = (cId, tId) => confirmDelete("ลบงานนี้ถาวร?", () => { const c = data.find(c => c.id == cId); c.tasks = c.tasks.filter(t => t.id != tId); if (selectedTaskId == tId) selectedTaskId = null; saveData(); });
+        window.deleteTodo = (cId, tId, dId) => confirmDelete("ลบรายการย่อยนี้?", () => { const t = data.find(c => c.id == cId).tasks.find(x => x.id == tId); t.todos = t.todos.filter(x => x.id != dId); saveData(); });
+
+        window.togglePin = function (cId, tId) { const t = data.find(c => c.id == cId).tasks.find(x => x.id == tId); t.isPinned = !t.isPinned; saveData(); }
+        window.archiveTask = function (cId, tId) { const t = data.find(c => c.id == cId).tasks.find(x => x.id == tId); t.isArchived = true; saveData(); }
+        window.showToday = function () { selectedCatId = 'today'; selectedTaskId = null; render(); }
+        window.showArchive = function () { selectedCatId = 'archive'; selectedTaskId = null; render(); }
+        window.moveTask = function (cId, from, to) { const cat = data.find(c => c.id == cId); const el = cat.tasks.splice(from, 1)[0]; cat.tasks.splice(to, 0, el); saveData(); }
+
+        window.addCategory = function () { data.push({ id: Date.now(), name: "New Project", tasks: [] }); saveData(); }
+        window.addTask = function (cId) { data.find(c => c.id == cId).tasks.push({ id: Date.now(), title: "New Task", desc: "", deadline: "", todos: [], isPinned: false, isArchived: false }); saveData(); }
+        window.updateCatName = function (cId, el) { data.find(c => c.id == cId).name = el.innerText; saveData(); }
+        window.updateTaskField = function (cId, tId, k, v) { data.find(c => c.id == cId).tasks.find(x => x.id == tId)[k] = v; saveData(); }
+        window.toggleTodo = function (cId, tId, dId) { const t = data.find(c => c.id == cId).tasks.find(x => x.id == tId).todos.find(y => y.id == dId); t.done = !t.done; saveData(); }
+        window.handleTodoEnter = function (e, cId, tId) { if (e.key == 'Enter' && e.target.value.trim()) { data.find(c => c.id == cId).tasks.find(x => x.id == tId).todos.push({ id: Date.now(), text: e.target.value.trim(), done: false }); e.target.value = ''; saveData(); } }
+        window.handleTab = function (e) { if (e.key == 'Tab') { e.preventDefault(); document.execCommand('insertHTML', false, '&#009;'); } }
+
+        window.selectedCatId = data.length > 0 ? data[0].id : null;
+        window.selectedTaskId = null;
+
+        window.render = function () {
+            document.getElementById('sidebarProjects').innerHTML = data.map(cat => `
+                <div class="flex items-center justify-between p-3 cursor-pointer text-sm ${selectedCatId == cat.id ? 'active-project' : 'text-slate-600'}">
+                    <span class="flex-1" onclick="selectedCatId=${cat.id}; selectedTaskId=null; render();">📁 ${cat.name}</span>
+                    <button class="trash-btn" onclick="deleteCategory(${cat.id})">${trashIcon}</button>
+                </div>
+            `).join('');
+
+            let tasksToShow = [];
+            if (selectedCatId == 'today') {
+                const today = new Date().toISOString().split('T')[0];
+                data.forEach(c => c.tasks.forEach(t => { if (t.deadline == today && !t.isArchived) tasksToShow.push({ ...t, parentId: c.id }); }));
+            } else if (selectedCatId == 'archive') {
+                data.forEach(c => c.tasks.forEach(t => { if (t.isArchived) tasksToShow.push({ ...t, parentId: c.id }); }));
+            } else {
+                const cat = data.find(c => c.id == selectedCatId);
+                if (cat) tasksToShow = cat.tasks.filter(t => !t.isArchived).sort((a, b) => b.isPinned - a.isPinned);
+            }
+
+            document.getElementById('taskList').innerHTML = `
+                <h2 class="text-2xl font-black mb-8">${selectedCatId == 'today' ? "Today's Agenda" : (selectedCatId == 'archive' ? "Archive" : (data.find(c => c.id == selectedCatId)?.name || "Project"))}</h2>
+                <div id="dragArea" class="space-y-3">
+                    ${tasksToShow.map((t) => `
+                        <div class="p-4 rounded-xl border ${selectedTaskId == t.id ? 'border-blue-500 bg-blue-50' : 'border-slate-200'} cursor-pointer" onclick="selectedTaskId=${t.id}; render();">
+                            <div class="flex justify-between font-bold text-slate-800">
+                                <span>${t.isPinned ? '★ ' : ''}${t.title}</span>
+                                <div onclick="event.stopPropagation()" class="flex gap-2">
+                                    <button onclick="togglePin(${t.parentId || selectedCatId}, ${t.id})">⭐</button>
+                              
+                                    <button class="text-red-500" onclick="deleteTask(${t.parentId || selectedCatId}, ${t.id})">${trashIcon}</button>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                    ${(selectedCatId != 'today' && selectedCatId != 'archive' && selectedCatId) ? `<button onclick="addTask(${selectedCatId})" class="w-full py-3 text-sm text-slate-500 border-2 border-dashed rounded-xl">+ Add New</button>` : ''}
+                </div>
+            `;
+
+            if (selectedTaskId !== null) {
+                const p = data.find(c => c.tasks.find(t => t.id == selectedTaskId));
+                const task = p.tasks.find(t => t.id == selectedTaskId);
+                document.getElementById('detailArea').innerHTML = `
+                    <div class="max-w-2xl mx-auto">
+                        <h2 contenteditable="true" onblur="updateTaskField(${p.id}, ${task.id}, 'title', this.innerText)" class="text-4xl font-black text-slate-900 mb-8 focus:outline-none">${task.title}</h2>
+                        <input type="date" value="${task.deadline}" onchange="updateTaskField(${p.id}, ${task.id}, 'deadline', this.value)" class="w-full mb-6 bg-white p-3 rounded-lg border border-slate-200">
+                        <div contenteditable="true" onblur="updateTaskField(${p.id}, ${task.id}, 'desc', this.innerHTML)" onkeydown="handleTab(event)" class="w-full h-64 bg-white p-4 rounded-lg border border-slate-200 text-sm mb-8 overflow-y-auto focus:outline-blue-400" style="white-space: pre-wrap;">${task.desc || ''}</div>
+                        <div class="space-y-3">
+                            <h3 class="text-xs font-bold text-slate-400 uppercase">Checklist</h3>
+                            ${task.todos.map(td => `
+                                <div class="flex items-center gap-3 p-3 bg-white rounded-lg border border-slate-200 group">
+                                    <input type="checkbox" ${td.done ? 'checked' : ''} onchange="toggleTodo(${p.id}, ${task.id}, ${td.id})">
+                                    <span class="${td.done ? 'line-through text-slate-400' : 'text-slate-700'} text-sm flex-1">${td.text}</span>
+                                    <button class="opacity-0 group-hover:opacity-100 text-red-500" onclick="deleteTodo(${p.id}, ${task.id}, ${td.id})">${trashIcon}</button>
+                                </div>
+                            `).join('')}
+                            <input type="text" placeholder="+ เพิ่มรายการย่อย" onkeydown="handleTodoEnter(event, ${p.id}, ${task.id})" class="w-full p-3 bg-white rounded-lg border border-blue-200 focus:outline-blue-400 text-sm">
+                        </div>
+                    </div>
+                `;
+            }
+            if (selectedCatId != 'today' && selectedCatId != 'archive' && selectedCatId)
+                new Sortable(document.getElementById('dragArea'), { onEnd: (e) => moveTask(selectedCatId, e.oldIndex, e.newIndex) });
+        }
+        async function loadFirebaseData() { const d = await getDoc(doc(db, "users", "myData")); if (d.exists()) { data = d.data().tasks; render(); } }
+        loadFirebaseData();
+    </script>
+</body>
+
+</html>
