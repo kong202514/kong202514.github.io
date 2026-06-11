@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow Analytics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        
+        :root { 
+            --bg-page: #f8fafc; 
+            --card-bg: #ffffff; 
+            --text-title: #0f172a; 
+            --text-body: #475569; 
+            --accent-blue: #3b82f6; 
+            --border: #e2e8f0; 
+        }
+        body.dark { 
+            --bg-page: #020617; 
+            --card-bg: #0f172a; 
+            --text-title: #f1f5f9; 
+            --text-body: #94a3b8; 
+            --border: #1e293b; 
+        }
+        
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: var(--bg-page); 
+            color: var(--text-body); 
+            transition: background-color 0.3s ease; 
+        }
+        
+        .glass-card { 
+            background: var(--card-bg); 
+            border: 1px solid var(--border); 
+            border-radius: 24px; 
+            padding: 1.5rem; 
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.02), 0 2px 4px -2px rgb(0 0 0 / 0.02);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-card:hover { 
+            transform: translateY(-4px); 
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.05), 0 8px 10px -6px rgb(0 0 0 / 0.05);
+            border-color: var(--accent-blue);
+        }
+        
+        .stat-icon {
+            width: 44px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.25rem;
+        }
+        
+        .progress-bar { height: 6px; border-radius: 10px; background: #f1f5f9; overflow: hidden; }
+        .dark .progress-bar { background: #1e293b; }
+        .progress-fill { height: 100%; border-radius: 10px; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        canvas { filter: drop-shadow(0 10px 8px rgb(0 0 0 / 0.02)); }
+    </style>
+</head>
+<body class="p-6 md:p-12">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <header class="flex flex-col lg:flex-row justify-between items-start lg:items-end mb-12 gap-8">
+            <div class="flex-1">
+                <h1 class="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">Workspace <span class="text-blue-600">Analytics</span></h1>
+                <p class="text-slate-500 dark:text-slate-400 mt-1 font-medium">Real-time performance metrics</p>
+                
+                <div class="mt-8 flex flex-wrap gap-4">
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Filter by Project</label>
+                        <select id="projectFilter" onchange="window.currentFilter = this.value; renderDashboard();" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+                            <option value="all">All Projects</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Show Status</label>
+                        <div class="flex bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-1">
+                            <button onclick="window.statusFilter = 'active'; renderDashboard();" id="btnActive" class="px-4 py-1 text-xs font-bold rounded-lg transition-all">Active</button>
+                            <button onclick="window.statusFilter = 'completed'; renderDashboard();" id="btnDone" class="px-4 py-1 text-xs font-bold rounded-lg transition-all text-slate-400">Done</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <button onclick="window.location.href='todo2.html'" class="flex items-center gap-2 px-6 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                    Back
+                </button>
+                <button onclick="toggleDarkMode()" id="themeToggle" class="p-4 bg-slate-900 dark:bg-blue-600 text-white rounded-2xl shadow-xl hover:scale-105 active:scale-95 transition-all">
+                    🌙
+                </button>
+            </div>
+        </header>
+
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12" id="statsCards">
+            <!-- Stats cards will be injected here -->
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+            <!-- Main Chart -->
+            <div class="lg:col-span-2 glass-card overflow-hidden">
+                <div class="flex justify-between items-center mb-10">
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-900 dark:text-white">Productivity Trends</h3>
+                        <p class="text-sm text-slate-400 font-medium">Completion success rate</p>
+                    </div>
+                </div>
+                <div class="h-[300px]">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Side Chart -->
+            <div class="glass-card">
+                <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Priority</h3>
+                <p class="text-sm text-slate-400 font-medium mb-10">Task weight distribution</p>
+                <div class="h-[260px]">
+                    <canvas id="priorityChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Projects Table -->
+        <div class="glass-card p-0 overflow-hidden">
+            <div class="p-8 border-b border-slate-50 dark:border-slate-900/50 flex justify-between items-center bg-slate-50/30 dark:bg-slate-900/10">
+                <h3 class="text-xl font-bold text-slate-900 dark:text-white">Active Projects</h3>
+                <span class="px-4 py-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-xl text-xs font-black text-blue-700 dark:text-blue-400" id="projCount">0 TOTAL</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="text-[10px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-[0.2em] bg-slate-50/50 dark:bg-slate-900/20">
+                            <th class="px-10 py-5">Project Name</th>
+                            <th class="px-10 py-5">Workload</th>
+                            <th class="px-10 py-5">Progress</th>
+                        </tr>
+                    </thead>
+                    <tbody id="projectTableBody" class="divide-y divide-slate-50 dark:divide-slate-900/50">
+                        <!-- Project rows will be injected here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCS61si8_UocRXNATeJRMVB01viqRS9IZk",
+            authDomain: "todo-my-job.firebaseapp.com",
+            projectId: "todo-my-job",
+            storageBucket: "todo-my-job.firebasestorage.app",
+            messagingSenderId: "215636980018",
+            appId: "1:215636980018:web:13a0880ae02ba17e45272b",
+            measurementId: "G-30Y3NTXF7J"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.data = JSON.parse(localStorage.getItem('taskData')) || [];
+
+        window.toggleDarkMode = function() {
+            document.body.classList.toggle('dark');
+            const isDark = document.body.classList.contains('dark');
+            localStorage.setItem('darkMode', isDark);
+            document.getElementById('themeToggle').innerText = isDark ? '☀️' : '🌙';
+            renderDashboard();
+        }
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark');
+            setTimeout(() => { if(document.getElementById('themeToggle')) document.getElementById('themeToggle').innerText = '☀️'; }, 100);
+        }
+
+        async function init() {
+            renderDashboard();
+            try {
+                const d = await getDoc(doc(db, "users", "myData"));
+                if (d.exists()) {
+                    window.data = d.data().tasks;
+                    localStorage.setItem('taskData', JSON.stringify(window.data));
+                    renderDashboard();
+                }
+            } catch (e) { console.error("Sync failed:", e); }
+        }
+
+        window.currentFilter = "all";
+        window.statusFilter = "active";
+
+        function renderDashboard() {
+            const isDark = document.body.classList.contains('dark');
+            
+            // Update filter buttons UI
+            document.getElementById('btnActive').className = `px-4 py-1 text-xs font-bold rounded-lg transition-all ${statusFilter === 'active' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400'}`;
+            document.getElementById('btnDone').className = `px-4 py-1 text-xs font-bold rounded-lg transition-all ${statusFilter === 'completed' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400'}`;
+
+            // Populate Project Dropdown if empty
+            const select = document.getElementById('projectFilter');
+            if (select.options.length <= 1) {
+                data.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p.id;
+                    opt.innerText = p.name;
+                    select.appendChild(opt);
+                });
+            }
+
+            // Filter data
+            let filteredData = data.filter(p => {
+                const matchesStatus = statusFilter === 'active' ? !p.isCompleted : p.isCompleted;
+                const matchesProject = currentFilter === 'all' || p.id == currentFilter;
+                return matchesStatus && (currentFilter === 'all' ? true : matchesProject);
+            });
+
+            // If "All Projects" but specific status, we just filter the projects list
+            // but for "all" view, we might want to see stats across all active or all completed.
+
+            let totalTasks = 0, completedTasks = 0;
+            let priorityCount = { high: 0, medium: 0, low: 0, none: 0 };
+            
+            filteredData.forEach(p => {
+                p.tasks.forEach(t => {
+                    totalTasks++;
+                    if (t.isCompleted) completedTasks++;
+                    priorityCount[t.priority || 'none']++;
+                });
+            });
+
+            const pendingTasks = totalTasks - completedTasks;
+            const completionRate = totalTasks ? Math.round((completedTasks / totalTasks) * 100) : 0;
+            document.getElementById('projCount').innerText = `${filteredData.length} PROJECTS`;
+
+            const icons = {
+                tasks: `<svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>`,
+                done: `<svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+                pending: `<svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+                rate: `<svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>`
+            };
+
+            document.getElementById('statsCards').innerHTML = `
+                <div class="glass-card">
+                    <div class="stat-icon bg-blue-500/10">${icons.tasks}</div>
+                    <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest">Total Tasks</p>
+                    <p class="text-3xl font-black mt-1 text-slate-900 dark:text-white">${totalTasks}</p>
+                </div>
+                <div class="glass-card">
+                    <div class="stat-icon bg-emerald-500/10">${icons.done}</div>
+                    <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest">Success</p>
+                    <p class="text-3xl font-black mt-1 text-emerald-600">${completedTasks}</p>
+                </div>
+                <div class="glass-card">
+                    <div class="stat-icon bg-orange-500/10">${icons.pending}</div>
+                    <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest">Pending</p>
+                    <p class="text-3xl font-black mt-1 text-orange-600">${pendingTasks}</p>
+                </div>
+                <div class="glass-card">
+                    <div class="stat-icon bg-purple-500/10">${icons.rate}</div>
+                    <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest">Score</p>
+                    <p class="text-3xl font-black mt-1 text-purple-600">${completionRate}%</p>
+                </div>
+            `;
+
+            if (charts.status) charts.status.destroy();
+            if (charts.priority) charts.priority.destroy();
+
+            charts.status = new Chart(document.getElementById('statusChart'), {
+                type: 'line',
+                data: {
+                    labels: ['Start', 'Quarter', 'Half', 'Target'],
+                    datasets: [{
+                        data: [0, completionRate * 0.4, completionRate * 0.7, completionRate],
+                        borderColor: '#3b82f6',
+                        backgroundColor: (ctx) => {
+                            const canvas = ctx.chart.ctx;
+                            const gradient = canvas.createLinearGradient(0, 0, 0, 400);
+                            gradient.addColorStop(0, 'rgba(59, 130, 246, 0.2)');
+                            gradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
+                            return gradient;
+                        },
+                        fill: true, tension: 0.5, borderWidth: 6, pointRadius: 0
+                    }]
+                },
+                options: { 
+                    plugins: { legend: { display: false } }, 
+                    maintainAspectRatio: false,
+                    scales: { 
+                        y: { min: 0, max: 100, grid: { color: isDark ? '#1e293b' : '#f1f5f9' }, ticks: { font: { weight: 700 }, color: '#94a3b8' } },
+                        x: { grid: { display: false }, ticks: { font: { weight: 800 }, color: isDark ? '#94a3b8' : '#64748b' } }
+                    } 
+                }
+            });
+
+            charts.priority = new Chart(document.getElementById('priorityChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['High', 'Med', 'Low'],
+                    datasets: [{
+                        data: [priorityCount.high, priorityCount.medium, priorityCount.low],
+                        backgroundColor: ['#ef4444', '#f59e0b', '#10b981'],
+                        borderWidth: 0, weight: 1, spacing: 10, borderRadius: 10
+                    }]
+                },
+                options: { cutout: '80%', plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 30, font: { weight: 700, size: 12 }, color: isDark ? '#94a3b8' : '#475569' } } }, maintainAspectRatio: false }
+            });
+
+            document.getElementById('projectTableBody').innerHTML = filteredData.map(p => {
+                const pTotal = p.tasks.length;
+                const pDone = p.tasks.filter(t => t.isCompleted).length;
+                const pRate = pTotal ? Math.round((pDone / pTotal) * 100) : 0;
+                return `
+                    <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-900/40 transition-all group">
+                        <td class="px-10 py-6">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-2xl bg-blue-600/10 flex items-center justify-center font-black text-blue-600 text-lg">
+                                    ${p.name.charAt(0).toUpperCase()}
+                                </div>
+                                <div>
+                                    <p class="font-bold text-slate-900 dark:text-white group-hover:text-blue-600 transition-colors">${p.name}</p>
+                                    <p class="text-[10px] ${p.isCompleted ? 'text-emerald-500' : 'text-slate-400'} font-black uppercase tracking-widest mt-0.5">${p.isCompleted ? '✓ Completed' : 'Active Project'}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-10 py-6 text-slate-500 dark:text-slate-400 text-sm font-bold">${pTotal} Tasks</td>
+                        <td class="px-10 py-6 min-w-[280px]">
+                            <div class="flex items-center gap-6">
+                                <div class="flex-1 progress-bar">
+                                    <div class="progress-fill ${p.isCompleted ? 'bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.4)]' : 'bg-blue-600 shadow-[0_0_15px_rgba(59,130,246,0.4)]'}" style="width: ${pRate}%"></div>
+                                </div>
+                                <span class="text-sm font-black text-slate-900 dark:text-slate-200 w-12">${pRate}%</span>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        init();
+    </script>
+</body>
+</html>
