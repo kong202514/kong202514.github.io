@@ -2,38 +2,80 @@
 <head>
     <meta charset="UTF-8">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; height: 100vh; display: flex; flex-direction: column; }
-        .active-project { background-color: #ffffff; border-left: 4px solid #3b82f6; font-weight: 600; color: #1e40af; }
-        [contenteditable]:focus { outline: none; background: #e0f2fe; border-radius: 4px; padding: 2px 4px; }
-        .trash-btn { opacity: 0; transition: opacity 0.2s; color: #ef4444; cursor: pointer; }
+        :root { --bg-primary: #ffffff; --sidebar-bg: #f7f6f3; --card-bg: #ffffff; --text-main: #37352f; --text-muted: #787774; --accent: #2383e2; --border: #e9e9e7; }
+        body.dark { --bg-primary: #191919; --sidebar-bg: #202020; --card-bg: #252525; --text-main: #ebebeb; --text-muted: #9b9b9b; --accent: #2eaadc; --border: #2f2f2f; }
+        
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; background-color: var(--bg-primary); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; transition: background 0.2s; }
+        aside { background-color: var(--sidebar-bg); border-color: var(--border); }
+        section { background-color: var(--bg-primary); border-color: var(--border); }
+        main { background-color: var(--bg-primary); }
+        
+        .active-project { background-color: rgba(0, 0, 0, 0.05); color: var(--text-main) !important; font-weight: 600; }
+        .dark .active-project { background-color: rgba(255, 255, 255, 0.05); }
+        
+        .card { background-color: var(--card-bg); border-bottom: 1px solid var(--border); transition: background 0.1s; }
+        .card:hover { background-color: rgba(0, 0, 0, 0.02); }
+        .dark .card:hover { background-color: rgba(255, 255, 255, 0.02); }
+        
+        [contenteditable]:focus { outline: none; background: rgba(35, 131, 226, 0.07); border-radius: 3px; }
+        .trash-btn { opacity: 0; transition: opacity 0.2s; color: #eb5757; cursor: pointer; }
         div:hover > .trash-btn { opacity: 1; }
+
+        input, select, textarea { background-color: transparent !important; border: 1px solid var(--border) !important; color: var(--text-main) !important; border-radius: 4px !important; }
+        input:focus { border-color: var(--accent) !important; outline: none; }
     </style>
 </head>
 <body>
-    <nav class="h-16 bg-slate-900 text-white flex items-center px-8 shadow-lg z-10">
-        <h1 class="text-xl font-bold tracking-tight">TaskFlow<span class="text-blue-500">.pro</span></h1>
-    </nav>
     <div class="flex-1 flex overflow-hidden">
-        <aside class="w-64 bg-slate-50 border-r border-slate-200 p-6 flex flex-col">
-            <h2 class="text-xs font-bold text-slate-400 mb-6 uppercase tracking-wider">My Projects</h2>
+        <aside class="w-64 bg-slate-50 dark:bg-[#1e1e1e] border-r border-slate-200 dark:border-[#2f2f2f] p-6 flex flex-col transition-colors duration-200">
+            <div class="flex items-center justify-between mb-8">
+                <div class="flex flex-col">
+                    <h1 class="text-xl font-bold tracking-tight text-slate-800 dark:text-slate-200">TaskFlow<span class="text-blue-500">.pro</span></h1>
+                    <div id="syncStatus" class="text-[9px] font-bold uppercase tracking-widest text-slate-400 mt-1 flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Synchronized
+                    </div>
+                </div>
+                <button onclick="toggleDarkMode()" id="themeToggle" class="p-2 rounded-lg bg-slate-200 dark:bg-[#2f2f2f] text-slate-600 dark:text-slate-400 hover:bg-slate-300 dark:hover:bg-[#3f3f3f] transition-colors">
+                    🌙
+                </button>
+            </div>
+            
+            <div class="relative mb-6">
+                <input type="text" placeholder="Search tasks..." oninput="window.searchQuery = this.value.toLowerCase(); render();" class="w-full pl-8 pr-3 py-2 bg-white dark:bg-[#252525] border border-slate-200 dark:border-[#2f2f2f] rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-blue-100 dark:text-slate-200 transition-colors">
+                <svg class="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            </div>
+
+            <h2 class="text-xs font-bold text-slate-400 mb-4 uppercase tracking-wider">My Projects</h2>
             <div id="sidebarProjects" class="space-y-1 flex-1"></div>
             <button onclick="addCategory()" class="w-full py-2 text-sm bg-blue-600 text-white rounded-lg font-bold shadow-md hover:bg-blue-700 mb-2">+ Add Project</button>
-            <button onclick="showToday()" class="w-full py-2 text-sm bg-slate-200 text-slate-700 rounded-lg font-bold hover:bg-slate-300 mb-2">📅 Today's Agenda</button>
+            <button onclick="showToday()" class="w-full py-2 text-sm bg-slate-200 dark:bg-[#2f2f2f] text-slate-700 dark:text-slate-300 rounded-lg font-bold hover:bg-slate-300 dark:hover:bg-[#3f3f3f] mb-2 transition-colors">📅 Today's Agenda</button>
+            <button onclick="window.location.href='dashboard.html'" class="w-full py-2 text-sm bg-slate-800 dark:bg-slate-700 text-white rounded-lg font-bold hover:bg-slate-900 dark:hover:bg-slate-600 mb-2 transition-colors">📊 Dashboard Views</button>
         </aside>
-        <section class="w-1/3 border-r border-slate-200 bg-white p-8 overflow-y-auto">
+        <section class="w-1/3 border-r border-slate-200 dark:border-[#2f2f2f] bg-white dark:bg-[#191919] p-8 overflow-y-auto transition-colors duration-200">
             <div id="taskList"></div>
         </section>
-        <main class="flex-1 p-10 bg-slate-50 overflow-y-auto" id="detailArea">
-            <div class="text-slate-400 text-center mt-20">Select a task to edit details</div>
+        <main class="flex-1 p-10 bg-slate-50 dark:bg-[#191919] overflow-y-auto transition-colors duration-200" id="detailArea">
+            <div class="text-slate-400 dark:text-slate-500 text-center mt-20">Select a task to edit details</div>
         </main>
+    </div>
+
+    <div id="toast" class="fixed bottom-8 right-8 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+        <div class="bg-slate-900 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3">
+            <div id="toastIcon"></div>
+            <p id="toastMsg" class="text-sm font-bold"></p>
+        </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
+        // ... (firebaseConfig remains same)
         const firebaseConfig = {
             apiKey: "AIzaSyCS61si8_UocRXNATeJRMVB01viqRS9IZk",
             authDomain: "todo-my-job.firebaseapp.com",
@@ -46,31 +88,70 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        const showToast = (msg, type = 'info') => {
+            const t = document.getElementById('toast');
+            const m = document.getElementById('toastMsg');
+            const i = document.getElementById('toastIcon');
+            m.innerText = msg;
+            i.innerHTML = type === 'error' ? '❌' : '✅';
+            t.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 3000);
+        };
+
+        const updateSyncUI = (status) => {
+            const el = document.getElementById('syncStatus');
+            if (status === 'syncing') el.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-orange-500 animate-spin"></span> Syncing...`;
+            else if (status === 'error') el.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> Connection Error`;
+            else el.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Synchronized`;
+        };
+
         const debounce = (fn, delay) => { let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), delay); }; };
-        const debouncedSave = debounce(async () => {
-            localStorage.setItem('taskData', JSON.stringify(window.data));
-            await setDoc(doc(db, "users", "myData"), { tasks: window.data });
-        }, 800);
+        const debouncedFirebaseSave = debounce(async () => {
+            updateSyncUI('syncing');
+            try {
+                await setDoc(doc(db, "users", "myData"), { tasks: window.data });
+                updateSyncUI('saved');
+            } catch (e) {
+                console.error(e);
+                updateSyncUI('error');
+                showToast("บันทึกข้อมูลไม่สำเร็จ กรุณาเช็คอินเทอร์เน็ต", "error");
+            }
+        }, 2000);
 
         const trashIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
+        const starIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`;
 
         window.data = JSON.parse(localStorage.getItem('taskData')) || [];
-        window.saveData = function () { debouncedSave(); render(); }
+        window.saveData = function () { 
+            localStorage.setItem('taskData', JSON.stringify(window.data));
+            debouncedFirebaseSave(); 
+            render(); 
+        }
 
         window.confirmDelete = (msg, cb) => { if (confirm(msg)) cb(); };
-        window.deleteCategory = (cId) => confirmDelete("ลบโครงการนี้ถาวร?", () => { data = data.filter(c => c.id != cId); selectedCatId = null; saveData(); });
+        window.deleteCategory = (cId) => confirmDelete("ลบโครงการนี้ถาวร?", () => { data = data.filter(c => c.id != cId); selectedCatId = (selectedCatId == cId) ? (data[0]?.id || null) : selectedCatId; saveData(); });
         window.deleteTask = (cId, tId) => confirmDelete("ลบงานนี้ถาวร?", () => { const c = data.find(c => c.id == cId); c.tasks = c.tasks.filter(t => t.id != tId); if (selectedTaskId == tId) selectedTaskId = null; saveData(); });
         window.deleteTodo = (cId, tId, dId) => confirmDelete("ลบรายการย่อยนี้?", () => { const t = data.find(c => c.id == cId).tasks.find(x => x.id == tId); t.todos = t.todos.filter(x => x.id != dId); saveData(); });
         
         window.togglePin = function (cId, tId) { const t = data.find(c => c.id == cId).tasks.find(x => x.id == tId); t.isPinned = !t.isPinned; saveData(); }
         window.toggleTaskStatus = function (cId, tId) { const t = data.find(c => c.id == cId).tasks.find(x => x.id == tId); t.isCompleted = !t.isCompleted; saveData(); }
+        window.toggleProjectStatus = function (cId) { const cat = data.find(c => c.id == cId); cat.isCompleted = !cat.isCompleted; saveData(); }
         window.showToday = function () { selectedCatId = 'today'; selectedTaskId = null; render(); }
         window.moveTask = function (cId, from, to) { const cat = data.find(c => c.id == cId); const el = cat.tasks.splice(from, 1)[0]; cat.tasks.splice(to, 0, el); saveData(); }
+        window.moveCategory = function (from, to) { const el = data.splice(from, 1)[0]; data.splice(to, 0, el); saveData(); }
 
-        window.addCategory = function () { data.push({ id: Date.now(), name: "New Project", tasks: [] }); saveData(); }
-        window.addTask = function (cId) { data.find(c => c.id == cId).tasks.push({ id: Date.now(), title: "New Task", desc: "", deadline: "", todos: [], isPinned: false, isCompleted: false }); saveData(); }
-        window.updateCatName = function (cId, el) { data.find(c => c.id == cId).name = el.innerText; saveData(); }
-        window.updateTaskField = function (cId, tId, k, v) { data.find(c => c.id == cId).tasks.find(x => x.id == tId)[k] = v; debouncedSave(); }
+        window.addCategory = function () { const id = Date.now(); data.push({ id, name: "New Project", tasks: [], isCompleted: false }); selectedCatId = id; saveData(); }
+        window.addTask = function (cId) { const id = Date.now(); data.find(c => c.id == cId).tasks.push({ id, title: "New Task", desc: "", deadline: "", todos: [], isPinned: false, isCompleted: false }); selectedTaskId = id; saveData(); }
+        window.updateCatName = function (cId, el) { if (cId == 'today') return; const cat = data.find(c => c.id == cId); if (cat) { cat.name = el.innerText; saveData(); } }
+        window.updateTaskField = function (cId, tId, k, v) { 
+            const t = data.find(c => c.id == cId)?.tasks.find(x => x.id == tId);
+            if (t) { 
+                t[k] = v; 
+                localStorage.setItem('taskData', JSON.stringify(window.data));
+                debouncedFirebaseSave(); 
+                if (k === 'title' || k === 'isPinned' || k === 'isCompleted') render(); 
+            }
+        }
         window.toggleTodo = function (cId, tId, dId) { const t = data.find(c => c.id == cId).tasks.find(x => x.id == tId).todos.find(y => y.id == dId); t.done = !t.done; saveData(); }
         
         window.handleTodoEnter = function (e, cId, tId) {
@@ -84,41 +165,83 @@
 
         window.selectedCatId = data.length > 0 ? data[0].id : null;
         window.selectedTaskId = null;
+        window.searchQuery = "";
+
+        window.toggleDarkMode = function() {
+            document.body.classList.toggle('dark');
+            const isDark = document.body.classList.contains('dark');
+            localStorage.setItem('darkMode', isDark);
+            document.getElementById('themeToggle').innerText = isDark ? '☀️' : '🌙';
+            render();
+        }
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark');
+            setTimeout(() => { if(document.getElementById('themeToggle')) document.getElementById('themeToggle').innerText = '☀️'; }, 100);
+        }
 
         window.render = function () {
+            const getTaskCount = (catId) => data.find(c => c.id == catId)?.tasks.filter(t => !t.isCompleted).length || 0;
+            const isDark = document.body.classList.contains('dark');
+
             document.getElementById('sidebarProjects').innerHTML = data.map(cat => `
-                <div class="flex items-center justify-between p-3 cursor-pointer text-sm ${selectedCatId == cat.id ? 'active-project' : 'text-slate-600'}">
-                    <span class="flex-1" onclick="selectedCatId=${cat.id}; selectedTaskId=null; render();">📁 ${cat.name}</span>
-                    <button class="trash-btn" onclick="event.stopPropagation(); deleteCategory(${cat.id})">${trashIcon}</button>
+                <div class="flex items-center justify-between px-3 py-1.5 cursor-pointer text-sm rounded transition-all ${selectedCatId == cat.id ? 'active-project' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-white/5'}" onclick="selectedCatId=${cat.id}; selectedTaskId=null; render();">
+                    <span class="flex-1 truncate mr-2 ${cat.isCompleted ? 'line-through opacity-50' : ''}"> ${cat.name}</span>
+                    <span class="text-[10px] text-slate-400 font-medium">${getTaskCount(cat.id)}</span>
+                    <button class="trash-btn p-1 ml-2" onclick="event.stopPropagation(); deleteCategory(${cat.id})">${trashIcon}</button>
                 </div>
             `).join('');
-
+            
+            // ... (rest of logic same)
             let tasksToShow = [];
-            if (selectedCatId == 'today') {
+            // ... (search and today logic same)
+            if (searchQuery) {
+                data.forEach(c => c.tasks.forEach(t => { 
+                    if (t.title.toLowerCase().includes(searchQuery) || (t.desc && t.desc.toLowerCase().includes(searchQuery))) 
+                        tasksToShow.push({ ...t, parentId: c.id }); 
+                }));
+            } else if (selectedCatId == 'today') {
                 const today = new Date().toISOString().split('T')[0];
                 data.forEach(c => c.tasks.forEach(t => { if (t.deadline == today) tasksToShow.push({ ...t, parentId: c.id }); }));
             } else {
                 const cat = data.find(c => c.id == selectedCatId);
-                if (cat) tasksToShow = cat.tasks.sort((a, b) => b.isPinned - a.isPinned);
+                if (cat) tasksToShow = [...cat.tasks].sort((a, b) => b.isPinned - a.isPinned);
             }
 
+            const priorityColors = { high: 'text-red-500', medium: 'text-orange-500', low: 'text-green-500' };
+
+            const currentCat = data.find(c => c.id == selectedCatId);
+
             document.getElementById('taskList').innerHTML = `
-                <h2 contenteditable="true" onblur="updateCatName(${selectedCatId}, this)" class="text-2xl font-black mb-8 focus:outline-none focus:bg-blue-50 focus:p-1 focus:rounded">
-                    ${selectedCatId == 'today' ? "Today's Agenda" : (data.find(c => c.id == selectedCatId)?.name || "Project")}
-                </h2>
-                <div id="dragArea" class="space-y-3">
+                <div class="mb-10 flex justify-between items-start">
+                    <h2 contenteditable="${selectedCatId !== 'today' && !searchQuery}" onblur="updateCatName(${selectedCatId}, this)" class="text-3xl font-bold tracking-tight focus:outline-none ${currentCat?.isCompleted ? 'line-through text-slate-400' : ''}">
+                        ${searchQuery ? `Search` : (selectedCatId == 'today' ? "Today" : (currentCat?.name || "Project"))}
+                    </h2>
+                    ${(selectedCatId !== 'today' && selectedCatId) ? `
+                        <button onclick="toggleProjectStatus(${selectedCatId})" class="text-[10px] font-black uppercase px-3 py-1.5 rounded-lg border transition-all ${currentCat?.isCompleted ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-200 text-slate-400 hover:border-emerald-500 hover:text-emerald-500'}">
+                            ${currentCat?.isCompleted ? '✓ Completed' : 'Mark Project Done'}
+                        </button>
+                    ` : ''}
+                </div>
+                <div id="dragArea" class="border-t border-slate-100 dark:border-slate-800">
                     ${tasksToShow.map((t) => `
-                        <div class="p-4 rounded-xl border ${selectedTaskId == t.id ? 'border-blue-500 bg-blue-50' : 'border-slate-200'} cursor-pointer" onclick="selectedTaskId=${t.id}; render();">
-                            <div class="flex justify-between font-bold text-slate-800">
-                                <div class="flex items-center gap-2">
-                                    <input type="checkbox" ${t.isCompleted ? 'checked' : ''} onchange="event.stopPropagation(); toggleTaskStatus(${t.parentId || selectedCatId}, ${t.id})">
-                                    <span class="${t.isCompleted ? 'line-through text-slate-400' : ''}">${t.isPinned ? '★ ' : ''}${t.title}</span>
+                        <div class="py-3 card cursor-pointer group" onclick="selectedTaskId=${t.id}; render();">
+                            <div class="flex items-center gap-3">
+                                <input type="checkbox" class="w-4 h-4 rounded border-slate-300 cursor-pointer" ${t.isCompleted ? 'checked' : ''} onchange="event.stopPropagation(); toggleTaskStatus(${t.parentId || selectedCatId}, ${t.id})">
+                                <div class="flex flex-1 items-center gap-3">
+                                    <span class="font-medium text-sm ${t.isCompleted ? 'line-through text-slate-400' : ''}">${t.title}</span>
+                                    ${t.priority ? `<span class="text-[9px] uppercase font-bold ${priorityColors[t.priority]}">●</span>` : ''}
+                                    ${t.deadline ? `<span class="text-[10px] text-slate-400">📅 ${t.deadline}</span>` : ''}
                                 </div>
-                                <button class="text-red-500" onclick="event.stopPropagation(); deleteTask(${t.parentId || selectedCatId}, ${t.id})">${trashIcon}</button>
+                                <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button onclick="event.stopPropagation(); togglePin(${t.parentId || selectedCatId}, ${t.id})" class="p-1 hover:bg-slate-100 dark:hover:bg-white/5 ${t.isPinned ? 'text-yellow-500' : 'text-slate-300'}">
+                                        ${starIcon}
+                                    </button>
+                                    <button class="p-1 text-slate-300 hover:text-red-500" onclick="event.stopPropagation(); deleteTask(${t.parentId || selectedCatId}, ${t.id})">${trashIcon}</button>
+                                </div>
                             </div>
                         </div>
                     `).join('')}
-                    ${(selectedCatId != 'today' && selectedCatId) ? `<button onclick="addTask(${selectedCatId})" class="w-full py-3 text-sm text-slate-500 border-2 border-dashed rounded-xl">+ Add New</button>` : ''}
+                    ${(selectedCatId != 'today' && selectedCatId) ? `<button onclick="addTask(${selectedCatId})" class="mt-4 text-xs font-medium text-slate-400 hover:text-slate-600 transition-colors">+ New Task</button>` : ''}
                 </div>
             `;
 
@@ -128,28 +251,59 @@
                     const task = p.tasks.find(t => t.id == selectedTaskId);
                     document.getElementById('detailArea').innerHTML = `
                         <div class="max-w-2xl mx-auto">
-                            <h2 contenteditable="true" onblur="updateTaskField(${p.id}, ${task.id}, 'title', this.innerText)" class="text-4xl font-black text-slate-900 mb-8 focus:outline-none">${task.title}</h2>
-                            <input type="date" value="${task.deadline}" onchange="updateTaskField(${p.id}, ${task.id}, 'deadline', this.value)" class="w-full mb-6 bg-white p-3 rounded-lg border border-slate-200">
-                            <div contenteditable="true" onblur="updateTaskField(${p.id}, ${task.id}, 'desc', this.innerHTML)" onkeydown="handleTab(event)" class="w-full h-64 bg-white p-4 rounded-lg border border-slate-200 text-sm mb-8 overflow-y-auto" style="white-space: pre-wrap;">${task.desc || ''}</div>
+                            <h2 contenteditable="true" onblur="updateTaskField(${p.id}, ${task.id}, 'title', this.innerText)" class="text-4xl font-black text-slate-900 dark:text-slate-100 mb-8 focus:outline-none">${task.title}</h2>
+                            <div class="flex gap-4 mb-8">
+                                <div class="flex-1">
+                                    <label class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase mb-2">Deadline</label>
+                                    <input type="date" value="${task.deadline}" onchange="updateTaskField(${p.id}, ${task.id}, 'deadline', this.value)" class="w-full bg-white dark:bg-[#252525] p-3 rounded-lg border border-slate-200 dark:border-[#2f2f2f] dark:text-slate-200 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 focus:outline-none">
+                                </div>
+                                <div class="flex-1">
+                                    <label class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase mb-2">Priority</label>
+                                    <select onchange="updateTaskField(${p.id}, ${task.id}, 'priority', this.value)" class="w-full bg-white dark:bg-[#252525] p-3 rounded-lg border border-slate-200 dark:border-[#2f2f2f] dark:text-slate-200 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 focus:outline-none text-sm">
+                                        <option value="">None</option>
+                                        <option value="high" ${task.priority == 'high' ? 'selected' : ''}>🔴 High</option>
+                                        <option value="medium" ${task.priority == 'medium' ? 'selected' : ''}>🟠 Medium</option>
+                                        <option value="low" ${task.priority == 'low' ? 'selected' : ''}>🟢 Low</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <label class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase mb-2">Description</label>
+                            <div contenteditable="true" onblur="updateTaskField(${p.id}, ${task.id}, 'desc', this.innerHTML)" onkeydown="handleTab(event)" class="w-full h-64 bg-white dark:bg-[#252525] p-4 rounded-lg border border-slate-200 dark:border-[#2f2f2f] dark:text-slate-300 text-sm mb-8 overflow-y-auto focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 focus:outline-none" style="white-space: pre-wrap;">${task.desc || ''}</div>
                             <div class="space-y-3">
-                                <h3 class="text-xs font-bold text-slate-400 uppercase">Checklist</h3>
+                                <h3 class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase">Checklist</h3>
                                 ${task.todos.map(td => `
-                                    <div class="flex items-center gap-3 p-3 bg-white rounded-lg border border-slate-200 group">
-                                        <input type="checkbox" ${td.done ? 'checked' : ''} onchange="toggleTodo(${p.id}, ${task.id}, ${td.id})">
-                                        <span class="${td.done ? 'line-through text-slate-400' : 'text-slate-700'} text-sm flex-1">${td.text}</span>
-                                        <button class="opacity-0 group-hover:opacity-100 text-red-500" onclick="deleteTodo(${p.id}, ${task.id}, ${td.id})">${trashIcon}</button>
+                                    <div class="flex items-center gap-3 p-3 bg-white dark:bg-[#252525] rounded-lg border border-slate-200 dark:border-[#2f2f2f] group hover:border-blue-200 dark:hover:border-blue-800 transition-all">
+                                        <input type="checkbox" class="w-4 h-4 rounded text-blue-600 dark:bg-slate-700 dark:border-slate-600" ${td.done ? 'checked' : ''} onchange="toggleTodo(${p.id}, ${task.id}, ${td.id})">
+                                        <span contenteditable="true" onblur="data.find(c => c.id == ${p.id}).tasks.find(x => x.id == ${task.id}).todos.find(y => y.id == ${td.id}).text = this.innerText; localStorage.setItem('taskData', JSON.stringify(window.data)); debouncedFirebaseSave();" class="${td.done ? 'line-through text-slate-400 dark:text-slate-600' : 'text-slate-700 dark:text-slate-300'} text-sm flex-1 focus:outline-none">${td.text}</span>
+                                        <button class="opacity-0 group-hover:opacity-100 text-red-500 p-1 hover:bg-red-50 dark:hover:bg-red-900/30 rounded" onclick="deleteTodo(${p.id}, ${task.id}, ${td.id})">${trashIcon}</button>
                                     </div>
                                 `).join('')}
-                                <input type="text" id="todoInput" placeholder="+ เพิ่มรายการย่อย" onkeydown="handleTodoEnter(event, ${p.id}, ${task.id})" class="w-full p-3 bg-white rounded-lg border border-blue-200 focus:outline-blue-400 text-sm">
+                                <input type="text" id="todoInput" placeholder="+ เพิ่มรายการย่อย และกด Enter" onkeydown="handleTodoEnter(event, ${p.id}, ${task.id})" class="w-full p-3 bg-white dark:bg-[#252525] dark:text-slate-200 rounded-lg border border-blue-100 dark:border-blue-900 focus:border-blue-400 dark:focus:border-blue-700 focus:ring-2 focus:ring-blue-50 dark:focus:ring-blue-900/30 focus:outline-none text-sm transition-all">
                             </div>
                         </div>
                     `;
                 }
+            } else {
+                document.getElementById('detailArea').innerHTML = `<div class="flex flex-col items-center justify-center h-full text-slate-400 dark:text-slate-600">
+                    <div class="text-6xl mb-4">📝</div>
+                    <p>เลือกงานเพื่อดูรายละเอียด</p>
+                </div>`;
             }
             if (selectedCatId != 'today' && selectedCatId)
-                new Sortable(document.getElementById('dragArea'), { onEnd: (e) => moveTask(selectedCatId, e.oldIndex, e.newIndex) });
+                new Sortable(document.getElementById('dragArea'), { animation: 150, onEnd: (e) => moveTask(selectedCatId, e.oldIndex, e.newIndex) });
+            
+            new Sortable(document.getElementById('sidebarProjects'), { animation: 150, onEnd: (e) => moveCategory(e.oldIndex, e.newIndex) });
         }
-        async function loadFirebaseData() { const d = await getDoc(doc(db, "users", "myData")); if (d.exists()) { data = d.data().tasks; render(); } }
+        async function loadFirebaseData() { 
+            try {
+                const d = await getDoc(doc(db, "users", "myData")); 
+                if (d.exists()) { 
+                    window.data = d.data().tasks; 
+                    if (!selectedCatId && window.data.length > 0) selectedCatId = window.data[0].id;
+                    render(); 
+                } 
+            } catch (e) { console.error("Firebase load failed:", e); }
+        }
         loadFirebaseData();
     </script>
 </body>
