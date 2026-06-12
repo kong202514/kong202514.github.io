@@ -1,10 +1,10 @@
-  !DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="th">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professional Digital Library - Final Fix</title>
+    <title>Professional Digital Library - Fixed</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -32,6 +32,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            box-sizing: border-box;
         }
 
         .book-grid {
@@ -40,6 +41,7 @@
             gap: 25px;
             width: 100%;
             max-width: 1000px;
+            margin-top: 20px;
         }
 
         .book-item {
@@ -58,7 +60,7 @@
             transform: translateY(-5px);
         }
 
-        /* --- Reader View (The Engine) --- */
+        /* --- Reader View --- */
         #reader-view {
             display: none;
             height: 100vh;
@@ -75,8 +77,7 @@
         .book-viewport {
             position: relative;
             width: 450px;
-            height: 85%;
-            /* ปรับให้พอดีหน้าจอเพื่อการ Scroll */
+            height: 80%;
             perspective: 2000px;
         }
 
@@ -85,20 +86,17 @@
             width: 100%;
             height: 100%;
             display: none;
-            /* ซ่อนทุกหน้าเป็นพื้นฐาน */
             transform-style: preserve-3d;
             transition: transform 0.6s ease-in-out;
             transform-origin: left;
         }
 
-        /* แสดงเฉพาะหน้าที่กำลังอ่าน (Active) */
         .paper.active {
             display: block;
             z-index: 10;
         }
 
-        .front,
-        .back {
+        .front {
             position: absolute;
             width: 100%;
             height: 100%;
@@ -111,7 +109,6 @@
             box-shadow: 10px 10px 20px rgba(0, 0, 0, 0.5);
         }
 
-        /* เนื้อหาที่ลูกกลิ้งเมาส์ต้องทำงาน */
         .content {
             flex: 1;
             padding: 40px;
@@ -119,7 +116,6 @@
             line-height: 1.8;
             color: #1a1a1a;
             overflow-y: auto !important;
-            /* บังคับ Scroll */
             white-space: pre-wrap;
             scrollbar-width: thin;
             scrollbar-color: var(--accent) #eee;
@@ -139,6 +135,7 @@
             padding: 10px;
             background: #eee;
             font-weight: bold;
+            color: #333;
         }
 
         /* Controls */
@@ -165,6 +162,7 @@
             cursor: pointer;
             font-weight: bold;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            transition: 0.2s;
         }
 
         .btn-ui:hover {
@@ -172,7 +170,7 @@
         }
 
         #hl-tool {
-            position: absolute;
+            position: fixed;
             display: none;
             background: #10b981;
             color: white;
@@ -180,10 +178,19 @@
             padding: 10px 20px;
             border-radius: 5px;
             z-index: 10005;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
 
+        #hl-tool:hover {
+            background: #059669;
+        }
+
+        /* คลาสสไตล์สำหรับข้อความที่ถูกไฮไลท์ */
         .highlight {
-            background: rgba(251, 191, 36, 0.5);
+            background: rgba(251, 191, 36, 0.6) !important;
+            display: inline;
         }
     </style>
 </head>
@@ -197,11 +204,10 @@
 
     <div id="reader-view">
         <div class="nav-bar">
-            <button class="btn-ui" onclick="location.reload()">← กลับคลังหนังสือ</button>
+            <button class="btn-ui" onclick="backToLibrary()">← กลับคลังหนังสือ</button>
         </div>
 
-        <div class="book-viewport" id="book-container">
-        </div>
+        <div class="book-viewport" id="book-container"></div>
 
         <div class="footer-controls">
             <button class="btn-ui" onclick="changePage(-1)">⬅️ หน้าก่อนหน้า</button>
@@ -211,7 +217,7 @@
         <button id="hl-tool">🖍️ ไฮไลท์</button>
     </div>
 
-    <script type="module" src="">
+    <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
         import { getFirestore, collection, getDocs, query, orderBy, onSnapshot, where, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
@@ -226,10 +232,12 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        
         let currentPageIdx = 0;
         let pagesData = [];
         let activeBookId = null;
 
+        // ดึงรายชื่อหนังสือที่มีสถานะเป็น published
         onSnapshot(query(collection(db, "my_books"), where("status", "==", "published")), (snap) => {
             const grid = document.getElementById('book-grid');
             grid.innerHTML = '';
@@ -242,6 +250,7 @@
             });
         });
 
+        // เปิดโหมดอ่านหนังสือ
         async function openReader(id) {
             activeBookId = id;
             currentPageIdx = 0;
@@ -255,68 +264,99 @@
             renderPages();
         }
 
+        // แสดงผลหน้ากระดาษ (แก้ไขให้รองรับ HTML tag ของไฮไลท์)
         function renderPages() {
             const container = document.getElementById('book-container');
             container.innerHTML = '';
 
-            // เราจะสร้าง Element หน้ากระดาษทีละหน้า (Single Page System เพื่อการ Scroll)
+            if (pagesData.length === 0) {
+                container.innerHTML = '<div style="color:white; text-align:center; padding-top:50px;">ไม่พบเนื้อหาในหนังสือเล่มนี้</div>';
+                return;
+            }
+
             pagesData.forEach((p, index) => {
                 const div = document.createElement('div');
                 div.className = `paper ${index === currentPageIdx ? 'active' : ''}`;
                 div.id = `page-${index}`;
+                // ใช้การใส่เนื้อหาแบบ HTML เพื่อให้ tag <span> ของไฮไลท์ทำงานได้
                 div.innerHTML = `
-                <div class="front">
-                    <div class="content" data-id="${p.id}">${p.content}</div>
-                    <div class="page-num">หน้า ${index + 1}</div>
-                </div>
-            `;
+                    <div class="front">
+                        <div class="content" data-id="${p.id}" data-index="${index}">${p.content}</div>
+                        <div class="page-num">หน้า ${index + 1}</div>
+                    </div>
+                `;
                 container.appendChild(div);
             });
         }
 
-        window.changePage = (step) => {
+        // ส่งฟังก์ชันไปยัง window scope เพื่อให้ปุ่ม HTML เรียกใช้งานได้
+        window.changePage = function(step) {
             const newIdx = currentPageIdx + step;
             if (newIdx >= 0 && newIdx < pagesData.length) {
-                // ซ่อนหน้าเก่า
                 document.getElementById(`page-${currentPageIdx}`).classList.remove('active');
-                // อัปเดต Index
                 currentPageIdx = newIdx;
-                // แสดงหน้าใหม่
+                
                 const nextElem = document.getElementById(`page-${currentPageIdx}`);
                 nextElem.classList.add('active');
-                // รีเซ็ตตำแหน่ง Scroll ของหน้าใหม่ให้ไปอยู่บนสุด
                 nextElem.querySelector('.content').scrollTop = 0;
             }
         };
 
-        // --- ระบบไฮไลท์ ---
+        window.backToLibrary = function() {
+            document.getElementById('library-view').style.display = 'flex';
+            document.getElementById('reader-view').style.display = 'none';
+            document.getElementById('hl-tool').style.display = 'none';
+        };
+
+        // --- ระบบไฮไลท์ข้อความ ---
         const hlBtn = document.getElementById('hl-tool');
+        
         document.addEventListener('mouseup', (e) => {
             const sel = window.getSelection();
-            if (sel.toString().trim()) {
+            if (sel && sel.toString().trim() && document.getElementById('reader-view').style.display === 'flex') {
                 hlBtn.style.display = 'block';
-                hlBtn.style.left = e.pageX + 'px';
-                hlBtn.style.top = (e.pageY - 60) + 'px';
+                // เปลี่ยนเป็น fixed positioning เพื่อไม่ให้ปุ่มเพี้ยนเวลาเลื่อนหน้าจอ
+                hlBtn.style.left = e.clientX + 'px';
+                hlBtn.style.top = (e.clientY - 50) + 'px';
             } else {
-                setTimeout(() => { if (!window.getSelection().toString()) hlBtn.style.display = 'none'; }, 200);
+                // หน่วงเวลาเล็กน้อยป้องกันปุ่มหายขณะกำลังกดคลิกที่ตัวปุ่มไฮไลท์เอง
+                setTimeout(() => { 
+                    if (!window.getSelection().toString()) hlBtn.style.display = 'none'; 
+                }, 200);
             }
         });
 
         hlBtn.onclick = async () => {
             const sel = window.getSelection();
+            if (!sel.toString().trim()) return;
+
             const range = sel.getRangeAt(0);
             const contentDiv = range.commonAncestorContainer.parentElement.closest('.content');
             if (!contentDiv) return;
 
             const span = document.createElement('span');
             span.className = 'highlight';
+            
             try {
                 range.surroundContents(span);
-                await updateDoc(doc(db, `my_books/${activeBookId}/pages`, contentDiv.dataset.id), {
-                    content: contentDiv.innerHTML
+                const updatedContent = contentDiv.innerHTML;
+                const pageId = contentDiv.dataset.id;
+                const pageIdx = parseInt(contentDiv.dataset.index);
+
+                // อัปเดตข้อมูลใน Local Array เพื่อไม่ให้สลับหน้าแล้วหาย
+                pagesData[pageIdx].content = updatedContent;
+
+                // อัปเดตลง Firestore
+                await updateDoc(doc(db, `my_books/${activeBookId}/pages`, pageId), {
+                    content: updatedContent
                 });
+                
                 hlBtn.style.display = 'none';
-            } catch (e) { alert("ไฮไลท์ผิดพลาด"); }
+                sel.removeAllRanges(); // ล้างแถบสีฟ้าที่เลือกออกหลังไฮไลท์เสร็จ
+            } catch (e) { 
+                alert("ไม่สามารถไฮไลท์พื้นที่นี้ได้ข้ามแท็กอื่น (กรุณาเลือกเฉพาะข้อความธรรมดา)"); 
+                console.error(e);
+            }
         };
     </script>
 </body>
