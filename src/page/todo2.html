@@ -1,4 +1,4 @@
-<html lang="th">
+ <html lang="th">
 <head>
     <meta charset="UTF-8">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -26,8 +26,12 @@
         .trash-btn { opacity: 0; transition: opacity 0.2s; color: #eb5757; cursor: pointer; }
         div:hover > .trash-btn { opacity: 1; }
 
-        input, select, textarea { background-color: transparent !important; border: 1px solid var(--border) !important; color: var(--text-main) !important; border-radius: 4px !important; }
-        input:focus { border-color: var(--accent) !important; outline: none; }
+        .todo-row:focus-within { background-color: rgba(35, 131, 226, 0.05); border-color: var(--accent) !important; }
+        .dark .todo-row:focus-within { background-color: rgba(46, 170, 220, 0.05); border-color: var(--accent) !important; }
+
+        input, select, textarea { background-color: var(--card-bg); border: 1px solid var(--border); color: var(--text-main); border-radius: 4px; }
+        select option { background-color: var(--card-bg); color: var(--text-main); }
+        input:focus, select:focus { border-color: var(--accent); outline: none; }
     </style>
 </head>
 <body>
@@ -152,7 +156,16 @@
                 if (k === 'title' || k === 'isPinned' || k === 'isCompleted') render(); 
             }
         }
-        window.toggleTodo = function (cId, tId, dId) { const t = data.find(c => c.id == cId).tasks.find(x => x.id == tId).todos.find(y => y.id == dId); t.done = !t.done; saveData(); }
+        window.toggleTodo = function (cId, tId, dId) { 
+            const t = data.find(c => c.id == cId)?.tasks.find(x => x.id == tId);
+            if (t) {
+                const todo = t.todos.find(y => y.id == dId);
+                if (todo) {
+                    todo.done = !todo.done;
+                    saveData();
+                }
+            }
+        }
         
         window.handleTodoEnter = function (e, cId, tId) {
             if (e.key == 'Enter' && e.target.value.trim()) {
