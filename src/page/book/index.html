@@ -1,5 +1,4 @@
- !DOCTYPE html>
-<html lang="th">
+ <html lang="th">
 
 <head>
     <meta charset="UTF-8">
@@ -214,30 +213,15 @@
     <script type="module" src="">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
         import { getFirestore, collection, getDocs, query, orderBy, onSnapshot, where, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-      const firebaseConfig = (() => {
-        const _0x4f2a = [
-                "cHJvamVjdC0zNDYzNzM1NzQ2OTAzMDc5NTY4",                             
-                "QUl6YVN5Q1FpWEhQRU1QOHZXVl9NeWZkSVR1R1JrTlp5SFJUSlJj",             
-                "MTo2OTE3NTU2MzQxMjA6d2ViOjQxMDUzNDJlYjdkMDM1ZGNhYzA0ZmQ=",         
-                "cHJvamVjdC0zNDYzNzM1NzQ2OTAzMDc5NTY4LmZpcmViYXNlYXBwLmNvbQ==",      
-                "NjkxNzU1NjM0MTIw",                                                 
-                "cHJvamVjdC0zNDYzNzM1NzQ2OTAzMDc5NTY4LmZpcmViYXNlc3RvcmFnZS5hcHA=" 
-            ], _ = (i) => {
-                try {
-                    return atob(_0x4f2a[i]);
-                } catch (e) {
-            return _0x4f2a[i].split('').reverse().join('');
-                }
-            };
-            return {
-                apiKey: _(1),          
-                authDomain: _(3),      
-                projectId: _(0),      
-                storageBucket: _(5),  
-                messagingSenderId: _(4),
-                appId: _(2)           
-            };
-        })();
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCQiXHPEMP8vWV_MyfdITuGRkNZyHRTJRc",
+            authDomain: "project-3463735746903079568.firebaseapp.com",
+            projectId: "project-3463735746903079568",
+            storageBucket: "project-3463735746903079568.firebasestorage.app",
+            messagingSenderId: "691755634120",
+            appId: "1:691755634120:web:4105342eb7d035dcac04fd"
+        };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
