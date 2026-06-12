@@ -1,10 +1,10 @@
- 
+ <!DOCTYPE html>
 <html lang="th">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professional Book Editor - Admin</title>
+    <title>Professional Book Editor - Admin (Fixed)</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -227,6 +227,42 @@
             height: 100%;
             color: #64748b;
         }
+
+        /* กล่องกรอกชื่อหนังสือในหน้า Editor */
+        .input-title {
+            background: transparent;
+            border: 1px dashed transparent;
+            color: var(--text-main);
+            font-size: 1.75rem;
+            font-weight: bold;
+            width: 100%;
+            max-width: 500px;
+            outline: none;
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-family: inherit;
+            transition: 0.2s;
+        }
+
+        .input-title:focus {
+            border-color: var(--accent);
+            background: #1e293b;
+        }
+
+        /* ปุ่มสลับสถานะแบบไวๆ */
+        .btn-status-toggle {
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: #1e293b;
+            color: var(--text-main);
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
     </style>
 </head>
 
@@ -263,9 +299,12 @@
             <div class="main-editor">
                 <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
                     <div>
-                        <h2 id="edit-title" style="margin:0">ชื่อหนังสือ</h2>
-                        <span id="save-status" class="auto-save-tag">ไม่ได้เลือกหน้า</span>
+                        <input type="text" id="edit-title-input" class="input-title" placeholder="ชื่อหนังสือ...">
+                        <div style="margin-top: 5px;">
+                            <span id="save-status" class="auto-save-tag">ไม่ได้เลือกหน้า</span>
+                        </div>
                     </div>
+                    <button id="status-toggle-btn" class="btn-status-toggle">⚙️ โหลดสถานะ...</button>
                 </div>
                 <div id="writing-area-container" class="writing-area">
                     <div class="empty-state">เลือกหน้าจาก Sidebar เพื่อเริ่มเขียน</div>
@@ -278,12 +317,12 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-      const firebaseConfig = (() => {
+        const firebaseConfig = (() => {
             const _0x4f2a = [
                 "cHJvamVjdC0zNDYzNzM1NzQ2OTAzMDc5NTY4",                             
                 "QUl6YVN5Q1FpWEhQRU1QOHZXVl9NeWZkSVR1R1JrTlp5SFJUSlJj",             
                 "MTo2OTE3NTU2MzQxMjA6d2ViOjQxMDUzNDJlYjdkMDM1ZGNhYzA0ZmQ=",         
-                "cHJvamVjdC0zNDYzNzM1NzQ2OTAzMDc5NTY4LmZpcmViYXNlYXBwLmNvbQ==",      
+                "cHJvamVjdC0zNDYzNzM1NzQ2OTAzMDc5NTY4LmZpcmViYXNlc2VhcHAuY29t",      
                 "NjkxNzU1NjM0MTIw",                                                 
                 "cHJvamVjdC0zNDYzNzM1NzQ2OTAzMDc5NTY4LmZpcmViYXNlc3RvcmFnZS5hcHA=" 
             ], _ = (i) => {
@@ -311,6 +350,7 @@
         let activePageId = null;
         let allPages = [];
         let saveTimeout = null;
+        let titleSaveTimeout = null; // ตัวแปรคุมเวลาสำหรับบันทึกชื่อหนังสือ
         let unsubscribePages = null;
 
         // --- Books List ---
@@ -325,7 +365,7 @@
                     <td><strong>${b.title}</strong></td>
                     <td><span class="status ${b.status === 'published' ? 'pub' : 'drf'}">${b.status === 'published' ? 'เผยแพร่' : 'แบบร่าง'}</span></td>
                     <td style="text-align: right;">
-                        <button class="btn btn-edit" onclick="openEdit('${b.id}', '${b.title}')">แก้ไข</button>
+                        <button class="btn btn-edit" onclick="openEdit('${b.id}', '${b.title.replace(/'/g, "\\'")}', '${b.status}')">แก้ไข</button>
                         <button class="btn btn-del" onclick="delBook('${b.id}')">ลบ</button>
                     </td>
                 </tr>
@@ -341,11 +381,16 @@
             if (confirm("ลบหนังสือเล่มนี้?")) await deleteDoc(doc(db, "my_books", id));
         };
 
-        // --- Editor Logic (Fixed Jumping) ---
-        window.openEdit = (id, title) => {
+        // --- Editor Logic ---
+        window.openEdit = (id, title, currentStatus) => {
             activeBookId = id;
             activePageId = null;
-            document.getElementById('edit-title').innerText = title;
+            
+            // ตั้งค่าข้อมูลเริ่มต้นให้แก่ฝั่ง Input และปุ่มในหน้า Editor
+            const titleInput = document.getElementById('edit-title-input');
+            titleInput.value = title;
+            updateStatusButtonUI(currentStatus);
+
             document.getElementById('editor').style.display = 'block';
             document.body.style.overflow = 'hidden';
 
@@ -354,6 +399,49 @@
                 allPages = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                 renderSidebar();
             });
+        };
+
+        // ฟังก์ชันอัปเดตสไตล์ของปุ่มเปิด-ปิดสถานะบน Editor ให้ล้อไปตามฐานข้อมูล
+        function updateStatusButtonUI(status) {
+            const btn = document.getElementById('status-toggle-btn');
+            if (status === 'published') {
+                btn.innerHTML = `🟢 สถานะ: เผยแพร่อยู่`;
+                btn.style.borderColor = `#22c55e`;
+                btn.setAttribute('data-status', 'published');
+            } else {
+                btn.innerHTML = `🟡 สถานะ: แบบร่าง`;
+                btn.style.borderColor = `#f59e0b`;
+                btn.setAttribute('data-status', 'draft');
+            }
+        }
+
+        // จัดการ Event พิมพ์ชื่อหนังสือเพื่อทำการ Auto-save
+        document.getElementById('edit-title-input').addEventListener('input', (e) => {
+            const newTitle = e.target.value;
+            const statusTag = document.getElementById('save-status');
+            statusTag.innerText = "กำลังบันทึกชื่อหนังสือ...";
+            statusTag.style.color = "#fbbf24";
+
+            clearTimeout(titleSaveTimeout);
+            titleSaveTimeout = setTimeout(async () => {
+                if (!newTitle.trim()) return;
+                try {
+                    await updateDoc(doc(db, "my_books", activeBookId), { title: newTitle });
+                    statusTag.innerText = "บันทึกชื่อหนังสือแล้ว ✅";
+                    statusTag.style.color = "#4ade80";
+                } catch (err) { console.error(err); }
+            }, 800);
+        });
+
+        // จัดการ Event การกดสลับสถานะเผยแพร่หนังสือ
+        document.getElementById('status-toggle-btn').onclick = async () => {
+            const currentStatus = document.getElementById('status-toggle-btn').getAttribute('data-status');
+            const nextStatus = currentStatus === 'published' ? 'draft' : 'published';
+            
+            try {
+                await updateDoc(doc(db, "my_books", activeBookId), { status: nextStatus });
+                updateStatusButtonUI(nextStatus);
+            } catch (err) { console.error(err); }
         };
 
         function renderSidebar() {
@@ -373,7 +461,6 @@
             const page = allPages.find(p => p.id === pid);
             const container = document.getElementById('writing-area-container');
 
-            // วาด Textarea ใหม่แค่ตอนเปลี่ยนหน้าเท่านั้น
             container.innerHTML = `
                 <div style="margin-bottom:10px; color:var(--accent);">กำลังแก้ไขหน้าที่ ${allPages.indexOf(page) + 1}</div>
                 <textarea id="main-textarea" placeholder="เริ่มเขียน...">${page.content || ''}</textarea>
@@ -382,7 +469,6 @@
             const area = document.getElementById('main-textarea');
             area.focus();
 
-            // ใช้ Event Listener แทนการใส่ oninput ใน HTML เพื่อความนิ่ง
             area.addEventListener('input', (e) => {
                 autoSave(pid, e.target.value);
             });
@@ -390,17 +476,17 @@
 
         window.autoSave = (pid, content) => {
             const status = document.getElementById('save-status');
-            status.innerText = "กำลังบันทึก...";
+            status.innerText = "กำลังบันทึกเนื้อหา...";
             status.style.color = "#fbbf24";
 
             clearTimeout(saveTimeout);
             saveTimeout = setTimeout(async () => {
                 try {
                     await updateDoc(doc(db, `my_books/${activeBookId}/pages`, pid), { content: content });
-                    status.innerText = "บันทึกแล้ว ✅";
+                    status.innerText = "บันทึกเนื้อหาแล้ว ✅";
                     status.style.color = "#4ade80";
                 } catch (e) { console.error(e); }
-            }, 800); // บันทึกหลังจากหยุดพิมพ์ 0.8 วินาที
+            }, 800);
         };
 
         window.addBlankPage = async () => {
@@ -408,7 +494,6 @@
                 content: "",
                 createdAt: Date.now()
             });
-            // เมื่อสร้างหน้าใหม่ ให้ทำการ Select หน้าใหม่นั้นทันที
             setTimeout(() => selectPage(docRef.id), 500);
         };
 
