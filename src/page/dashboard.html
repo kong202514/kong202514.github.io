@@ -1,149 +1,201 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TaskFlow Analytics</title>
+    <title>Dashboard - Minimalist</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = { darkMode: 'class' }
-    </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         
         :root { 
-            --bg-page: #f8fafc; 
-            --card-bg: #ffffff; 
-            --text-title: #0f172a; 
-            --text-body: #475569; 
-            --accent-blue: #3b82f6; 
-            --border: #e2e8f0; 
+            --bg-app: #f9fafb;
+            --bg-card: #ffffff;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --border: #e5e7eb;
+            --accent: #2383e2;
         }
+        
         body.dark { 
-            --bg-page: #020617; 
-            --card-bg: #0f172a; 
-            --text-title: #f1f5f9; 
-            --text-body: #94a3b8; 
-            --border: #1e293b; 
+            --bg-app: #111827;
+            --bg-card: #1f2937;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --border: #374151;
+            --accent: #2eaadc;
         }
         
         body { 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-            background-color: var(--bg-page); 
-            color: var(--text-body); 
-            transition: background-color 0.3s ease; 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg-app); 
+            color: var(--text-primary); 
+            transition: all 0.2s; 
         }
-        
-        .glass-card { 
-            background: var(--card-bg); 
-            border: 1px solid var(--border); 
-            border-radius: 24px; 
-            padding: 1.5rem; 
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.02), 0 2px 4px -2px rgb(0 0 0 / 0.02);
+
+        .stat-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .glass-card:hover { 
-            transform: translateY(-4px); 
-            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.05), 0 8px 10px -6px rgb(0 0 0 / 0.05);
-            border-color: var(--accent-blue);
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
-        
-        .stat-icon {
-            width: 44px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.25rem;
+
+        .progress-bar { height: 8px; border-radius: 10px; background-color: var(--border); overflow: hidden; }
+        .progress-fill { 
+            height: 100%; border-radius: 10px; 
+            background-color: var(--accent);
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); 
         }
-        
-        .progress-bar { height: 6px; border-radius: 10px; background: #f1f5f9; overflow: hidden; }
-        .dark .progress-bar { background: #1e293b; }
-        .progress-fill { height: 100%; border-radius: 10px; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); }
-        
-        canvas { filter: drop-shadow(0 10px 8px rgb(0 0 0 / 0.02)); }
+
+        select {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 36px 8px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        select:hover { border-color: var(--accent); }
+
+        .btn-tab {
+            padding: 8px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: all 0.2s;
+            color: var(--text-secondary);
+        }
+        .btn-tab.active {
+            background-color: var(--accent);
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .badge {
+            padding: 2px 8px;
+            border-radius: 9999px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .badge-high { background-color: #fee2e2; color: #ef4444; }
+        .badge-med { background-color: #ffedd5; color: #f59e0b; }
+        .badge-low { background-color: #dcfce7; color: #10b981; }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
     </style>
 </head>
 <body class="p-6 md:p-12">
-    <div class="max-w-6xl mx-auto">
+    <div class="max-w-7xl mx-auto">
         <!-- Header -->
-        <header class="flex flex-col lg:flex-row justify-between items-start lg:items-end mb-12 gap-8">
-            <div class="flex-1">
-                <h1 class="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">Workspace <span class="text-blue-600">Analytics</span></h1>
-                <p class="text-slate-500 dark:text-slate-400 mt-1 font-medium">Real-time performance metrics</p>
-                
-                <div class="mt-8 flex flex-wrap gap-4">
-                    <div class="flex flex-col gap-1.5">
-                        <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Filter by Project</label>
-                        <select id="projectFilter" onchange="window.currentFilter = this.value; renderDashboard();" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-500/20">
-                            <option value="all">All Projects</option>
-                        </select>
-                    </div>
-                    <div class="flex flex-col gap-1.5">
-                        <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Show Status</label>
-                        <div class="flex bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-1">
-                            <button onclick="window.statusFilter = 'active'; renderDashboard();" id="btnActive" class="px-4 py-1 text-xs font-bold rounded-lg transition-all">Active</button>
-                            <button onclick="window.statusFilter = 'completed'; renderDashboard();" id="btnDone" class="px-4 py-1 text-xs font-bold rounded-lg transition-all text-slate-400">Done</button>
-                        </div>
-                    </div>
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
+            <div>
+                <div class="flex items-center gap-3 mb-1">
+                    <h1 class="text-4xl font-black tracking-tight">Analytics</h1>
+                    <span id="syncBadge" class="px-2 py-0.5 bg-emerald-100 text-emerald-600 text-[10px] font-bold rounded-full">LIVE</span>
                 </div>
+                <p class="text-[var(--text-secondary)] font-medium">Tracking your productivity across all projects</p>
             </div>
             
-            <div class="flex items-center gap-3">
-                <button onclick="window.location.href='todo2.html'" class="flex items-center gap-2 px-6 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-                    Back
+            <div class="flex items-center gap-4">
+                <button onclick="window.location.href='todo2.html'" class="px-6 py-2.5 bg-white dark:bg-gray-800 border border-[var(--border)] rounded-xl text-sm font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-all shadow-sm flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                    Back to Tasks
                 </button>
-                <button onclick="toggleDarkMode()" id="themeToggle" class="p-4 bg-slate-900 dark:bg-blue-600 text-white rounded-2xl shadow-xl hover:scale-105 active:scale-95 transition-all">
+                <button onclick="toggleDarkMode()" id="themeToggle" class="p-3 bg-white dark:bg-gray-800 border border-[var(--border)] rounded-xl shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
                     🌙
                 </button>
             </div>
         </header>
 
-        <!-- Stats Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12" id="statsCards">
-            <!-- Stats cards will be injected here -->
+        <!-- Filters -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+            <div class="flex flex-wrap gap-3">
+                <select id="projectFilter" onchange="window.currentFilter = this.value; renderDashboard();">
+                    <option value="all">All Projects</option>
+                </select>
+                <div class="flex bg-white dark:bg-gray-800 border border-[var(--border)] p-1.5 rounded-xl shadow-sm">
+                    <button onclick="window.statusFilter = 'active'; renderDashboard();" id="btnActive" class="btn-tab active">Active</button>
+                    <button onclick="window.statusFilter = 'completed'; renderDashboard();" id="btnDone" class="btn-tab">Completed</button>
+                </div>
+            </div>
+            <div id="lastUpdate" class="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-widest">
+                Last updated: Just now
+            </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-            <!-- Main Chart -->
-            <div class="lg:col-span-2 glass-card overflow-hidden">
-                <div class="flex justify-between items-center mb-10">
-                    <div>
-                        <h3 class="text-xl font-bold text-slate-900 dark:text-white">Productivity Trends</h3>
-                        <p class="text-sm text-slate-400 font-medium">Completion success rate</p>
+        <!-- Stats -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10" id="statsCards"></div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+            <div class="lg:col-span-2 stat-card">
+                <div class="flex justify-between items-center mb-8">
+                    <h3 class="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Project Comparison</h3>
+                    <div class="flex gap-2">
+                        <span class="flex items-center gap-1.5 text-[10px] font-bold text-[var(--text-secondary)]">
+                            <span class="w-2 h-2 rounded-full bg-[var(--accent)]"></span> Completion %
+                        </span>
                     </div>
                 </div>
-                <div class="h-[300px]">
+                <div class="h-[320px]">
                     <canvas id="statusChart"></canvas>
                 </div>
             </div>
             
-            <!-- Side Chart -->
-            <div class="glass-card">
-                <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-2">Priority</h3>
-                <p class="text-sm text-slate-400 font-medium mb-10">Task weight distribution</p>
-                <div class="h-[260px]">
+            <div class="stat-card">
+                <h3 class="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-8">Task Distribution</h3>
+                <div class="h-[280px] flex flex-col items-center justify-center">
                     <canvas id="priorityChart"></canvas>
                 </div>
             </div>
         </div>
 
-        <!-- Projects Table -->
-        <div class="glass-card p-0 overflow-hidden">
-            <div class="p-8 border-b border-slate-50 dark:border-slate-900/50 flex justify-between items-center bg-slate-50/30 dark:bg-slate-900/10">
-                <h3 class="text-xl font-bold text-slate-900 dark:text-white">Active Projects</h3>
-                <span class="px-4 py-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-xl text-xs font-black text-blue-700 dark:text-blue-400" id="projCount">0 TOTAL</span>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+            <!-- Project Table -->
+            <div class="stat-card p-0 overflow-hidden flex flex-col">
+                <div class="p-6 border-b border-[var(--border)] flex justify-between items-center">
+                    <h3 class="font-bold">Project Progress</h3>
+                    <span id="projectCount" class="text-xs font-bold px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-md">0 Projects</span>
+                </div>
+                <div class="overflow-x-auto flex-1">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest bg-gray-50/50 dark:bg-gray-800/30 border-b border-[var(--border)]">
+                                <th class="px-6 py-4">Project</th>
+                                <th class="px-6 py-4">Tasks</th>
+                                <th class="px-6 py-4">Progress</th>
+                            </tr>
+                        </thead>
+                        <tbody id="projectTableBody" class="divide-y divide-[var(--border)]"></tbody>
+                    </table>
+                </div>
             </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left">
-                    <thead>
-                        <tr class="text-[10px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-[0.2em] bg-slate-50/50 dark:bg-slate-900/20">
-                            <th class="px-10 py-5">Project Name</th>
-                            <th class="px-10 py-5">Workload</th>
-                            <th class="px-10 py-5">Progress</th>
-                        </tr>
-                    </thead>
-                    <tbody id="projectTableBody" class="divide-y divide-slate-50 dark:divide-slate-900/50">
-                        <!-- Project rows will be injected here -->
-                    </tbody>
-                </table>
+
+            <!-- Urgent Tasks -->
+            <div class="stat-card p-0 overflow-hidden flex flex-col">
+                <div class="p-6 border-b border-[var(--border)] flex justify-between items-center">
+                    <h3 class="font-bold">Urgent & High Priority</h3>
+                    <span class="text-[10px] font-black text-red-500 uppercase">Attention Required</span>
+                </div>
+                <div class="p-2 space-y-1 overflow-y-auto max-h-[400px]" id="urgentTaskList">
+                    <!-- Urgent tasks will be injected here -->
+                </div>
             </div>
         </div>
     </div>
@@ -165,6 +217,7 @@
         const db = getFirestore(app);
 
         window.data = JSON.parse(localStorage.getItem('taskData')) || [];
+        const charts = { status: null, priority: null };
 
         window.toggleDarkMode = function() {
             document.body.classList.toggle('dark');
@@ -173,12 +226,12 @@
             document.getElementById('themeToggle').innerText = isDark ? '☀️' : '🌙';
             renderDashboard();
         }
-        if (localStorage.getItem('darkMode') === 'true') {
-            document.body.classList.add('dark');
-            setTimeout(() => { if(document.getElementById('themeToggle')) document.getElementById('themeToggle').innerText = '☀️'; }, 100);
-        }
 
         async function init() {
+            if (localStorage.getItem('darkMode') === 'true') {
+                document.body.classList.add('dark');
+                if(document.getElementById('themeToggle')) document.getElementById('themeToggle').innerText = '☀️';
+            }
             renderDashboard();
             try {
                 const d = await getDoc(doc(db, "users", "myData"));
@@ -187,7 +240,7 @@
                     localStorage.setItem('taskData', JSON.stringify(window.data));
                     renderDashboard();
                 }
-            } catch (e) { console.error("Sync failed:", e); }
+            } catch (e) { console.error(e); }
         }
 
         window.currentFilter = "all";
@@ -195,151 +248,199 @@
 
         function renderDashboard() {
             const isDark = document.body.classList.contains('dark');
-            
-            // Update filter buttons UI
-            document.getElementById('btnActive').className = `px-4 py-1 text-xs font-bold rounded-lg transition-all ${statusFilter === 'active' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400'}`;
-            document.getElementById('btnDone').className = `px-4 py-1 text-xs font-bold rounded-lg transition-all ${statusFilter === 'completed' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400'}`;
+            document.getElementById('btnActive').className = `btn-tab ${statusFilter === 'active' ? 'active' : ''}`;
+            document.getElementById('btnDone').className = `btn-tab ${statusFilter === 'completed' ? 'active' : ''}`;
+            document.getElementById('lastUpdate').innerText = `Updated: ${new Date().toLocaleTimeString()}`;
 
-            // Populate Project Dropdown if empty
             const select = document.getElementById('projectFilter');
-            if (select.options.length <= 1) {
+            if (select) {
+                const val = select.value;
+                select.innerHTML = '<option value="all">All Projects</option>';
                 data.forEach(p => {
                     const opt = document.createElement('option');
-                    opt.value = p.id;
-                    opt.innerText = p.name;
+                    opt.value = p.id; opt.innerText = p.name;
+                    if (p.id == val) opt.selected = true;
                     select.appendChild(opt);
                 });
             }
-
-            // Filter data
-            let filteredData = data.filter(p => {
-                const matchesStatus = statusFilter === 'active' ? !p.isCompleted : p.isCompleted;
-                const matchesProject = currentFilter === 'all' || p.id == currentFilter;
-                return matchesStatus && (currentFilter === 'all' ? true : matchesProject);
-            });
-
-            // If "All Projects" but specific status, we just filter the projects list
-            // but for "all" view, we might want to see stats across all active or all completed.
-
-            let totalTasks = 0, completedTasks = 0;
-            let priorityCount = { high: 0, medium: 0, low: 0, none: 0 };
             
-            filteredData.forEach(p => {
+            let statsData = (currentFilter === 'all') ? data : [data.find(p => p.id == currentFilter)].filter(Boolean);
+            let totalTasks = 0, completedTasksProgress = 0;
+            let pCounts = { high: 0, medium: 0, low: 0, none: 0 };
+            let urgentTasks = [];
+            
+            statsData.forEach(p => {
                 p.tasks.forEach(t => {
                     totalTasks++;
-                    if (t.isCompleted) completedTasks++;
-                    priorityCount[t.priority || 'none']++;
+                    pCounts[t.priority || 'none']++;
+                    
+                    let taskProgress = 0;
+                    if (t.isCompleted) taskProgress = 1;
+                    else if (t.todos?.length) taskProgress = (t.todos.filter(x => x.done).length / t.todos.length);
+                    
+                    completedTasksProgress += taskProgress;
+
+                    // Urgent logic: High priority AND not completed
+                    if ((t.priority === 'high' || t.priority === 'medium') && !t.isCompleted) {
+                        urgentTasks.push({ ...t, projectName: p.name });
+                    }
                 });
             });
 
-            const pendingTasks = totalTasks - completedTasks;
-            const completionRate = totalTasks ? Math.round((completedTasks / totalTasks) * 100) : 0;
-            document.getElementById('projCount').innerText = `${filteredData.length} PROJECTS`;
+            const rate = totalTasks ? Math.round((completedTasksProgress / totalTasks) * 100) : 0;
+            let tableData = data.filter(p => {
+                const mStatus = statusFilter === 'active' ? !p.isCompleted : p.isCompleted;
+                const mProj = currentFilter === 'all' || p.id == currentFilter;
+                return mStatus && mProj;
+            });
 
-            const icons = {
-                tasks: `<svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>`,
-                done: `<svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
-                pending: `<svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
-                rate: `<svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>`
-            };
+            document.getElementById('projectCount').innerText = `${tableData.length} Projects`;
+
+            const accentColor = isDark ? '#2eaadc' : '#2383e2';
 
             document.getElementById('statsCards').innerHTML = `
-                <div class="glass-card">
-                    <div class="stat-icon bg-blue-500/10">${icons.tasks}</div>
-                    <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest">Total Tasks</p>
-                    <p class="text-3xl font-black mt-1 text-slate-900 dark:text-white">${totalTasks}</p>
+                <div class="stat-card">
+                    <p class="text-[10px] font-black text-[var(--text-secondary)] uppercase tracking-widest mb-2">Total Workload</p>
+                    <div class="flex items-end gap-2">
+                        <p class="text-4xl font-black">${totalTasks}</p>
+                        <p class="text-xs font-bold text-[var(--text-secondary)] mb-1.5">Tasks</p>
+                    </div>
                 </div>
-                <div class="glass-card">
-                    <div class="stat-icon bg-emerald-500/10">${icons.done}</div>
-                    <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest">Success</p>
-                    <p class="text-3xl font-black mt-1 text-emerald-600">${completedTasks}</p>
+                <div class="stat-card">
+                    <p class="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-2">Completion</p>
+                    <div class="flex items-end gap-2">
+                        <p class="text-4xl font-black text-emerald-500">${Math.floor(completedTasksProgress)}</p>
+                        <p class="text-xs font-bold text-emerald-400 mb-1.5">Tasks</p>
+                    </div>
                 </div>
-                <div class="glass-card">
-                    <div class="stat-icon bg-orange-500/10">${icons.pending}</div>
-                    <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest">Pending</p>
-                    <p class="text-3xl font-black mt-1 text-orange-600">${pendingTasks}</p>
+                <div class="stat-card">
+                    <p class="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-2">Pending</p>
+                    <div class="flex items-end gap-2">
+                        <p class="text-4xl font-black text-orange-500">${totalTasks - Math.floor(completedTasksProgress)}</p>
+                        <p class="text-xs font-bold text-orange-400 mb-1.5">Tasks</p>
+                    </div>
                 </div>
-                <div class="glass-card">
-                    <div class="stat-icon bg-purple-500/10">${icons.rate}</div>
-                    <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest">Score</p>
-                    <p class="text-3xl font-black mt-1 text-purple-600">${completionRate}%</p>
+                <div class="stat-card">
+                    <p class="text-[10px] font-black text-[var(--accent)] uppercase tracking-widest mb-2">Success Rate</p>
+                    <div class="flex items-end gap-2">
+                        <p class="text-4xl font-black text-[var(--accent)]">${rate}%</p>
+                        <div class="mb-2 w-16 progress-bar h-1.5"><div class="progress-fill" style="width: ${rate}%"></div></div>
+                    </div>
                 </div>
             `;
 
+            // Chart 1: Project Comparison (Bar chart instead of line)
             if (charts.status) charts.status.destroy();
-            if (charts.priority) charts.priority.destroy();
+            
+            const projectLabels = tableData.slice(0, 7).map(p => p.name);
+            const projectRates = tableData.slice(0, 7).map(p => {
+                const pTotal = p.tasks.length;
+                let pWeighted = 0;
+                p.tasks.forEach(t => {
+                    if (t.isCompleted) pWeighted += 1;
+                    else if (t.todos?.length) pWeighted += (t.todos.filter(x => x.done).length / t.todos.length);
+                });
+                return pTotal ? Math.round((pWeighted / pTotal) * 100) : 0;
+            });
 
             charts.status = new Chart(document.getElementById('statusChart'), {
-                type: 'line',
+                type: 'bar',
                 data: {
-                    labels: ['Start', 'Quarter', 'Half', 'Target'],
+                    labels: projectLabels.length ? projectLabels : ['No Projects'],
                     datasets: [{
-                        data: [0, completionRate * 0.4, completionRate * 0.7, completionRate],
-                        borderColor: '#3b82f6',
-                        backgroundColor: (ctx) => {
-                            const canvas = ctx.chart.ctx;
-                            const gradient = canvas.createLinearGradient(0, 0, 0, 400);
-                            gradient.addColorStop(0, 'rgba(59, 130, 246, 0.2)');
-                            gradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
-                            return gradient;
-                        },
-                        fill: true, tension: 0.5, borderWidth: 6, pointRadius: 0
+                        data: projectRates.length ? projectRates : [0],
+                        backgroundColor: accentColor,
+                        borderRadius: 8,
+                        barThickness: 24
                     }]
                 },
                 options: { 
+                    indexAxis: 'y',
                     plugins: { legend: { display: false } }, 
                     maintainAspectRatio: false,
                     scales: { 
-                        y: { min: 0, max: 100, grid: { color: isDark ? '#1e293b' : '#f1f5f9' }, ticks: { font: { weight: 700 }, color: '#94a3b8' } },
-                        x: { grid: { display: false }, ticks: { font: { weight: 800 }, color: isDark ? '#94a3b8' : '#64748b' } }
+                        x: { min: 0, max: 100, grid: { color: isDark ? '#374151' : '#f3f4f6' }, ticks: { font: { weight: 600, size: 10 } } },
+                        y: { grid: { display: false }, ticks: { font: { weight: 700, size: 11 }, color: isDark ? '#f9fafb' : '#111827' } }
                     } 
                 }
             });
 
+            // Chart 2: Priority Distribution
+            if (charts.priority) charts.priority.destroy();
             charts.priority = new Chart(document.getElementById('priorityChart'), {
                 type: 'doughnut',
                 data: {
-                    labels: ['High', 'Med', 'Low'],
+                    labels: ['High', 'Medium', 'Low'],
                     datasets: [{
-                        data: [priorityCount.high, priorityCount.medium, priorityCount.low],
-                        backgroundColor: ['#ef4444', '#f59e0b', '#10b981'],
-                        borderWidth: 0, weight: 1, spacing: 10, borderRadius: 10
+                        data: [pCounts.high, pCounts.medium, pCounts.low],
+                        backgroundColor: [ '#ef4444', '#f59e0b', '#10b981' ],
+                        borderWidth: 0,
+                        hoverOffset: 10
                     }]
                 },
-                options: { cutout: '80%', plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 30, font: { weight: 700, size: 12 }, color: isDark ? '#94a3b8' : '#475569' } } }, maintainAspectRatio: false }
+                options: { 
+                    cutout: '80%', 
+                    plugins: { 
+                        legend: { 
+                            position: 'bottom', 
+                            labels: { usePointStyle: true, padding: 25, font: { weight: 700, size: 12 }, color: isDark ? '#9ca3af' : '#6b7280' } 
+                        } 
+                    }, 
+                    maintainAspectRatio: false 
+                }
             });
 
-            document.getElementById('projectTableBody').innerHTML = filteredData.map(p => {
+            // Project Table Rendering
+            document.getElementById('projectTableBody').innerHTML = tableData.length ? tableData.map(p => {
                 const pTotal = p.tasks.length;
-                const pDone = p.tasks.filter(t => t.isCompleted).length;
-                const pRate = pTotal ? Math.round((pDone / pTotal) * 100) : 0;
+                let pWeighted = 0;
+                if (p.isCompleted) pWeighted = pTotal;
+                else p.tasks.forEach(t => {
+                    if (t.isCompleted) pWeighted += 1;
+                    else if (t.todos?.length) pWeighted += (t.todos.filter(x => x.done).length / t.todos.length);
+                });
+                const rate = pTotal ? Math.round((pWeighted / pTotal) * 100) : (p.isCompleted ? 100 : 0);
                 return `
-                    <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-900/40 transition-all group">
-                        <td class="px-10 py-6">
-                            <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 rounded-2xl bg-blue-600/10 flex items-center justify-center font-black text-blue-600 text-lg">
-                                    ${p.name.charAt(0).toUpperCase()}
-                                </div>
-                                <div>
-                                    <p class="font-bold text-slate-900 dark:text-white group-hover:text-blue-600 transition-colors">${p.name}</p>
-                                    <p class="text-[10px] ${p.isCompleted ? 'text-emerald-500' : 'text-slate-400'} font-black uppercase tracking-widest mt-0.5">${p.isCompleted ? '✓ Completed' : 'Active Project'}</p>
-                                </div>
-                            </div>
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all group">
+                        <td class="px-6 py-4">
+                            <p class="font-bold text-sm group-hover:text-[var(--accent)] transition-colors">${p.name}</p>
+                            <p class="text-[9px] text-[var(--text-secondary)] uppercase font-black mt-0.5 tracking-tighter">${p.isCompleted ? '✓ Completed' : '• In Progress'}</p>
                         </td>
-                        <td class="px-10 py-6 text-slate-500 dark:text-slate-400 text-sm font-bold">${pTotal} Tasks</td>
-                        <td class="px-10 py-6 min-w-[280px]">
-                            <div class="flex items-center gap-6">
-                                <div class="flex-1 progress-bar">
-                                    <div class="progress-fill ${p.isCompleted ? 'bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.4)]' : 'bg-blue-600 shadow-[0_0_15px_rgba(59,130,246,0.4)]'}" style="width: ${pRate}%"></div>
-                                </div>
-                                <span class="text-sm font-black text-slate-900 dark:text-slate-200 w-12">${pRate}%</span>
+                        <td class="px-6 py-4 text-xs font-bold text-[var(--text-secondary)]">${pTotal} Tasks</td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <div class="flex-1 progress-bar h-1.5"><div class="progress-fill" style="width: ${rate}%"></div></div>
+                                <span class="text-[10px] font-black w-8">${rate}%</span>
                             </div>
                         </td>
                     </tr>
                 `;
-            }).join('');
-        }
+            }).join('') : `<tr><td colspan="3" class="p-12 text-center text-slate-400 font-medium">No projects found for this filter</td></tr>`;
 
+            // Urgent Tasks Rendering
+            const urgentList = document.getElementById('urgentTaskList');
+            if (urgentTasks.length) {
+                urgentList.innerHTML = urgentTasks.slice(0, 10).map(t => `
+                    <div class="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/40 rounded-xl transition-all border border-transparent hover:border-[var(--border)]">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="badge ${t.priority === 'high' ? 'badge-high' : 'badge-med'}">${t.priority}</span>
+                            <span class="text-[9px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">${t.projectName}</span>
+                        </div>
+                        <h4 class="text-sm font-bold mb-1">${t.title}</h4>
+                        <div class="flex items-center gap-2 text-[10px] font-bold text-slate-400">
+                            <span>📅 ${t.deadline || 'No deadline'}</span>
+                            <span>•</span>
+                            <span>${t.todos?.length || 0} Subtasks</span>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                urgentList.innerHTML = `<div class="p-12 text-center text-slate-400 font-medium flex flex-col items-center gap-2">
+                    <span class="text-2xl">✨</span>
+                    <p>All high-priority tasks are clear!</p>
+                </div>`;
+            }
+        }
         init();
     </script>
 </body>
