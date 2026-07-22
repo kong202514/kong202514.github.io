@@ -361,23 +361,24 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-      const firebaseConfig = {
-    apiKey: "AIzaSyBfz9eZVukWm8JaarG7FrM9Riq8sds-teU",
-    authDomain: "len-html.firebaseapp.com",
-    databaseURL: "https://len-html-default-rtdb.firebaseio.com",
-    projectId: "len-html",
-    storageBucket: "len-html.firebasestorage.app",
-    messagingSenderId: "128154153096",
-    appId: "1:128154153096:web:39554e3a5b401f05682f3d",
-    measurementId: "G-DY3Q28G20F"
-  };
+        // Exact User-Provided Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBfz9eZVukWm8JaarG7FrM9Riq8sds-teU",
+            authDomain: "len-html.firebaseapp.com",
+            databaseURL: "https://len-html-default-rtdb.firebaseio.com",
+            projectId: "len-html",
+            storageBucket: "len-html.firebasestorage.app",
+            messagingSenderId: "128154153096",
+            appId: "1:128154153096:web:39554e3a5b401f05682f3d",
+            measurementId: "G-DY3Q28G20F"
+        };
 
         let db = null;
         try {
-            const firebaseApp = initializeApp(encodedFirebaseConfig);
+            const firebaseApp = initializeApp(firebaseConfig);
             db = getFirestore(firebaseApp);
         } catch(e) {
-            console.warn("Firebase initialized in Local Memory fallback mode.");
+            console.warn("Firebase initialized in Local Memory fallback mode.", e);
         }
 
         // APP STATE MANAGEMENT
@@ -627,7 +628,6 @@
                 e.preventDefault();
                 hideSlashMenu();
 
-                // If on slash command menu, let it select
                 const newType = (block.type === 'todo' || block.type === 'bullet') ? block.type : 'text';
                 const newBlock = {
                     id: 'b-' + Date.now(),
@@ -673,7 +673,6 @@
                 const el = blocksContainer.querySelector(`[data-index="${index}"] [contenteditable="true"]`);
                 if (el) {
                     el.focus();
-                    // Place cursor at the end
                     const range = document.createRange();
                     const sel = window.getSelection();
                     range.selectNodeContents(el);
@@ -706,7 +705,6 @@
             if (state.activeBlockIndex !== null && activeDoc.blocks[state.activeBlockIndex]) {
                 const block = activeDoc.blocks[state.activeBlockIndex];
                 block.type = type;
-                // Remove trailing slash
                 block.text = block.text.replace(/\/$/, '');
                 saveState();
                 renderBlocks();
@@ -728,7 +726,6 @@
             const counts = { todo: 0, in_progress: 0, completed: 0 };
 
             state.documents.forEach(doc => {
-                // Determine doc status from checklist or default
                 const todoBlocks = doc.blocks.filter(b => b.type === 'todo');
                 const completedBlocks = todoBlocks.filter(b => b.checked);
                 
@@ -776,7 +773,7 @@
 
             state.documents.forEach(doc => {
                 const todoBlocks = doc.blocks.filter(b => b.type === 'todo');
-                todoBlocks.forEach((block, idx) => {
+                todoBlocks.forEach((block) => {
                     totalTasks++;
                     if (block.checked) completedTasks++;
 
