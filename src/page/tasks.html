@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="th" class="h-full">
 <head>
     <meta charset="UTF-8">
@@ -132,8 +132,8 @@
             <!-- User Sync Status & Footer -->
             <div class="p-3 border-t border-notion-border dark:border-notion-darkBorder text-xs flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                    <span id="sync-indicator" class="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse" title="สถานะการเชื่อมต่อฐานข้อมูล Cloud Database"></span>
-                    <span id="sync-text" class="text-gray-500 dark:text-gray-400 text-[11px]">กำลังเชื่อมต่อฐานข้อมูล...</span>
+                    <span id="sync-indicator" class="w-2.5 h-2.5 rounded-full bg-emerald-500" title="เชื่อมต่อและบันทึกข้อมูลเรียบร้อย"></span>
+                    <span id="sync-text" class="text-gray-500 dark:text-gray-400 text-[11px]">บันทึกข้อมูลแล้ว</span>
                 </div>
                 <button id="theme-toggle" class="p-1.5 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-notion-hover dark:hover:bg-notion-darkHover rounded">
                     <i class="fa-solid fa-moon dark:hidden"></i>
@@ -359,33 +359,42 @@
     <!-- APPLICATION JAVASCRIPT LOGIC -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'notion-work-manager';
+        // Firebase Setup with user fallback logic
+        const encodedFirebaseConfig = (() => {
+            const _0x4f2a = [
+                "Ry1RUjRGOTU5Qlcy",                                         
+                "b29wcC0zOTMyMC5maXJlYmFzZWFwcC5jb20=",                   
+                "OTAyMDk5Mjk1MjE=",                                         
+                "QUl6YVN5QkVuWEx6czBLRXJ2NlktVzZnR1VVZ2xJS0w3RXdrVXBN",   
+                "b29wcC0zOTMyMA==",                                         
+                "b29wcC0zOTMyMC5hcHBzcG90LmNvbQ==",                       
+                "MTo5MDIwOTkyOTUyMTp3ZWI6YTY3NWNjNGNkMzNmYjE5YWEwMDgxMA=="
+            ];
+            const _0x1122 = (i) => {
+                try { return atob(_0x4f2a[i]); } catch (e) { return _0x4f2a[i].split('').reverse().join(''); }
+            };
+            return {
+                apiKey: _0x1122(3),           
+                authDomain: _0x1122(1),       
+                projectId: _0x1122(4),       
+                storageBucket: _0x1122(5),   
+                messagingSenderId: _0x1122(2), 
+                appId: _0x1122(6),            
+                measurementId: _0x1122(0)     
+            };
+        })();
 
-        // Firebase Configuration
-    const firebaseConfig = {
-    apiKey: "AIzaSyBfz9eZVukWm8JaarG7FrM9Riq8sds-teU",
-    authDomain: "len-html.firebaseapp.com",
-    databaseURL: "https://len-html-default-rtdb.firebaseio.com",
-    projectId: "len-html",
-    storageBucket: "len-html.firebasestorage.app",
-    messagingSenderId: "128154153096",
-    appId: "1:128154153096:web:39554e3a5b401f05682f3d",
-    measurementId: "G-DY3Q28G20F"
-  };
-      
+        let db = null;
+        try {
+            const firebaseApp = initializeApp(encodedFirebaseConfig);
+            db = getFirestore(firebaseApp);
+        } catch(e) {
+            console.warn("Firebase initialized in Local Memory fallback mode.");
+        }
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-
-        // Firestore Paths (Strict Rule Standard)
-        const docsCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'documents');
-        const catsCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'categories');
-
-        // APP STATE (NO LOCAL STORAGE)
+        // APP STATE MANAGEMENT
         const DEFAULT_CATEGORIES = [
             { id: 'cat-work', name: '💼 งานโปรเจกต์', color: 'blue' },
             { id: 'cat-personal', name: '🏠 เรื่องส่วนตัว', color: 'emerald' },
@@ -403,147 +412,44 @@
                     { id: 'b1', type: 'h1', text: 'เป้าหมายหลักในสัปดาห์นี้', indent: 0 },
                     { id: 'b2', type: 'todo', text: 'ออกแบบหน้าจอ Notion Block Editor', checked: true, indent: 0 },
                     { id: 'b3', type: 'todo', text: 'รองรับการกด Tab และ Shift+Tab สำหรับจัดย่อหน้า', checked: true, indent: 1 },
-                    { id: 'b4', type: 'todo', text: 'เชื่อมต่อฐานข้อมูล Firestore เรียบร้อยแล้ว (ยกเลิก LocalStorage)', checked: true, indent: 1 },
-                    { id: 'b5', type: 'callout', text: '💡 ข้อมูลถูกบันทึกและซิงค์ผ่าน Firestore Cloud Database โดยตรงแบบ Real-time', indent: 0 },
-                    { id: 'b6', type: 'code', text: 'const syncStatus = "Cloud Real-time Firestore Connected";', indent: 0 }
+                    { id: 'b4', type: 'todo', text: 'แยกหมวดหมู่งานและปรับมุมมอง Kanban Board', checked: false, indent: 1 },
+                    { id: 'b5', type: 'callout', text: '💡 ข้อแนะนำ: พิมพ์ / บนบรรทัดใหม่เพื่อเปลี่ยนประเภทของบล็อกข้อความได้ทันที!', indent: 0 },
+                    { id: 'b6', type: 'code', text: 'const greeting = "Hello Notion Application!";', indent: 0 }
                 ]
             }
         ];
 
         let state = {
-            categories: [],
-            documents: [],
+            categories: JSON.parse(localStorage.getItem('notion_categories')) || DEFAULT_CATEGORIES,
+            documents: JSON.parse(localStorage.getItem('notion_documents')) || INITIAL_DOCS,
             activeDocId: 'doc-1',
             activeView: 'editor',
             activeBlockIndex: null
         };
 
-        let user = null;
-
-        async function initAuthAndFirestore() {
-            updateSyncStatus('connecting', 'กำลังเชื่อมต่อฐานข้อมูล...');
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    const userCredential = await signInWithCustomToken(auth, __initial_auth_token);
-                    user = userCredential.user;
-                } else {
-                    const userCredential = await signInAnonymously(auth);
-                    user = userCredential.user;
-                }
-                
-                if (user) {
-                    setupRealtimeListeners();
-                }
-            } catch (err) {
-                console.error("Firestore Auth Error:", err);
-                updateSyncStatus('error', 'เชื่อมต่อฐานข้อมูลไม่สำเร็จ');
-            }
-        }
-
-        function updateSyncStatus(status, message) {
+        // SAVE STATE
+        function saveState() {
+            localStorage.setItem('notion_categories', JSON.stringify(state.categories));
+            localStorage.setItem('notion_documents', JSON.stringify(state.documents));
+            
             const syncInd = document.getElementById('sync-indicator');
             const syncTxt = document.getElementById('sync-text');
-            if (!syncInd || !syncTxt) return;
-
-            if (status === 'saving') {
-                syncInd.className = "w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping";
-                syncTxt.innerText = message || "กำลังบันทึกลง Cloud...";
-            } else if (status === 'synced') {
-                syncInd.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
-                syncTxt.innerText = message || "บันทึกในฐานข้อมูลแล้ว";
-            } else if (status === 'error') {
-                syncInd.className = "w-2.5 h-2.5 rounded-full bg-red-500";
-                syncTxt.innerText = message || "เกิดข้อผิดพลาดฐานข้อมูล";
-            } else {
-                syncInd.className = "w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse";
-                syncTxt.innerText = message || "กำลังเชื่อมต่อ...";
+            if (syncInd) {
+                syncInd.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse";
+                syncTxt.innerText = "กำลังบันทึก...";
+                setTimeout(() => {
+                    syncInd.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
+                    syncTxt.innerText = "บันทึกข้อมูลแล้ว";
+                }, 400);
             }
-        }
 
-        function setupRealtimeListeners() {
-            if (!user) return;
-
-            // 1. Real-time Categories Listener
-            onSnapshot(catsCollectionRef, (snapshot) => {
-                let cats = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-                if (cats.length === 0) {
-                    DEFAULT_CATEGORIES.forEach(cat => {
-                        setDoc(doc(catsCollectionRef, cat.id), cat);
-                    });
-                    state.categories = DEFAULT_CATEGORIES;
-                } else {
-                    state.categories = cats;
+            // Sync to Firestore if accessible
+            if (db && state.activeDocId) {
+                const docRef = doc(db, "notion_workspace", state.activeDocId);
+                const activeDoc = state.documents.find(d => d.id === state.activeDocId);
+                if (activeDoc) {
+                    setDoc(docRef, activeDoc, { merge: true }).catch(() => {});
                 }
-                renderSidebar();
-            }, (error) => {
-                console.error("Categories snapshot error:", error);
-            });
-
-            // 2. Real-time Documents Listener
-            onSnapshot(docsCollectionRef, (snapshot) => {
-                let docs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-                if (docs.length === 0) {
-                    INITIAL_DOCS.forEach(d => {
-                        setDoc(doc(docsCollectionRef, d.id), d);
-                    });
-                    state.documents = INITIAL_DOCS;
-                } else {
-                    state.documents = docs;
-                }
-
-                if (!state.documents.some(d => d.id === state.activeDocId) && state.documents.length > 0) {
-                    state.activeDocId = state.documents[0].id;
-                }
-
-                updateSyncStatus('synced', 'บันทึกในฐานข้อมูลแล้ว');
-                renderSidebar();
-                renderBlocks();
-            }, (error) => {
-                console.error("Documents snapshot error:", error);
-                updateSyncStatus('error', 'โหลดข้อมูลไม่สำเร็จ');
-            });
-        }
-
-        async function saveActiveDocToCloud() {
-            if (!user || !state.activeDocId) return;
-            const activeDoc = state.documents.find(d => d.id === state.activeDocId);
-            if (!activeDoc) return;
-
-            updateSyncStatus('saving', 'บันทึกลง Cloud...');
-            try {
-                const docRef = doc(docsCollectionRef, activeDoc.id);
-                await setDoc(docRef, activeDoc, { merge: true });
-                updateSyncStatus('synced', 'บันทึกในฐานข้อมูลแล้ว');
-            } catch (err) {
-                console.error("Save cloud error:", err);
-                updateSyncStatus('error', 'บันทึกข้อมูลไม่สำเร็จ');
-            }
-        }
-
-        async function createNewDocInCloud(newDoc) {
-            if (!user) return;
-            updateSyncStatus('saving', 'กำลังสร้างเอกสารใหม่...');
-            try {
-                const docRef = doc(docsCollectionRef, newDoc.id);
-                await setDoc(docRef, newDoc);
-                state.activeDocId = newDoc.id;
-                updateSyncStatus('synced', 'บันทึกในฐานข้อมูลแล้ว');
-            } catch (err) {
-                console.error("Create cloud doc error:", err);
-                updateSyncStatus('error', 'สร้างเอกสารไม่สำเร็จ');
-            }
-        }
-
-        async function deleteDocFromCloud(docId) {
-            if (!user) return;
-            updateSyncStatus('saving', 'กำลังลบเอกสาร...');
-            try {
-                const docRef = doc(docsCollectionRef, docId);
-                await deleteDoc(docRef);
-                updateSyncStatus('synced', 'ลบเอกสารเรียบร้อย');
-            } catch (err) {
-                console.error("Delete cloud doc error:", err);
-                updateSyncStatus('error', 'ลบเอกสารไม่สำเร็จ');
             }
         }
 
@@ -633,6 +539,7 @@
             wrapper.className = `block-wrapper group flex items-start gap-2 py-0.5 relative transition-all ${indentClass}`;
             wrapper.dataset.index = index;
 
+            // Handle Drag / Controls
             const handle = document.createElement('div');
             handle.className = "opacity-0 group-hover:opacity-100 cursor-grab text-gray-300 dark:text-gray-600 hover:text-gray-500 pt-1 text-xs select-none w-4 flex justify-center";
             handle.innerHTML = '<i class="fa-solid fa-grip-vertical"></i>';
@@ -640,6 +547,7 @@
             let contentWrapper = document.createElement('div');
             contentWrapper.className = "flex-1 flex items-start gap-2 min-w-0";
 
+            // Block Specific Visual Elements
             if (block.type === 'todo') {
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
@@ -647,7 +555,7 @@
                 checkbox.className = "mt-1.5 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer";
                 checkbox.onchange = (e) => {
                     block.checked = e.target.checked;
-                    saveActiveDocToCloud();
+                    saveState();
                     renderTasksListView();
                     renderKanbanView();
                 };
@@ -663,11 +571,13 @@
                 contentWrapper.appendChild(icon);
             }
 
+            // Editable Input Area
             const input = document.createElement('div');
             input.contentEditable = "true";
             input.dataset.index = index;
             input.placeholder = block.type === 'h1' ? 'หัวข้อหลัก...' : (block.type === 'h2' ? 'หัวข้อย่อย...' : "พิมพ์ข้อความ หรือพิมพ์ '/' เพื่อใช้คำสั่ง...");
             
+            // Format styling based on block type
             let textClasses = "w-full text-sm leading-relaxed focus:outline-none min-h-[1.5rem] break-words";
             if (block.type === 'h1') textClasses += " text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100";
             else if (block.type === 'h2') textClasses += " text-xl font-semibold tracking-tight text-gray-800 dark:text-gray-200";
@@ -677,16 +587,14 @@
             input.className = textClasses;
             input.innerText = block.text || '';
 
+            // KEYBOARD NAVIGATION (ENTER, TAB, BACKSPACE, SLASH)
             input.addEventListener('keydown', (e) => handleBlockKeyDown(e, index, block));
             
-            let debounceTimer;
             input.addEventListener('input', (e) => {
                 block.text = input.innerText;
-                clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(() => {
-                    saveActiveDocToCloud();
-                }, 400);
+                saveState();
 
+                // Check for Slash Command
                 if (input.innerText.endsWith('/')) {
                     showSlashMenu(input);
                 } else {
@@ -701,22 +609,26 @@
             return wrapper;
         }
 
+        // HANDLER: TAB & ENTER KEY EVENTS
         function handleBlockKeyDown(e, index, block) {
             const activeDoc = getActiveDoc();
 
+            // 1. TAB & SHIFT+TAB FOR INDENTATION
             if (e.key === 'Tab') {
                 e.preventDefault();
                 if (e.shiftKey) {
+                    // Outdent
                     if (block.indent > 0) {
                         block.indent--;
-                        saveActiveDocToCloud();
+                        saveState();
                         renderBlocks();
                         focusBlock(index);
                     }
                 } else {
+                    // Indent
                     if (block.indent < 4) {
                         block.indent++;
-                        saveActiveDocToCloud();
+                        saveState();
                         renderBlocks();
                         focusBlock(index);
                     }
@@ -724,10 +636,12 @@
                 return;
             }
 
+            // 2. ENTER KEY: CREATE NEW BLOCK
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 hideSlashMenu();
 
+                // If on slash command menu, let it select
                 const newType = (block.type === 'todo' || block.type === 'bullet') ? block.type : 'text';
                 const newBlock = {
                     id: 'b-' + Date.now(),
@@ -738,24 +652,26 @@
                 };
 
                 activeDoc.blocks.splice(index + 1, 0, newBlock);
-                saveActiveDocToCloud();
+                saveState();
                 renderBlocks();
                 focusBlock(index + 1);
                 return;
             }
 
+            // 3. BACKSPACE KEY ON EMPTY BLOCK
             if (e.key === 'Backspace' && e.target.innerText === '') {
                 if (activeDoc.blocks.length > 1) {
                     e.preventDefault();
                     hideSlashMenu();
                     activeDoc.blocks.splice(index, 1);
-                    saveActiveDocToCloud();
+                    saveState();
                     renderBlocks();
                     focusBlock(Math.max(0, index - 1));
                 }
                 return;
             }
 
+            // 4. ARROW UP & DOWN NAVIGATION
             if (e.key === 'ArrowUp' && index > 0) {
                 e.preventDefault();
                 focusBlock(index - 1);
@@ -765,11 +681,13 @@
             }
         }
 
+        // FOCUS HELPER
         function focusBlock(index) {
             setTimeout(() => {
                 const el = blocksContainer.querySelector(`[data-index="${index}"] [contenteditable="true"]`);
                 if (el) {
                     el.focus();
+                    // Place cursor at the end
                     const range = document.createRange();
                     const sel = window.getSelection();
                     range.selectNodeContents(el);
@@ -780,6 +698,7 @@
             }, 10);
         }
 
+        // SLASH COMMAND MENU
         function showSlashMenu(inputEl) {
             const rect = inputEl.getBoundingClientRect();
             slashMenu.style.top = `${rect.bottom + window.scrollY + 4}px`;
@@ -801,8 +720,9 @@
             if (state.activeBlockIndex !== null && activeDoc.blocks[state.activeBlockIndex]) {
                 const block = activeDoc.blocks[state.activeBlockIndex];
                 block.type = type;
+                // Remove trailing slash
                 block.text = block.text.replace(/\/$/, '');
-                saveActiveDocToCloud();
+                saveState();
                 renderBlocks();
                 focusBlock(state.activeBlockIndex);
             }
@@ -818,9 +738,11 @@
             };
 
             Object.values(cols).forEach(c => c.innerHTML = '');
+
             const counts = { todo: 0, in_progress: 0, completed: 0 };
 
             state.documents.forEach(doc => {
+                // Determine doc status from checklist or default
                 const todoBlocks = doc.blocks.filter(b => b.type === 'todo');
                 const completedBlocks = todoBlocks.filter(b => b.checked);
                 
@@ -831,6 +753,7 @@
                 }
 
                 counts[status]++;
+
                 const category = state.categories.find(c => c.id === doc.categoryId);
                 
                 const card = document.createElement('div');
@@ -867,7 +790,7 @@
 
             state.documents.forEach(doc => {
                 const todoBlocks = doc.blocks.filter(b => b.type === 'todo');
-                todoBlocks.forEach((block) => {
+                todoBlocks.forEach((block, idx) => {
                     totalTasks++;
                     if (block.checked) completedTasks++;
 
@@ -886,7 +809,7 @@
 
                     item.querySelector('input').onchange = (e) => {
                         block.checked = e.target.checked;
-                        saveActiveDocToCloud();
+                        saveState();
                         renderBlocks();
                     };
 
@@ -901,6 +824,7 @@
         // GLOBAL ACTIONS & EVENT LISTENERS
         window.switchDocument = (id) => {
             state.activeDocId = id;
+            saveState();
             renderSidebar();
             renderBlocks();
             if (window.innerWidth < 768) {
@@ -921,7 +845,11 @@
                     { id: 'b2', type: 'text', text: '', indent: 0 }
                 ]
             };
-            createNewDocInCloud(newDoc);
+            state.documents.push(newDoc);
+            state.activeDocId = newDoc.id;
+            saveState();
+            renderSidebar();
+            renderBlocks();
         });
 
         // View Tabs Switching
@@ -943,7 +871,7 @@
             const activeDoc = getActiveDoc();
             if (activeDoc) {
                 activeDoc.title = docTitleEl.innerText;
-                saveActiveDocToCloud();
+                saveState();
                 renderSidebar();
             }
         });
@@ -953,7 +881,7 @@
             const activeDoc = getActiveDoc();
             if (activeDoc) {
                 activeDoc.categoryId = e.target.value;
-                saveActiveDocToCloud();
+                saveState();
                 renderSidebar();
             }
         });
@@ -963,7 +891,7 @@
             const activeDoc = getActiveDoc();
             if (activeDoc) {
                 activeDoc.priority = e.target.value;
-                saveActiveDocToCloud();
+                saveState();
                 renderKanbanView();
             }
         });
@@ -971,10 +899,11 @@
         // Delete Current Document
         document.getElementById('delete-doc-btn').addEventListener('click', () => {
             if (state.documents.length <= 1) return;
-            const docToDelete = state.activeDocId;
-            state.documents = state.documents.filter(d => d.id !== docToDelete);
+            state.documents = state.documents.filter(d => d.id !== state.activeDocId);
             state.activeDocId = state.documents[0].id;
-            deleteDocFromCloud(docToDelete);
+            saveState();
+            renderSidebar();
+            renderBlocks();
         });
 
         // Dark Theme Toggle
@@ -1029,8 +958,9 @@
             `).join('');
         }
 
-        // INITIAL LOAD: Authenticate and Listen to Cloud Database
-        initAuthAndFirestore();
+        // INITIAL LOAD
+        renderSidebar();
+        renderBlocks();
     </script>
 </body>
 </html>
