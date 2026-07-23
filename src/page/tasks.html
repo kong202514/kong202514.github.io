@@ -357,7 +357,7 @@
     </div>
 
     <!-- APPLICATION JAVASCRIPT LOGIC -->
-    <script type="module">
+     <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
@@ -435,7 +435,6 @@
 
             renderSidebar();
             
-            // ป้องกันการ Re-render ทับถ้าผู้ใช้กำลังพิมพ์อยู่
             const isTypingInsideEditor = blocksContainer.contains(document.activeElement);
             if (!isTypingInsideEditor && !isLocalEditing) {
                 renderBlocks();
@@ -453,7 +452,7 @@
         });
     }
 
-    // DEBOUNCED SAVE STATE (หน่วงเวลาเซฟเพื่อไม่ให้รบกวนการพิมพ์)
+    // DEBOUNCED SAVE STATE
     function saveState() {
         isLocalEditing = true;
         const syncInd = document.getElementById('sync-indicator');
@@ -485,7 +484,7 @@
             } else {
                 isLocalEditing = false;
             }
-        }, 500); // บันทึกหลังจากพิมพ์เสร็จ 0.5 วินาที
+        }, 500);
     }
 
     function getActiveDoc() {
@@ -521,6 +520,9 @@
                         <span>${doc.emoji || '📄'}</span>
                         <span class="truncate">${doc.title || 'ไม่มีชื่อหัวข้อ'}</span>
                     </span>
+                    <button onclick="deleteDocument('${doc.id}', event)" title="ลบเอกสาร" class="opacity-0 group-hover:opacity-100 p-1 hover:text-red-500 transition text-gray-400">
+                        <i class="fa-regular fa-trash-can text-xs"></i>
+                    </button>
                 </li>
             `;
         }).join('');
@@ -565,9 +567,20 @@
         wrapper.className = `block-wrapper group flex items-start gap-2 py-0.5 relative transition-all ${indentClass}`;
         wrapper.dataset.index = index;
 
+        // ด้ามจับย้ายบล็อก (Drag handle)
         const handle = document.createElement('div');
         handle.className = "opacity-0 group-hover:opacity-100 cursor-grab text-gray-300 dark:text-gray-600 hover:text-gray-500 pt-1 text-xs select-none w-4 flex justify-center";
         handle.innerHTML = '<i class="fa-solid fa-grip-vertical"></i>';
+
+        // ปุ่มลบบล็อก (Delete block button)
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = "opacity-0 group-hover:opacity-100 text-gray-300 dark:text-gray-600 hover:text-red-500 pt-1 text-xs select-none w-4 flex justify-center transition";
+        deleteBtn.innerHTML = '<i class="fa-regular fa-trash-can"></i>';
+        deleteBtn.title = "ลบบล็อกนี้";
+        deleteBtn.onclick = (e) => {
+            e.stopPropagation();
+            deleteBlock(index);
+        };
 
         let contentWrapper = document.createElement('div');
         contentWrapper.className = "flex-1 flex items-start gap-2 min-w-0";
@@ -624,10 +637,59 @@
 
         contentWrapper.appendChild(input);
         wrapper.appendChild(handle);
+        wrapper.appendChild(deleteBtn);
         wrapper.appendChild(contentWrapper);
 
         return wrapper;
     }
+
+    // ฟังก์ชันลบบล็อกข้อความ
+    function deleteBlock(index) {
+        const activeDoc = getActiveDoc();
+        if (!activeDoc) return;
+
+        if (activeDoc.blocks.length > 1) {
+            activeDoc.blocks.splice(index, 1);
+            saveState();
+            renderBlocks();
+            focusBlock(Math.max(0, index - 1));
+        } else {
+            // เคลียร์ข้อความถ้ารีเทิร์นลบบล็อกสุดท้าย
+            activeDoc.blocks[0].text = '';
+            activeDoc.blocks[0].type = 'text';
+            activeDoc.blocks[0].indent = 0;
+            saveState();
+            renderBlocks();
+            focusBlock(0);
+        }
+    }
+
+    // ฟังก์ชันลบเอกสาร
+    window.deleteDocument = (docId, event) => {
+        if (event) event.stopPropagation();
+
+        if (state.documents.length <= 1) {
+            alert("ไม่สามารถลบเอกสารสุดท้ายได้ครับ");
+            return;
+        }
+
+        if (confirm("คุณต้องการลบเอกสารนี้ใช่หรือไม่?")) {
+            state.documents = state.documents.filter(d => d.id !== docId);
+            
+            if (state.activeDocId === docId) {
+                state.activeDocId = state.documents[0].id;
+            }
+
+            if (db) {
+                deleteDoc(doc(db, "notion_workspace", docId)).catch(err => {
+                    console.error("Error deleting document from Firestore:", err);
+                });
+            }
+
+            renderSidebar();
+            renderBlocks();
+        }
+    };
 
     function handleBlockKeyDown(e, index, block) {
         const activeDoc = getActiveDoc();
@@ -673,14 +735,9 @@
         }
 
         if (e.key === 'Backspace' && e.target.innerText === '') {
-            if (activeDoc.blocks.length > 1) {
-                e.preventDefault();
-                hideSlashMenu();
-                activeDoc.blocks.splice(index, 1);
-                saveState();
-                renderBlocks();
-                focusBlock(Math.max(0, index - 1));
-            }
+            e.preventDefault();
+            hideSlashMenu();
+            deleteBlock(index);
             return;
         }
 
@@ -891,18 +948,12 @@
         }
     });
 
-    document.getElementById('delete-doc-btn').addEventListener('click', () => {
-        if (state.documents.length <= 1) return;
-        const docIdToDelete = state.activeDocId;
-        state.documents = state.documents.filter(d => d.id !== docIdToDelete);
-        state.activeDocId = state.documents[0].id;
-        
-        if (db) {
-            deleteDoc(doc(db, "notion_workspace", docIdToDelete));
-        }
-        renderSidebar();
-        renderBlocks();
-    });
+    const deleteDocHeaderBtn = document.getElementById('delete-doc-btn');
+    if (deleteDocHeaderBtn) {
+        deleteDocHeaderBtn.addEventListener('click', () => {
+            deleteDocument(state.activeDocId);
+        });
+    }
 
     document.getElementById('theme-toggle').addEventListener('click', () => {
         document.documentElement.classList.toggle('dark');
