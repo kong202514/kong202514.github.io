@@ -133,7 +133,7 @@
             <div class="p-3 border-t border-notion-border dark:border-notion-darkBorder text-xs flex items-center justify-between">
                 <div class="flex items-center gap-2">
                     <span id="sync-indicator" class="w-2.5 h-2.5 rounded-full bg-emerald-500" title="เชื่อมต่อและบันทึกข้อมูลเรียบร้อย"></span>
-                    <span id="sync-text" class="text-gray-500 dark:text-gray-400 text-[11px]">บันทึกข้อมูลแล้ว</span>
+                    <span id="sync-text" class="text-gray-500 dark:text-gray-400 text-[11px]">เรียลไทม์ซิงค์แล้ว</span>
                 </div>
                 <button id="theme-toggle" class="p-1.5 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-notion-hover dark:hover:bg-notion-darkHover rounded">
                     <i class="fa-solid fa-moon dark:hidden"></i>
@@ -359,7 +359,7 @@
     <!-- APPLICATION JAVASCRIPT LOGIC -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Exact User-Provided Firebase Configuration
         const firebaseConfig = {
@@ -378,7 +378,7 @@
             const firebaseApp = initializeApp(firebaseConfig);
             db = getFirestore(firebaseApp);
         } catch(e) {
-            console.warn("Firebase initialized in Local Memory fallback mode.", e);
+            console.warn("Firebase initialization error.", e);
         }
 
         // APP STATE MANAGEMENT
@@ -388,42 +388,86 @@
             { id: 'cat-ideas', name: '💡 ไอเดีย & ความคิด', color: 'amber' }
         ];
 
-        const INITIAL_DOCS = [
-            {
-                id: 'doc-1',
-                title: 'วางแผนพัฒนาแอปพลิเคชันจัดการงาน',
-                emoji: '🚀',
-                categoryId: 'cat-work',
-                priority: 'high',
-                blocks: [
-                    { id: 'b1', type: 'h1', text: 'เป้าหมายหลักในสัปดาห์นี้', indent: 0 },
-                    { id: 'b2', type: 'todo', text: 'ออกแบบหน้าจอ Notion Block Editor', checked: true, indent: 0 },
-                    { id: 'b3', type: 'todo', text: 'รองรับการกด Tab และ Shift+Tab สำหรับจัดย่อหน้า', checked: true, indent: 1 },
-                    { id: 'b4', type: 'todo', text: 'แยกหมวดหมู่งานและปรับมุมมอง Kanban Board', checked: false, indent: 1 },
-                    { id: 'b5', type: 'callout', text: '💡 ข้อแนะนำ: พิมพ์ / บนบรรทัดใหม่เพื่อเปลี่ยนประเภทของบล็อกข้อความได้ทันที!', indent: 0 },
-                    { id: 'b6', type: 'code', text: 'const greeting = "Hello Notion Application!";', indent: 0 }
-                ]
-            }
-        ];
-
         let state = {
             categories: DEFAULT_CATEGORIES,
-            documents: INITIAL_DOCS,
+            documents: [],
             activeDocId: 'doc-1',
             activeView: 'editor',
             activeBlockIndex: null
         };
 
-        // SAVE STATE (เซฟลง Firestore Database เท่านั้น)
+        let isRemoteUpdating = false;
+
+        // REALTIME DATABASE LISTENER
+        function initRealtimeSync() {
+            if (!db) return;
+
+            const colRef = collection(db, "notion_workspace");
+            onSnapshot(colRef, (snapshot) => {
+                isRemoteUpdating = true;
+                const docs = [];
+                snapshot.forEach((docSnap) => {
+                    docs.push(docSnap.data());
+                });
+
+                if (docs.length > 0) {
+                    state.documents = docs;
+                    if (!state.documents.some(d => d.id === state.activeDocId)) {
+                        state.activeDocId = state.documents[0].id;
+                    }
+                } else {
+                    // หากยังไม่มีเอกสารในฐานข้อมูลเลย ให้สร้างตัวเริ่มต้นขึ้น Firestore
+                    const initialDoc = {
+                        id: 'doc-1',
+                        title: 'วางแผนพัฒนาแอปพลิเคชันจัดการงาน',
+                        emoji: '🚀',
+                        categoryId: 'cat-work',
+                        priority: 'high',
+                        blocks: [
+                            { id: 'b1', type: 'h1', text: 'เป้าหมายหลักในสัปดาห์นี้', indent: 0 },
+                            { id: 'b2', type: 'todo', text: 'ออกแบบหน้าจอ Notion Block Editor', checked: true, indent: 0 },
+                            { id: 'b3', type: 'todo', text: 'รองรับการกด Tab และ Shift+Tab สำหรับจัดย่อหน้า', checked: true, indent: 1 },
+                            { id: 'b4', type: 'todo', text: 'แยกหมวดหมู่งานและปรับมุมมอง Kanban Board', checked: false, indent: 1 },
+                            { id: 'b5', type: 'callout', text: '💡 ข้อแนะนำ: พิมพ์ / บนบรรทัดใหม่เพื่อเปลี่ยนประเภทของบล็อกข้อความได้ทันที!', indent: 0 },
+                            { id: 'b6', type: 'code', text: 'const greeting = "Hello Notion Application!";', indent: 0 }
+                        ]
+                    };
+                    state.documents = [initialDoc];
+                    setDoc(doc(db, "notion_workspace", initialDoc.id), initialDoc);
+                }
+
+                renderSidebar();
+                renderBlocks();
+                isRemoteUpdating = false;
+
+                const syncInd = document.getElementById('sync-indicator');
+                const syncTxt = document.getElementById('sync-text');
+                if (syncInd) {
+                    syncInd.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
+                    syncTxt.innerText = "เรียลไทม์ซิงค์แล้ว";
+                }
+            }, (error) => {
+                console.error("Firestore sync error:", error);
+                const syncInd = document.getElementById('sync-indicator');
+                const syncTxt = document.getElementById('sync-text');
+                if (syncInd) {
+                    syncInd.className = "w-2.5 h-2.5 rounded-full bg-red-500";
+                    syncTxt.innerText = "เชื่อมต่อล้มเหลว";
+                }
+            });
+        }
+
+        // SAVE STATE (บันทึกข้อมูลเฉพาะเมื่อผู้ใช้แก้ไขข้อมูลในหน้าจอ)
         function saveState() {
+            if (isRemoteUpdating) return;
+
             const syncInd = document.getElementById('sync-indicator');
             const syncTxt = document.getElementById('sync-text');
             if (syncInd) {
-                syncInd.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse";
+                syncInd.className = "w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse";
                 syncTxt.innerText = "กำลังบันทึก...";
             }
 
-            // Sync to Firestore Database
             if (db && state.activeDocId) {
                 const docRef = doc(db, "notion_workspace", state.activeDocId);
                 const activeDoc = state.documents.find(d => d.id === state.activeDocId);
@@ -432,11 +476,11 @@
                         .then(() => {
                             if (syncInd) {
                                 syncInd.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
-                                syncTxt.innerText = "บันทึกข้อมูลแล้ว";
+                                syncTxt.innerText = "เรียลไทม์ซิงค์แล้ว";
                             }
                         })
                         .catch((err) => {
-                            console.error("Error saving to database:", err);
+                            console.error("Error saving to Firestore:", err);
                             if (syncInd) {
                                 syncInd.className = "w-2.5 h-2.5 rounded-full bg-red-500";
                                 syncTxt.innerText = "บันทึกล้มเหลว";
@@ -505,7 +549,10 @@
             const category = state.categories.find(c => c.id === activeDoc.categoryId);
             document.getElementById('nav-category-badge').innerText = category ? category.name : 'ทั่วไป';
             document.getElementById('nav-doc-title').innerText = activeDoc.title || 'ไม่มีชื่อหัวข้อ';
-            docTitleEl.innerText = activeDoc.title || '';
+            
+            if (document.activeElement !== docTitleEl) {
+                docTitleEl.innerText = activeDoc.title || '';
+            }
             docEmojiEl.innerText = activeDoc.emoji || '📄';
             prioritySelectEl.value = activeDoc.priority || 'medium';
 
@@ -813,7 +860,6 @@
         // GLOBAL ACTIONS & EVENT LISTENERS
         window.switchDocument = (id) => {
             state.activeDocId = id;
-            saveState();
             renderSidebar();
             renderBlocks();
             if (window.innerWidth < 768) {
@@ -888,9 +934,14 @@
         // Delete Current Document
         document.getElementById('delete-doc-btn').addEventListener('click', () => {
             if (state.documents.length <= 1) return;
-            state.documents = state.documents.filter(d => d.id !== state.activeDocId);
+            const docIdToDelete = state.activeDocId;
+            state.documents = state.documents.filter(d => d.id !== docIdToDelete);
             state.activeDocId = state.documents[0].id;
-            saveState();
+            
+            // Delete from Firestore
+            if (db) {
+                deleteDoc(doc(db, "notion_workspace", docIdToDelete));
+            }
             renderSidebar();
             renderBlocks();
         });
@@ -947,9 +998,8 @@
             `).join('');
         }
 
-        // INITIAL LOAD
-        renderSidebar();
-        renderBlocks();
+        // INITIAL LOAD & REALTIME LISTENERS
+        initRealtimeSync();
     </script>
 </body>
 </html>
