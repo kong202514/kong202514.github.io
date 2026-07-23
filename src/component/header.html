@@ -1,16 +1,16 @@
- 
+<!DOCTYPE html>
 <html lang="th">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard | App Hub</title>
+  <title>Dashboard | Compact Layout</title>
 
   <!-- Bootstrap 5 & Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-  <!-- Google Fonts: Inter & Noto Sans Thai -->
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -33,34 +33,37 @@
       min-height: 100vh;
     }
 
-    /* Navbar Custom */
+    /* Navbar Compact */
     .navbar-custom {
       background-color: var(--nav-bg);
+      padding-top: 0.4rem !important;
+      padding-bottom: 0.4rem !important;
     }
 
-    /* Card Menu Styles */
+    /* Compact Card Menu */
     .card-menu {
       border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 8px;
+      /* ปรับมุมให้โค้งน้อยลงเล็กน้อย */
+      transition: all 0.2s ease-in-out;
       background-color: var(--card-bg);
     }
 
     .card-menu:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.1) !important;
-      border-color: rgba(99, 102, 241, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+      border-color: #6366f1;
     }
 
+    /* Smaller Icon Wrapper */
     .card-icon-wrapper {
-      width: 56px;
-      height: 56px;
-      border-radius: 12px;
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 1rem;
-      font-size: 1.6rem;
+      font-size: 1.2rem;
     }
 
     /* Icon Background Themes */
@@ -99,11 +102,13 @@
       color: #0f172a;
     }
 
-    /* Clean Search Bar */
+    /* Compact Search Input */
     .search-input {
       background-color: rgba(255, 255, 255, 0.1);
       border: 1px solid rgba(255, 255, 255, 0.2);
       color: #fff;
+      font-size: 0.85rem;
+      padding: 0.25rem 0.6rem;
     }
 
     .search-input::placeholder {
@@ -121,24 +126,24 @@
 
 <body>
 
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark navbar-custom shadow-sm py-3">
-    <div class="container">
-      <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="#">
+  <!-- Compact Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark navbar-custom shadow-sm">
+    <div class="container-fluid px-md-4">
+      <a class="navbar-brand fw-bold fs-6 d-flex align-items-center gap-2" href="#">
         <i class="bi bi-grid-1x2-fill text-indigo" style="color: #6366f1;"></i>
-        <span>My App Workspace</span>
+        <span>My Workspace</span>
       </a>
 
-      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
-        <span class="navbar-toggler-icon"></span>
+      <button class="navbar-toggler border-0 p-1" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+        <span class="navbar-toggler-icon" style="width: 1.2em; height: 1.2em;"></span>
       </button>
 
       <div class="collapse navbar-collapse" id="mainNav">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0"></ul>
+        <ul class="navbar-nav me-auto"></ul>
 
-        <!-- Live Search Input -->
-        <div class="d-flex" role="search">
-          <div class="input-group">
+        <!-- Compact Search -->
+        <div class="d-flex my-1 my-lg-0" role="search">
+          <div class="input-group input-group-sm">
             <span class="input-group-text search-input border-end-0"><i class="bi bi-search text-muted"></i></span>
             <input id="searchInput" class="form-control search-input border-start-0" type="search"
               placeholder="ค้นหาเมนู..." aria-label="Search">
@@ -148,135 +153,44 @@
     </div>
   </nav>
 
-  <!-- Main Content Area -->
-  <div class="container my-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+  <!-- Compact Main Container -->
+  <div class="container-fluid px-md-4 my-3">
+    <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
       <div>
-        <h3 class="fw-bold mb-1">เมนูระบบหลัก</h3>
-        <p class="text-muted small mb-0">เลือกเข้าใช้งานแอปพลิเคชันและเครื่องมือต่างๆ</p>
+        <h5 class="fw-bold mb-0 text-dark">เมนูระบบหลัก</h5>
       </div>
     </div>
 
-    <!-- Cards Grid Container -->
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4" id="menuContainer">
-      <!-- Cards จะถูกสร้างขึ้นอัตโนมัติจาก JS -->
+    <!-- Grid เพิ่มจำนวนคอลัมน์ให้แน่นขึ้น (2, 3, 4, 5, 6 คอลัมน์ตามขนาดจอ) -->
+    <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 row-cols-xl-6 g-2" id="menuContainer">
+      <!-- Cards Rendered Dynamic via JS -->
     </div>
 
     <!-- No Result Message -->
-    <div id="noResults" class="text-center py-5 d-none">
-      <i class="bi bi-search-heart text-muted display-4 mb-3"></i>
-      <p class="text-muted">ไม่พบเมนูที่คุณกำลังค้นหา</p>
+    <div id="noResults" class="text-center py-4 d-none">
+      <i class="bi bi-search-heart text-muted fs-2 mb-2"></i>
+      <p class="text-muted small">ไม่พบเมนูที่คุณกำลังค้นหา</p>
     </div>
   </div>
 
   <script>
-    // ==========================================
-    // 1. กำหนดรายการเมนูทั้งหมดที่นี่ (แก้ไข/เพิ่มง่ายมาก)
-    // ==========================================
     const menuItems = [
-      {
-        title: 'Home',
-        description: 'หน้าหลักของเว็บไซต์',
-        url: '/index.html',
-        icon: 'bi-house-door-fill',
-        theme: 'theme-primary'
-      },
-      {
-        title: 'Workout',
-        description: 'บันทึกการออกกำลังกาย',
-        url: '/src/page/workout.html',
-        icon: 'bi-lightning-charge-fill',
-        theme: 'theme-success'
-      },
-      {
-        title: 'CRUD Google',
-        description: 'จัดการข้อมูล CRUD',
-        url: '/src/page/a.html',
-        icon: 'bi-terminal-fill',
-        theme: 'theme-dark'
-      },
-      {
-        title: 'Test Firebase',
-        description: 'ทดสอบ Input และ Database',
-        url: '/src/page/test.html',
-        icon: 'bi-database-fill',
-        theme: 'theme-warning'
-      },
-      {
-        title: 'Color Picker',
-        description: 'เครื่องมือเลือกสีสำหรับงานดีไซน์',
-        url: '/src/page/color.html',
-        icon: 'bi-palette-fill',
-        theme: 'theme-info'
-      },
-      {
-        title: 'Tools',
-        description: 'เครื่องมืออำนวยความสะดวก',
-        url: '/src/page/tool.html',
-        icon: 'bi-tools',
-        theme: 'theme-secondary'
-      },
-      {
-        title: 'Tasks',
-        description: 'รายการสิ่งที่ต้องทำ',
-        url: '/src/page/tasks.html',
-        icon: 'bi-list-check',
-        theme: 'theme-danger'
-      },
-      {
-        title: 'คำนวณจำนวนนม',
-        description: 'เครื่องมือคำนวณจำนวนนม',
-        url: '/src/page/c_milk.html',
-        icon: 'bi-calculator-fill',
-        theme: 'theme-primary'
-      },
-      {
-        title: 'Note',
-        description: 'สมุดบันทึกข้อความ',
-        url: '/src/page/note.html',
-        icon: 'bi-journal-text',
-        theme: 'theme-primary'
-      },
-      {
-        title: 'Book',
-        description: 'ระบบจัดการหนังสือ',
-        url: '/src/page/book/index.html',
-        icon: 'bi-book-fill',
-        theme: 'theme-primary'
-      },
-      {
-        title: 'Book Admin',
-        description: 'จัดการระบบหลังบ้านหนังสือ',
-        url: '/src/page/book/admin.html',
-        icon: 'bi-journal-bookmark-fill',
-        theme: 'theme-dark'
-      },
-      {
-        title: 'YT Admin',
-        description: 'ระบบจัดการ YouTube Content',
-        url: '/src/page/page2.html',
-        icon: 'bi-youtube',
-        theme: 'theme-danger'
-      },
-      {
-        title: 'FB Admin',
-        description: 'ระบบจัดการ Facebook Page',
-        url: '/src/page/page3.html',
-        icon: 'bi-facebook',
-        theme: 'theme-info'
-      },
-      {
-        title: 'Todo My Job',
-        description: 'รายการงานส่วนตัวที่ต้องทำ',
-        url: '/src/page/todo2.html',
-        icon: 'bi-check2-square',
-        theme: 'theme-success'
-      }
+      { title: 'Home', description: 'หน้าหลักของเว็บไซต์', url: '/index.html', icon: 'bi-house-door-fill', theme: 'theme-primary' },
+      { title: 'Workout', description: 'บันทึกการออกกำลังกาย', url: '/src/page/workout.html', icon: 'bi-lightning-charge-fill', theme: 'theme-success' },
+      { title: 'CRUD Google', description: 'จัดการข้อมูล CRUD', url: '/src/page/a.html', icon: 'bi-terminal-fill', theme: 'theme-dark' },
+      { title: 'Test Firebase', description: 'ทดสอบ Input & DB', url: '/src/page/test.html', icon: 'bi-database-fill', theme: 'theme-warning' },
+      { title: 'Color Picker', description: 'เครื่องมือเลือกสี', url: '/src/page/color.html', icon: 'bi-palette-fill', theme: 'theme-info' },
+      { title: 'Tools', description: 'เครื่องมืออำนวยความสะดวก', url: '/src/page/tool.html', icon: 'bi-tools', theme: 'theme-secondary' },
+      { title: 'Tasks', description: 'รายการสิ่งที่ต้องทำ', url: '/src/page/tasks.html', icon: 'bi-list-check', theme: 'theme-danger' },
+      { title: 'คำนวณจำนวนนม', description: 'คำนวณปริมาณนม', url: '/src/page/c_milk.html', icon: 'bi-calculator-fill', theme: 'theme-primary' },
+      { title: 'Note', description: 'สมุดบันทึกข้อความ', url: '/src/page/note.html', icon: 'bi-journal-text', theme: 'theme-primary' },
+      { title: 'Book', description: 'ระบบจัดการหนังสือ', url: '/src/page/book/index.html', icon: 'bi-book-fill', theme: 'theme-primary' },
+      { title: 'Book Admin', description: 'หลังบ้านหนังสือ', url: '/src/page/book/admin.html', icon: 'bi-journal-bookmark-fill', theme: 'theme-dark' },
+      { title: 'YT Admin', description: 'จัดการ YouTube', url: '/src/page/page2.html', icon: 'bi-youtube', theme: 'theme-danger' },
+      { title: 'FB Admin', description: 'จัดการ Facebook', url: '/src/page/page3.html', icon: 'bi-facebook', theme: 'theme-info' },
+      { title: 'Todo My Job', description: 'งานส่วนตัวที่ต้องทำ', url: '/src/page/todo2.html', icon: 'bi-check2-square', theme: 'theme-success' }
     ];
 
-    // ==========================================
-    // 2. Function สำหรับแสดงผล Card บนหน้าจอ
-    // ==========================================
     function renderMenu(items) {
       const container = document.getElementById('menuContainer');
       const noResults = document.getElementById('noResults');
@@ -294,13 +208,13 @@
         const cardHTML = `
           <div class="col">
             <a href="${item.url}" class="text-decoration-none">
-              <div class="card h-100 shadow-sm card-menu text-center p-3">
-                <div class="card-body p-2 d-flex flex-column align-items-center justify-content-center">
-                  <div class="card-icon-wrapper ${item.theme}">
+              <div class="card h-100 shadow-sm card-menu text-center p-2">
+                <div class="card-body p-1 d-flex flex-column align-items-center justify-content-center">
+                  <div class="card-icon-wrapper ${item.theme} mb-2">
                     <i class="bi ${item.icon}"></i>
                   </div>
-                  <h6 class="card-title fw-bold text-dark mb-1">${item.title}</h6>
-                  <p class="card-text text-muted small mb-0">${item.description || ''}</p>
+                  <h6 class="card-title fw-semibold text-dark mb-1" style="font-size: 0.85rem;">${item.title}</h6>
+                  <p class="card-text text-muted mb-0 text-truncate w-100" style="font-size: 0.72rem;">${item.description || ''}</p>
                 </div>
               </div>
             </a>
@@ -310,9 +224,6 @@
       });
     }
 
-    // ==========================================
-    // 3. ระบบ Live Search กรองเมนู real-time
-    // ==========================================
     document.getElementById('searchInput').addEventListener('input', (e) => {
       const keyword = e.target.value.toLowerCase().trim();
       const filtered = menuItems.filter(item =>
@@ -322,7 +233,6 @@
       renderMenu(filtered);
     });
 
-    // แสดงผลครั้งแรก
     renderMenu(menuItems);
   </script>
 
