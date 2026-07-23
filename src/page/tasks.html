@@ -407,35 +407,41 @@
         ];
 
         let state = {
-            categories: JSON.parse(localStorage.getItem('notion_categories')) || DEFAULT_CATEGORIES,
-            documents: JSON.parse(localStorage.getItem('notion_documents')) || INITIAL_DOCS,
+            categories: DEFAULT_CATEGORIES,
+            documents: INITIAL_DOCS,
             activeDocId: 'doc-1',
             activeView: 'editor',
             activeBlockIndex: null
         };
 
-        // SAVE STATE
+        // SAVE STATE (เซฟลง Firestore Database เท่านั้น)
         function saveState() {
-            localStorage.setItem('notion_categories', JSON.stringify(state.categories));
-            localStorage.setItem('notion_documents', JSON.stringify(state.documents));
-            
             const syncInd = document.getElementById('sync-indicator');
             const syncTxt = document.getElementById('sync-text');
             if (syncInd) {
                 syncInd.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse";
                 syncTxt.innerText = "กำลังบันทึก...";
-                setTimeout(() => {
-                    syncInd.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
-                    syncTxt.innerText = "บันทึกข้อมูลแล้ว";
-                }, 400);
             }
 
-            // Sync to Firestore if accessible
+            // Sync to Firestore Database
             if (db && state.activeDocId) {
                 const docRef = doc(db, "notion_workspace", state.activeDocId);
                 const activeDoc = state.documents.find(d => d.id === state.activeDocId);
                 if (activeDoc) {
-                    setDoc(docRef, activeDoc, { merge: true }).catch(() => {});
+                    setDoc(docRef, activeDoc, { merge: true })
+                        .then(() => {
+                            if (syncInd) {
+                                syncInd.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
+                                syncTxt.innerText = "บันทึกข้อมูลแล้ว";
+                            }
+                        })
+                        .catch((err) => {
+                            console.error("Error saving to database:", err);
+                            if (syncInd) {
+                                syncInd.className = "w-2.5 h-2.5 rounded-full bg-red-500";
+                                syncTxt.innerText = "บันทึกล้มเหลว";
+                            }
+                        });
                 }
             }
         }
