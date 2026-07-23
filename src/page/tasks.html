@@ -1,5 +1,6 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="th" class="h-full">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -32,75 +33,115 @@
     <!-- Google Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <style>
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
+
         .code-font {
             font-family: 'JetBrains Mono', monospace;
         }
+
         [contenteditable]:empty:before {
             content: attr(placeholder);
             color: #a3a3a3;
             cursor: text;
         }
+
         .dark [contenteditable]:empty:before {
             color: #525252;
         }
+
         [contenteditable]:focus {
             outline: none;
         }
+
         /* Custom scrollbars */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
         }
+
         ::-webkit-scrollbar-track {
             background: transparent;
         }
+
         ::-webkit-scrollbar-thumb {
             background: #d1d5db;
             border-radius: 9999px;
         }
+
         .dark ::webkit-scrollbar-thumb {
             background: #4b5563;
         }
+
         /* Tab indentation helper visual guides */
-        .indent-guide-1 { margin-left: 1.25rem; border-left: 2px solid rgba(156, 163, 175, 0.2); padding-left: 0.75rem; }
-        .indent-guide-2 { margin-left: 2.5rem; border-left: 2px solid rgba(156, 163, 175, 0.25); padding-left: 0.75rem; }
-        .indent-guide-3 { margin-left: 3.75rem; border-left: 2px solid rgba(156, 163, 175, 0.3); padding-left: 0.75rem; }
-        .indent-guide-4 { margin-left: 5.0rem; border-left: 2px solid rgba(156, 163, 175, 0.35); padding-left: 0.75rem; }
+        .indent-guide-1 {
+            margin-left: 1.25rem;
+            border-left: 2px solid rgba(156, 163, 175, 0.2);
+            padding-left: 0.75rem;
+        }
+
+        .indent-guide-2 {
+            margin-left: 2.5rem;
+            border-left: 2px solid rgba(156, 163, 175, 0.25);
+            padding-left: 0.75rem;
+        }
+
+        .indent-guide-3 {
+            margin-left: 3.75rem;
+            border-left: 2px solid rgba(156, 163, 175, 0.3);
+            padding-left: 0.75rem;
+        }
+
+        .indent-guide-4 {
+            margin-left: 5.0rem;
+            border-left: 2px solid rgba(156, 163, 175, 0.35);
+            padding-left: 0.75rem;
+        }
     </style>
 </head>
-<body class="bg-notion-bg dark:bg-notion-darkBg text-notion-text dark:text-notion-darkText h-full flex flex-col font-sans transition-colors duration-200 antialiased selection:bg-blue-100 dark:selection:bg-blue-900 selection:text-blue-900 dark:selection:text-blue-100">
+
+<body
+    class="bg-notion-bg dark:bg-notion-darkBg text-notion-text dark:text-notion-darkText h-full flex flex-col font-sans transition-colors duration-200 antialiased selection:bg-blue-100 dark:selection:bg-blue-900 selection:text-blue-900 dark:selection:text-blue-100">
 
     <div id="app" class="flex h-screen w-screen overflow-hidden">
-        
+
         <!-- SIDEBAR NAVIGATION -->
-        <aside id="sidebar" class="w-64 bg-notion-sidebar dark:bg-notion-darkSidebar border-r border-notion-border dark:border-notion-darkBorder flex flex-col flex-shrink-0 transition-all duration-300 z-20 relative">
+        <aside id="sidebar"
+            class="w-64 bg-notion-sidebar dark:bg-notion-darkSidebar border-r border-notion-border dark:border-notion-darkBorder flex flex-col flex-shrink-0 transition-all duration-300 z-20 relative">
             <!-- Workspace Switcher -->
-            <div class="p-3 border-b border-notion-border dark:border-notion-darkBorder flex items-center justify-between">
+            <div
+                class="p-3 border-b border-notion-border dark:border-notion-darkBorder flex items-center justify-between">
                 <div class="flex items-center space-x-2.5 overflow-hidden">
-                    <div class="w-7 h-7 rounded bg-gradient-to-tr from-blue-600 to-indigo-500 text-white flex items-center justify-center font-bold text-sm shadow-sm flex-shrink-0">
+                    <div
+                        class="w-7 h-7 rounded bg-gradient-to-tr from-blue-600 to-indigo-500 text-white flex items-center justify-center font-bold text-sm shadow-sm flex-shrink-0">
                         N
                     </div>
                     <span class="font-semibold text-sm truncate">My Notion Workspace</span>
                 </div>
-                <button id="toggle-sidebar-btn" class="p-1 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 rounded hover:bg-notion-hover dark:hover:bg-notion-darkHover transition">
+                <button id="toggle-sidebar-btn"
+                    class="p-1 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 rounded hover:bg-notion-hover dark:hover:bg-notion-darkHover transition">
                     <i class="fa-solid font-bold fa-bars-staggered text-xs"></i>
                 </button>
             </div>
 
             <!-- Global Action Items -->
             <div class="px-2 py-2 space-y-0.5">
-                <button id="btn-quick-search" class="w-full flex items-center justify-between px-2.5 py-1.5 text-xs text-gray-600 dark:text-gray-400 hover:bg-notion-hover dark:hover:bg-notion-darkHover rounded-md transition">
-                    <span class="flex items-center gap-2"><i class="fa-solid fa-magnifying-glass"></i> ค้นหางาน / โน้ต</span>
-                    <kbd class="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-800 text-[10px] rounded text-gray-500">Ctrl+K</kbd>
+                <button id="btn-quick-search"
+                    class="w-full flex items-center justify-between px-2.5 py-1.5 text-xs text-gray-600 dark:text-gray-400 hover:bg-notion-hover dark:hover:bg-notion-darkHover rounded-md transition">
+                    <span class="flex items-center gap-2"><i class="fa-solid fa-magnifying-glass"></i> ค้นหางาน /
+                        โน้ต</span>
+                    <kbd
+                        class="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-800 text-[10px] rounded text-gray-500">Ctrl+K</kbd>
                 </button>
-                <button id="btn-new-doc" class="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 rounded-md font-medium transition">
+                <button id="btn-new-doc"
+                    class="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 rounded-md font-medium transition">
                     <i class="fa-solid fa-plus"></i> เพิ่มเอกสาร / งานใหม่
                 </button>
             </div>
@@ -110,8 +151,12 @@
                 <!-- Categories Section -->
                 <div>
                     <div class="flex items-center justify-between px-2 mb-1">
-                        <span class="text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">การหมวดหมู่ (Categories)</span>
-                        <button id="add-category-btn" title="เพิ่มหมวดหมู่" class="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"><i class="fa-solid fa-plus"></i></button>
+                        <span
+                            class="text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">การหมวดหมู่
+                            (Categories)</span>
+                        <button id="add-category-btn" title="เพิ่มหมวดหมู่"
+                            class="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"><i
+                                class="fa-solid fa-plus"></i></button>
                     </div>
                     <ul id="category-list" class="space-y-0.5 text-xs">
                         <!-- Category Items Injected Here -->
@@ -121,7 +166,9 @@
                 <!-- Documents / Tasks Section -->
                 <div>
                     <div class="flex items-center justify-between px-2 mb-1">
-                        <span class="text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">เอกสาร & งาน (Pages)</span>
+                        <span
+                            class="text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">เอกสาร
+                            & งาน (Pages)</span>
                     </div>
                     <ul id="document-list" class="space-y-0.5 text-xs">
                         <!-- Document Items Injected Here -->
@@ -130,12 +177,15 @@
             </div>
 
             <!-- User Sync Status & Footer -->
-            <div class="p-3 border-t border-notion-border dark:border-notion-darkBorder text-xs flex items-center justify-between">
+            <div
+                class="p-3 border-t border-notion-border dark:border-notion-darkBorder text-xs flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                    <span id="sync-indicator" class="w-2.5 h-2.5 rounded-full bg-emerald-500" title="เชื่อมต่อและบันทึกข้อมูลเรียบร้อย"></span>
+                    <span id="sync-indicator" class="w-2.5 h-2.5 rounded-full bg-emerald-500"
+                        title="เชื่อมต่อและบันทึกข้อมูลเรียบร้อย"></span>
                     <span id="sync-text" class="text-gray-500 dark:text-gray-400 text-[11px]">เรียลไทม์ซิงค์แล้ว</span>
                 </div>
-                <button id="theme-toggle" class="p-1.5 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-notion-hover dark:hover:bg-notion-darkHover rounded">
+                <button id="theme-toggle"
+                    class="p-1.5 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-notion-hover dark:hover:bg-notion-darkHover rounded">
                     <i class="fa-solid fa-moon dark:hidden"></i>
                     <i class="fa-solid fa-sun hidden dark:inline"></i>
                 </button>
@@ -144,40 +194,51 @@
 
         <!-- MAIN WORKSPACE -->
         <main class="flex-1 flex flex-col h-full bg-notion-bg dark:bg-notion-darkBg overflow-hidden relative">
-            
+
             <!-- Top Navigation Bar -->
-            <header class="h-12 border-b border-notion-border dark:border-notion-darkBorder px-4 flex items-center justify-between flex-shrink-0">
+            <header
+                class="h-12 border-b border-notion-border dark:border-notion-darkBorder px-4 flex items-center justify-between flex-shrink-0">
                 <div class="flex items-center space-x-3 overflow-hidden">
-                    <button id="open-sidebar-btn" class="p-1 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 rounded hover:bg-notion-hover dark:hover:bg-notion-darkHover hidden">
+                    <button id="open-sidebar-btn"
+                        class="p-1 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 rounded hover:bg-notion-hover dark:hover:bg-notion-darkHover hidden">
                         <i class="fa-solid fa-bars"></i>
                     </button>
                     <!-- Breadcrumbs -->
                     <div class="flex items-center text-xs space-x-2 text-gray-500 truncate">
-                        <span id="nav-category-badge" class="px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 font-medium">📋 งานทั่วไป</span>
+                        <span id="nav-category-badge"
+                            class="px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 font-medium">📋
+                            งานทั่วไป</span>
                         <span>/</span>
-                        <span id="nav-doc-title" class="font-medium text-gray-800 dark:text-gray-200 truncate">โปรเจกต์พัฒนาแอปพลิเคชัน</span>
+                        <span id="nav-doc-title"
+                            class="font-medium text-gray-800 dark:text-gray-200 truncate">โปรเจกต์พัฒนาแอปพลิเคชัน</span>
                     </div>
                 </div>
 
                 <!-- View Switch Tabs -->
-                <div class="flex items-center space-x-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg text-xs font-medium">
-                    <button data-view="editor" class="view-tab-btn px-3 py-1 rounded-md bg-white dark:bg-gray-700 shadow-sm text-gray-800 dark:text-white transition flex items-center gap-1.5">
+                <div
+                    class="flex items-center space-x-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg text-xs font-medium">
+                    <button data-view="editor"
+                        class="view-tab-btn px-3 py-1 rounded-md bg-white dark:bg-gray-700 shadow-sm text-gray-800 dark:text-white transition flex items-center gap-1.5">
                         <i class="fa-solid fa-file-lines"></i> โน้ต/เอกสาร (Notion)
                     </button>
-                    <button data-view="kanban" class="view-tab-btn px-3 py-1 rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition flex items-center gap-1.5">
+                    <button data-view="kanban"
+                        class="view-tab-btn px-3 py-1 rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition flex items-center gap-1.5">
                         <i class="fa-solid fa-square-poll-vertical"></i> บอร์ดงาน (Kanban)
                     </button>
-                    <button data-view="tasks" class="view-tab-btn px-3 py-1 rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition flex items-center gap-1.5">
+                    <button data-view="tasks"
+                        class="view-tab-btn px-3 py-1 rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition flex items-center gap-1.5">
                         <i class="fa-solid fa-list-check"></i> รายการงาน (List)
                     </button>
                 </div>
 
                 <!-- Extra Actions -->
                 <div class="flex items-center gap-2">
-                    <button id="export-doc-btn" title="ส่งออกข้อมูล (Export JSON)" class="p-1.5 text-xs text-gray-500 hover:bg-notion-hover dark:hover:bg-notion-darkHover rounded">
+                    <button id="export-doc-btn" title="ส่งออกข้อมูล (Export JSON)"
+                        class="p-1.5 text-xs text-gray-500 hover:bg-notion-hover dark:hover:bg-notion-darkHover rounded">
                         <i class="fa-solid fa-download"></i>
                     </button>
-                    <button id="delete-doc-btn" title="ลบเอกสารนี้" class="p-1.5 text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded">
+                    <button id="delete-doc-btn" title="ลบเอกสารนี้"
+                        class="p-1.5 text-xs text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded">
                         <i class="fa-solid fa-trash-can"></i>
                     </button>
                 </div>
@@ -189,14 +250,18 @@
                     <!-- Document Icon & Meta -->
                     <div class="group relative mb-6">
                         <div class="flex items-center gap-3 mb-3">
-                            <span id="doc-emoji-icon" class="text-4xl p-2 rounded-lg hover:bg-notion-hover dark:hover:bg-notion-darkHover cursor-pointer select-none transition" title="คลิกเพื่อเปลี่ยนไอคอน">🚀</span>
-                            
+                            <span id="doc-emoji-icon"
+                                class="text-4xl p-2 rounded-lg hover:bg-notion-hover dark:hover:bg-notion-darkHover cursor-pointer select-none transition"
+                                title="คลิกเพื่อเปลี่ยนไอคอน">🚀</span>
+
                             <!-- Status & Priority Badge Pickers -->
                             <div class="flex items-center gap-2">
-                                <select id="doc-category-select" class="text-xs bg-gray-100 dark:bg-gray-800 border-none rounded px-2.5 py-1 text-gray-700 dark:text-gray-300 font-medium focus:ring-1 focus:ring-blue-500">
+                                <select id="doc-category-select"
+                                    class="text-xs bg-gray-100 dark:bg-gray-800 border-none rounded px-2.5 py-1 text-gray-700 dark:text-gray-300 font-medium focus:ring-1 focus:ring-blue-500">
                                     <!-- Dynamic Category Options -->
                                 </select>
-                                <select id="doc-priority-select" class="text-xs bg-gray-100 dark:bg-gray-800 border-none rounded px-2.5 py-1 font-medium focus:ring-1 focus:ring-blue-500">
+                                <select id="doc-priority-select"
+                                    class="text-xs bg-gray-100 dark:bg-gray-800 border-none rounded px-2.5 py-1 font-medium focus:ring-1 focus:ring-blue-500">
                                     <option value="low">🔵 ความสำคัญ: ต่ำ</option>
                                     <option value="medium" selected>🟡 ความสำคัญ: ปานกลาง</option>
                                     <option value="high">🟠 ความสำคัญ: สูง</option>
@@ -206,11 +271,18 @@
                         </div>
 
                         <!-- Main Title Input -->
-                        <h1 id="doc-main-title" contenteditable="true" placeholder="ตั้งชื่อหัวข้อเอกสารหรือชื่องาน..." class="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100 focus:outline-none mb-2">
+                        <h1 id="doc-main-title" contenteditable="true" placeholder="ตั้งชื่อหัวข้อเอกสารหรือชื่องาน..."
+                            class="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-100 focus:outline-none mb-2">
                             วางแผนงานโปรเจกต์ประจำสัปดาห์
                         </h1>
                         <p class="text-xs text-gray-400 mb-6 flex items-center gap-2">
-                            <span><i class="fa-regular fa-keyboard"></i> เคล็ดลับ: กด <kbd class="px-1 py-0.5 bg-gray-200 dark:bg-gray-800 rounded">Enter</kbd> ขึ้นบรรทัดใหม่, <kbd class="px-1 py-0.5 bg-gray-200 dark:bg-gray-800 rounded">Tab</kbd> / <kbd class="px-1 py-0.5 bg-gray-200 dark:bg-gray-800 rounded">Shift+Tab</kbd> เพื่อย่อหน้า/ถอยย่อหน้า หรือพิมพ์ <kbd class="px-1 py-0.5 bg-gray-200 dark:bg-gray-800 rounded">/</kbd> เพื่อเลือกประเภทบล็อก</span>
+                            <span><i class="fa-regular fa-keyboard"></i> เคล็ดลับ: กด <kbd
+                                    class="px-1 py-0.5 bg-gray-200 dark:bg-gray-800 rounded">Enter</kbd> ขึ้นบรรทัดใหม่,
+                                <kbd class="px-1 py-0.5 bg-gray-200 dark:bg-gray-800 rounded">Tab</kbd> / <kbd
+                                    class="px-1 py-0.5 bg-gray-200 dark:bg-gray-800 rounded">Shift+Tab</kbd>
+                                เพื่อย่อหน้า/ถอยย่อหน้า หรือพิมพ์ <kbd
+                                    class="px-1 py-0.5 bg-gray-200 dark:bg-gray-800 rounded">/</kbd>
+                                เพื่อเลือกประเภทบล็อก</span>
                         </p>
                     </div>
 
@@ -222,15 +294,19 @@
             </div>
 
             <!-- VIEW 2: KANBAN BOARD VIEW -->
-            <div id="view-kanban" class="view-container hidden flex-1 p-6 overflow-x-auto bg-gray-50/50 dark:bg-notion-darkBg">
+            <div id="view-kanban"
+                class="view-container hidden flex-1 p-6 overflow-x-auto bg-gray-50/50 dark:bg-notion-darkBg">
                 <div class="flex items-start gap-6 h-full min-w-max pb-6">
                     <!-- Column 1: To Do -->
-                    <div class="w-80 bg-notion-sidebar dark:bg-notion-darkSidebar rounded-xl p-3 border border-notion-border dark:border-notion-darkBorder flex flex-col max-h-full">
+                    <div
+                        class="w-80 bg-notion-sidebar dark:bg-notion-darkSidebar rounded-xl p-3 border border-notion-border dark:border-notion-darkBorder flex flex-col max-h-full">
                         <div class="flex items-center justify-between mb-3 px-1">
                             <div class="flex items-center gap-2">
                                 <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
-                                <h3 class="font-semibold text-xs text-gray-700 dark:text-gray-300">รอดำเนินการ (To Do)</h3>
-                                <span id="count-todo" class="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300">0</span>
+                                <h3 class="font-semibold text-xs text-gray-700 dark:text-gray-300">รอดำเนินการ (To Do)
+                                </h3>
+                                <span id="count-todo"
+                                    class="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300">0</span>
                             </div>
                         </div>
                         <div id="kanban-todo" class="kanban-col flex-1 overflow-y-auto space-y-2.5 pr-1 min-h-[100px]">
@@ -239,29 +315,37 @@
                     </div>
 
                     <!-- Column 2: In Progress -->
-                    <div class="w-80 bg-notion-sidebar dark:bg-notion-darkSidebar rounded-xl p-3 border border-notion-border dark:border-notion-darkBorder flex flex-col max-h-full">
+                    <div
+                        class="w-80 bg-notion-sidebar dark:bg-notion-darkSidebar rounded-xl p-3 border border-notion-border dark:border-notion-darkBorder flex flex-col max-h-full">
                         <div class="flex items-center justify-between mb-3 px-1">
                             <div class="flex items-center gap-2">
                                 <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-                                <h3 class="font-semibold text-xs text-gray-700 dark:text-gray-300">กำลังทำ (In Progress)</h3>
-                                <span id="count-in_progress" class="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300">0</span>
+                                <h3 class="font-semibold text-xs text-gray-700 dark:text-gray-300">กำลังทำ (In Progress)
+                                </h3>
+                                <span id="count-in_progress"
+                                    class="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300">0</span>
                             </div>
                         </div>
-                        <div id="kanban-in_progress" class="kanban-col flex-1 overflow-y-auto space-y-2.5 pr-1 min-h-[100px]">
+                        <div id="kanban-in_progress"
+                            class="kanban-col flex-1 overflow-y-auto space-y-2.5 pr-1 min-h-[100px]">
                             <!-- Tasks Injected -->
                         </div>
                     </div>
 
                     <!-- Column 3: Completed -->
-                    <div class="w-80 bg-notion-sidebar dark:bg-notion-darkSidebar rounded-xl p-3 border border-notion-border dark:border-notion-darkBorder flex flex-col max-h-full">
+                    <div
+                        class="w-80 bg-notion-sidebar dark:bg-notion-darkSidebar rounded-xl p-3 border border-notion-border dark:border-notion-darkBorder flex flex-col max-h-full">
                         <div class="flex items-center justify-between mb-3 px-1">
                             <div class="flex items-center gap-2">
                                 <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                                <h3 class="font-semibold text-xs text-gray-700 dark:text-gray-300">เสร็จสิ้น (Completed)</h3>
-                                <span id="count-completed" class="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300">0</span>
+                                <h3 class="font-semibold text-xs text-gray-700 dark:text-gray-300">เสร็จสิ้น (Completed)
+                                </h3>
+                                <span id="count-completed"
+                                    class="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300">0</span>
                             </div>
                         </div>
-                        <div id="kanban-completed" class="kanban-col flex-1 overflow-y-auto space-y-2.5 pr-1 min-h-[100px]">
+                        <div id="kanban-completed"
+                            class="kanban-col flex-1 overflow-y-auto space-y-2.5 pr-1 min-h-[100px]">
                             <!-- Tasks Injected -->
                         </div>
                     </div>
@@ -270,9 +354,12 @@
 
             <!-- VIEW 3: TASK LIST VIEW -->
             <div id="view-tasks" class="view-container hidden flex-1 p-6 overflow-y-auto">
-                <div class="max-w-4xl mx-auto bg-white dark:bg-notion-darkSidebar rounded-xl border border-notion-border dark:border-notion-darkBorder shadow-sm overflow-hidden">
-                    <div class="p-4 border-b border-notion-border dark:border-notion-darkBorder flex items-center justify-between">
-                        <h2 class="font-bold text-sm text-gray-800 dark:text-gray-200">สรุปรายการงานย่อยทั้งหมด (Task Checklist)</h2>
+                <div
+                    class="max-w-4xl mx-auto bg-white dark:bg-notion-darkSidebar rounded-xl border border-notion-border dark:border-notion-darkBorder shadow-sm overflow-hidden">
+                    <div
+                        class="p-4 border-b border-notion-border dark:border-notion-darkBorder flex items-center justify-between">
+                        <h2 class="font-bold text-sm text-gray-800 dark:text-gray-200">สรุปรายการงานย่อยทั้งหมด (Task
+                            Checklist)</h2>
                         <span id="task-completion-rate" class="text-xs text-gray-500">ความคืบหน้า 0%</span>
                     </div>
                     <div class="divide-y divide-notion-border dark:divide-notion-darkBorder" id="all-tasks-list">
@@ -285,54 +372,63 @@
     </div>
 
     <!-- SLASH COMMAND POPUP MENU -->
-    <div id="slash-menu" class="hidden absolute z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl w-64 overflow-hidden py-1 text-xs">
-        <div class="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-400 border-b border-gray-100 dark:border-gray-700">
+    <div id="slash-menu"
+        class="hidden absolute z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl w-64 overflow-hidden py-1 text-xs">
+        <div
+            class="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-400 border-b border-gray-100 dark:border-gray-700">
             เปลี่ยนประเภทบล็อก (BASIC BLOCKS)
         </div>
         <div class="max-h-60 overflow-y-auto py-1" id="slash-options">
-            <button data-type="text" class="slash-item w-full flex items-center gap-3 px-3 py-2 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-left transition">
+            <button data-type="text"
+                class="slash-item w-full flex items-center gap-3 px-3 py-2 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-left transition">
                 <i class="fa-solid fa-paragraph text-gray-500 w-4 text-center"></i>
                 <div>
                     <div class="font-medium">ข้อความทั่วไป (Text)</div>
                     <div class="text-[10px] text-gray-400">พิมพ์ตัวหนังสือ ย่อหน้าทั่วไป</div>
                 </div>
             </button>
-            <button data-type="h1" class="slash-item w-full flex items-center gap-3 px-3 py-2 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-left transition">
+            <button data-type="h1"
+                class="slash-item w-full flex items-center gap-3 px-3 py-2 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-left transition">
                 <i class="fa-solid fa-heading text-gray-500 w-4 text-center"></i>
                 <div>
                     <div class="font-medium">หัวข้อใหญ่ (Heading 1)</div>
                     <div class="text-[10px] text-gray-400">หัวข้อหลักประจำส่วน</div>
                 </div>
             </button>
-            <button data-type="h2" class="slash-item w-full flex items-center gap-3 px-3 py-2 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-left transition">
+            <button data-type="h2"
+                class="slash-item w-full flex items-center gap-3 px-3 py-2 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-left transition">
                 <i class="fa-solid fa-h2 text-gray-500 w-4 text-center"></i>
                 <div>
                     <div class="font-medium">หัวข้อย่อย (Heading 2)</div>
                     <div class="text-[10px] text-gray-400">หัวข้อขนาดกลาง</div>
                 </div>
             </button>
-            <button data-type="todo" class="slash-item w-full flex items-center gap-3 px-3 py-2 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-left transition">
+            <button data-type="todo"
+                class="slash-item w-full flex items-center gap-3 px-3 py-2 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-left transition">
                 <i class="fa-regular fa-square-check text-gray-500 w-4 text-center"></i>
                 <div>
                     <div class="font-medium">รายการงาน (To-Do List)</div>
                     <div class="text-[10px] text-gray-400">กล่องเช็กลิสต์งานที่ต้องทำ</div>
                 </div>
             </button>
-            <button data-type="bullet" class="slash-item w-full flex items-center gap-3 px-3 py-2 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-left transition">
+            <button data-type="bullet"
+                class="slash-item w-full flex items-center gap-3 px-3 py-2 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-left transition">
                 <i class="fa-solid fa-list-ul text-gray-500 w-4 text-center"></i>
                 <div>
                     <div class="font-medium">รายการหัวข้อย่อย (Bullet List)</div>
                     <div class="text-[10px] text-gray-400">จุดรายการแบบจุดวงกลม</div>
                 </div>
             </button>
-            <button data-type="callout" class="slash-item w-full flex items-center gap-3 px-3 py-2 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-left transition">
+            <button data-type="callout"
+                class="slash-item w-full flex items-center gap-3 px-3 py-2 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-left transition">
                 <i class="fa-regular fa-lightbulb text-amber-500 w-4 text-center"></i>
                 <div>
                     <div class="font-medium">กล่องเน้นข้อความ (Callout)</div>
                     <div class="text-[10px] text-gray-400">เน้นข้อความสำคัญด้วยกล่องสี</div>
                 </div>
             </button>
-            <button data-type="code" class="slash-item w-full flex items-center gap-3 px-3 py-2 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-left transition">
+            <button data-type="code"
+                class="slash-item w-full flex items-center gap-3 px-3 py-2 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-left transition">
                 <i class="fa-solid fa-code text-gray-500 w-4 text-center"></i>
                 <div>
                     <div class="font-medium">บล็อกโค้ด (Code Block)</div>
@@ -343,11 +439,14 @@
     </div>
 
     <!-- QUICK SEARCH MODAL -->
-    <div id="search-modal" class="hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-start justify-center pt-20 p-4">
-        <div class="bg-white dark:bg-notion-darkSidebar border border-gray-200 dark:border-gray-700 w-full max-w-lg rounded-xl shadow-2xl overflow-hidden">
+    <div id="search-modal"
+        class="hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-start justify-center pt-20 p-4">
+        <div
+            class="bg-white dark:bg-notion-darkSidebar border border-gray-200 dark:border-gray-700 w-full max-w-lg rounded-xl shadow-2xl overflow-hidden">
             <div class="p-3 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
                 <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
-                <input id="search-input" type="text" placeholder="พิมพ์ชื่อเอกสารเพื่อค้นหา..." class="w-full bg-transparent border-none text-sm focus:outline-none text-gray-800 dark:text-gray-200">
+                <input id="search-input" type="text" placeholder="พิมพ์ชื่อเอกสารเพื่อค้นหา..."
+                    class="w-full bg-transparent border-none text-sm focus:outline-none text-gray-800 dark:text-gray-200">
                 <kbd class="text-[10px] bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-gray-400">ESC</kbd>
             </div>
             <div id="search-results" class="max-h-80 overflow-y-auto p-2 space-y-1 text-xs">
@@ -357,152 +456,152 @@
     </div>
 
     <!-- APPLICATION JAVASCRIPT LOGIC -->
-     <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyBfz9eZVukWm8JaarG7FrM9Riq8sds-teU",
-        authDomain: "len-html.firebaseapp.com",
-        databaseURL: "https://len-html-default-rtdb.firebaseio.com",
-        projectId: "len-html",
-        storageBucket: "len-html.firebasestorage.app",
-        messagingSenderId: "128154153096",
-        appId: "1:128154153096:web:39554e3a5b401f05682f3d",
-        measurementId: "G-DY3Q28G20F"
-    };
+        const firebaseConfig = {
+            apiKey: "AIzaSyBfz9eZVukWm8JaarG7FrM9Riq8sds-teU",
+            authDomain: "len-html.firebaseapp.com",
+            databaseURL: "https://len-html-default-rtdb.firebaseio.com",
+            projectId: "len-html",
+            storageBucket: "len-html.firebasestorage.app",
+            messagingSenderId: "128154153096",
+            appId: "1:128154153096:web:39554e3a5b401f05682f3d",
+            measurementId: "G-DY3Q28G20F"
+        };
 
-    let db = null;
-    try {
-        const firebaseApp = initializeApp(firebaseConfig);
-        db = getFirestore(firebaseApp);
-    } catch(e) {
-        console.warn("Firebase initialization error.", e);
-    }
+        let db = null;
+        try {
+            const firebaseApp = initializeApp(firebaseConfig);
+            db = getFirestore(firebaseApp);
+        } catch (e) {
+            console.warn("Firebase initialization error.", e);
+        }
 
-    const DEFAULT_CATEGORIES = [
-        { id: 'cat-work', name: '💼 งานโปรเจกต์', color: 'blue' },
-        { id: 'cat-personal', name: '🏠 เรื่องส่วนตัว', color: 'emerald' },
-        { id: 'cat-ideas', name: '💡 ไอเดีย & ความคิด', color: 'amber' }
-    ];
+        const DEFAULT_CATEGORIES = [
+            { id: 'cat-work', name: '💼 งานโปรเจกต์', color: 'blue' },
+            { id: 'cat-personal', name: '🏠 เรื่องส่วนตัว', color: 'emerald' },
+            { id: 'cat-ideas', name: '💡 ไอเดีย & ความคิด', color: 'amber' }
+        ];
 
-    let state = {
-        categories: DEFAULT_CATEGORIES,
-        documents: [],
-        activeDocId: 'doc-1',
-        activeView: 'editor',
-        activeBlockIndex: null
-    };
+        let state = {
+            categories: DEFAULT_CATEGORIES,
+            documents: [],
+            activeDocId: 'doc-1',
+            activeView: 'editor',
+            activeBlockIndex: null
+        };
 
-    let isLocalEditing = false;
-    let saveTimeout = null;
+        let isLocalEditing = false;
+        let saveTimeout = null;
 
-    // REALTIME DATABASE LISTENER
-    function initRealtimeSync() {
-        if (!db) return;
+        // REALTIME DATABASE LISTENER
+        function initRealtimeSync() {
+            if (!db) return;
 
-        const colRef = collection(db, "notion_workspace");
-        onSnapshot(colRef, (snapshot) => {
-            const docs = [];
-            snapshot.forEach((docSnap) => {
-                docs.push(docSnap.data());
-            });
+            const colRef = collection(db, "notion_workspace");
+            onSnapshot(colRef, (snapshot) => {
+                const docs = [];
+                snapshot.forEach((docSnap) => {
+                    docs.push(docSnap.data());
+                });
 
-            if (docs.length > 0) {
-                state.documents = docs;
-                if (!state.documents.some(d => d.id === state.activeDocId)) {
-                    state.activeDocId = state.documents[0].id;
+                if (docs.length > 0) {
+                    state.documents = docs;
+                    if (!state.documents.some(d => d.id === state.activeDocId)) {
+                        state.activeDocId = state.documents[0].id;
+                    }
+                } else {
+                    const initialDoc = {
+                        id: 'doc-1',
+                        title: 'วางแผนพัฒนาแอปพลิเคชันจัดการงาน',
+                        emoji: '🚀',
+                        categoryId: 'cat-work',
+                        priority: 'high',
+                        blocks: [
+                            { id: 'b1', type: 'h1', text: 'เป้าหมายหลักในสัปดาห์นี้', indent: 0 },
+                            { id: 'b2', type: 'todo', text: 'ออกแบบหน้าจอ Notion Block Editor', checked: true, indent: 0 },
+                            { id: 'b3', type: 'todo', text: 'รองรับการกด Tab และ Shift+Tab สำหรับจัดย่อหน้า', checked: true, indent: 1 },
+                            { id: 'b4', type: 'todo', text: 'แยกหมวดหมู่งานและปรับมุมมอง Kanban Board', checked: false, indent: 1 },
+                            { id: 'b5', type: 'callout', text: '💡 ข้อแนะนำ: พิมพ์ / บนบรรทัดใหม่เพื่อเปลี่ยนประเภทของบล็อกข้อความได้ทันที!', indent: 0 },
+                            { id: 'b6', type: 'code', text: 'const greeting = "Hello Notion Application!";', indent: 0 }
+                        ]
+                    };
+                    state.documents = [initialDoc];
+                    setDoc(doc(db, "notion_workspace", initialDoc.id), initialDoc);
                 }
-            } else {
-                const initialDoc = {
-                    id: 'doc-1',
-                    title: 'วางแผนพัฒนาแอปพลิเคชันจัดการงาน',
-                    emoji: '🚀',
-                    categoryId: 'cat-work',
-                    priority: 'high',
-                    blocks: [
-                        { id: 'b1', type: 'h1', text: 'เป้าหมายหลักในสัปดาห์นี้', indent: 0 },
-                        { id: 'b2', type: 'todo', text: 'ออกแบบหน้าจอ Notion Block Editor', checked: true, indent: 0 },
-                        { id: 'b3', type: 'todo', text: 'รองรับการกด Tab และ Shift+Tab สำหรับจัดย่อหน้า', checked: true, indent: 1 },
-                        { id: 'b4', type: 'todo', text: 'แยกหมวดหมู่งานและปรับมุมมอง Kanban Board', checked: false, indent: 1 },
-                        { id: 'b5', type: 'callout', text: '💡 ข้อแนะนำ: พิมพ์ / บนบรรทัดใหม่เพื่อเปลี่ยนประเภทของบล็อกข้อความได้ทันที!', indent: 0 },
-                        { id: 'b6', type: 'code', text: 'const greeting = "Hello Notion Application!";', indent: 0 }
-                    ]
-                };
-                state.documents = [initialDoc];
-                setDoc(doc(db, "notion_workspace", initialDoc.id), initialDoc);
-            }
 
-            renderSidebar();
-            
-            const isTypingInsideEditor = blocksContainer.contains(document.activeElement);
-            if (!isTypingInsideEditor && !isLocalEditing) {
-                renderBlocks();
-            } else {
-                renderKanbanView();
-                renderTasksListView();
-            }
+                renderSidebar();
 
+                const isTypingInsideEditor = blocksContainer.contains(document.activeElement);
+                if (!isTypingInsideEditor && !isLocalEditing) {
+                    renderBlocks();
+                } else {
+                    renderKanbanView();
+                    renderTasksListView();
+                }
+
+                const syncInd = document.getElementById('sync-indicator');
+                const syncTxt = document.getElementById('sync-text');
+                if (syncInd) {
+                    syncInd.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
+                    syncTxt.innerText = "เรียลไทม์ซิงค์แล้ว";
+                }
+            });
+        }
+
+        // DEBOUNCED SAVE STATE
+        function saveState() {
+            isLocalEditing = true;
             const syncInd = document.getElementById('sync-indicator');
             const syncTxt = document.getElementById('sync-text');
             if (syncInd) {
-                syncInd.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
-                syncTxt.innerText = "เรียลไทม์ซิงค์แล้ว";
+                syncInd.className = "w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse";
+                syncTxt.innerText = "กำลังพิมพ์/บันทึก...";
             }
-        });
-    }
 
-    // DEBOUNCED SAVE STATE
-    function saveState() {
-        isLocalEditing = true;
-        const syncInd = document.getElementById('sync-indicator');
-        const syncTxt = document.getElementById('sync-text');
-        if (syncInd) {
-            syncInd.className = "w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse";
-            syncTxt.innerText = "กำลังพิมพ์/บันทึก...";
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                if (db && state.activeDocId) {
+                    const docRef = doc(db, "notion_workspace", state.activeDocId);
+                    const activeDoc = getActiveDoc();
+                    if (activeDoc) {
+                        setDoc(docRef, activeDoc, { merge: true })
+                            .then(() => {
+                                isLocalEditing = false;
+                                if (syncInd) {
+                                    syncInd.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
+                                    syncTxt.innerText = "เรียลไทม์ซิงค์แล้ว";
+                                }
+                            })
+                            .catch((err) => {
+                                isLocalEditing = false;
+                                console.error("Error saving:", err);
+                            });
+                    }
+                } else {
+                    isLocalEditing = false;
+                }
+            }, 500);
         }
 
-        clearTimeout(saveTimeout);
-        saveTimeout = setTimeout(() => {
-            if (db && state.activeDocId) {
-                const docRef = doc(db, "notion_workspace", state.activeDocId);
-                const activeDoc = getActiveDoc();
-                if (activeDoc) {
-                    setDoc(docRef, activeDoc, { merge: true })
-                        .then(() => {
-                            isLocalEditing = false;
-                            if (syncInd) {
-                                syncInd.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
-                                syncTxt.innerText = "เรียลไทม์ซิงค์แล้ว";
-                            }
-                        })
-                        .catch((err) => {
-                            isLocalEditing = false;
-                            console.error("Error saving:", err);
-                        });
-                }
-            } else {
-                isLocalEditing = false;
-            }
-        }, 500);
-    }
+        function getActiveDoc() {
+            return state.documents.find(d => d.id === state.activeDocId) || state.documents[0];
+        }
 
-    function getActiveDoc() {
-        return state.documents.find(d => d.id === state.activeDocId) || state.documents[0];
-    }
+        const sidebar = document.getElementById('sidebar');
+        const documentListEl = document.getElementById('document-list');
+        const categoryListEl = document.getElementById('category-list');
+        const categorySelectEl = document.getElementById('doc-category-select');
+        const prioritySelectEl = document.getElementById('doc-priority-select');
+        const blocksContainer = document.getElementById('blocks-container');
+        const docTitleEl = document.getElementById('doc-main-title');
+        const docEmojiEl = document.getElementById('doc-emoji-icon');
+        const slashMenu = document.getElementById('slash-menu');
 
-    const sidebar = document.getElementById('sidebar');
-    const documentListEl = document.getElementById('document-list');
-    const categoryListEl = document.getElementById('category-list');
-    const categorySelectEl = document.getElementById('doc-category-select');
-    const prioritySelectEl = document.getElementById('doc-priority-select');
-    const blocksContainer = document.getElementById('blocks-container');
-    const docTitleEl = document.getElementById('doc-main-title');
-    const docEmojiEl = document.getElementById('doc-emoji-icon');
-    const slashMenu = document.getElementById('slash-menu');
-
-    function renderSidebar() {
-        categoryListEl.innerHTML = state.categories.map(cat => `
+        function renderSidebar() {
+            categoryListEl.innerHTML = state.categories.map(cat => `
             <li class="group flex items-center justify-between px-2 py-1 rounded-md hover:bg-notion-hover dark:hover:bg-notion-darkHover cursor-pointer text-gray-700 dark:text-gray-300">
                 <span class="truncate flex items-center gap-2">
                     <span class="w-2 h-2 rounded-full bg-blue-500"></span>
@@ -512,9 +611,9 @@
             </li>
         `).join('');
 
-        documentListEl.innerHTML = state.documents.map(doc => {
-            const isActive = doc.id === state.activeDocId;
-            return `
+            documentListEl.innerHTML = state.documents.map(doc => {
+                const isActive = doc.id === state.activeDocId;
+                return `
                 <li onclick="switchDocument('${doc.id}')" class="group flex items-center justify-between px-2 py-1.5 rounded-md cursor-pointer transition ${isActive ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-medium' : 'hover:bg-notion-hover dark:hover:bg-notion-darkHover text-gray-700 dark:text-gray-300'}">
                     <span class="truncate flex items-center gap-2">
                         <span>${doc.emoji || '📄'}</span>
@@ -525,303 +624,303 @@
                     </button>
                 </li>
             `;
-        }).join('');
+            }).join('');
 
-        categorySelectEl.innerHTML = state.categories.map(cat => `
+            categorySelectEl.innerHTML = state.categories.map(cat => `
             <option value="${cat.id}" ${getActiveDoc()?.categoryId === cat.id ? 'selected' : ''}>${cat.name}</option>
         `).join('');
-    }
-
-    function renderBlocks() {
-        const activeDoc = getActiveDoc();
-        if (!activeDoc) return;
-
-        const category = state.categories.find(c => c.id === activeDoc.categoryId);
-        document.getElementById('nav-category-badge').innerText = category ? category.name : 'ทั่วไป';
-        document.getElementById('nav-doc-title').innerText = activeDoc.title || 'ไม่มีชื่อหัวข้อ';
-        
-        if (document.activeElement !== docTitleEl) {
-            docTitleEl.innerText = activeDoc.title || '';
-        }
-        docEmojiEl.innerText = activeDoc.emoji || '📄';
-        prioritySelectEl.value = activeDoc.priority || 'medium';
-
-        blocksContainer.innerHTML = '';
-        
-        if (!activeDoc.blocks || activeDoc.blocks.length === 0) {
-            activeDoc.blocks = [{ id: 'b-' + Date.now(), type: 'text', text: '', indent: 0 }];
         }
 
-        activeDoc.blocks.forEach((block, index) => {
-            const blockEl = createBlockElement(block, index);
-            blocksContainer.appendChild(blockEl);
-        });
+        function renderBlocks() {
+            const activeDoc = getActiveDoc();
+            if (!activeDoc) return;
 
-        renderKanbanView();
-        renderTasksListView();
-    }
+            const category = state.categories.find(c => c.id === activeDoc.categoryId);
+            document.getElementById('nav-category-badge').innerText = category ? category.name : 'ทั่วไป';
+            document.getElementById('nav-doc-title').innerText = activeDoc.title || 'ไม่มีชื่อหัวข้อ';
 
-    function createBlockElement(block, index) {
-        const wrapper = document.createElement('div');
-        const indentClass = block.indent > 0 ? `indent-guide-${Math.min(block.indent, 4)}` : '';
-        wrapper.className = `block-wrapper group flex items-start gap-2 py-0.5 relative transition-all ${indentClass}`;
-        wrapper.dataset.index = index;
+            if (document.activeElement !== docTitleEl) {
+                docTitleEl.innerText = activeDoc.title || '';
+            }
+            docEmojiEl.innerText = activeDoc.emoji || '📄';
+            prioritySelectEl.value = activeDoc.priority || 'medium';
 
-        // ด้ามจับย้ายบล็อก (Drag handle)
-        const handle = document.createElement('div');
-        handle.className = "opacity-0 group-hover:opacity-100 cursor-grab text-gray-300 dark:text-gray-600 hover:text-gray-500 pt-1 text-xs select-none w-4 flex justify-center";
-        handle.innerHTML = '<i class="fa-solid fa-grip-vertical"></i>';
+            blocksContainer.innerHTML = '';
 
-        // ปุ่มลบบล็อก (Delete block button)
-        const deleteBtn = document.createElement('button');
-        deleteBtn.className = "opacity-0 group-hover:opacity-100 text-gray-300 dark:text-gray-600 hover:text-red-500 pt-1 text-xs select-none w-4 flex justify-center transition";
-        deleteBtn.innerHTML = '<i class="fa-regular fa-trash-can"></i>';
-        deleteBtn.title = "ลบบล็อกนี้";
-        deleteBtn.onclick = (e) => {
-            e.stopPropagation();
-            deleteBlock(index);
-        };
+            if (!activeDoc.blocks || activeDoc.blocks.length === 0) {
+                activeDoc.blocks = [{ id: 'b-' + Date.now(), type: 'text', text: '', indent: 0 }];
+            }
 
-        let contentWrapper = document.createElement('div');
-        contentWrapper.className = "flex-1 flex items-start gap-2 min-w-0";
+            activeDoc.blocks.forEach((block, index) => {
+                const blockEl = createBlockElement(block, index);
+                blocksContainer.appendChild(blockEl);
+            });
 
-        if (block.type === 'todo') {
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.checked = !!block.checked;
-            checkbox.className = "mt-1.5 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer";
-            checkbox.onchange = (e) => {
-                block.checked = e.target.checked;
+            renderKanbanView();
+            renderTasksListView();
+        }
+
+        function createBlockElement(block, index) {
+            const wrapper = document.createElement('div');
+            const indentClass = block.indent > 0 ? `indent-guide-${Math.min(block.indent, 4)}` : '';
+            wrapper.className = `block-wrapper group flex items-start gap-2 py-0.5 relative transition-all ${indentClass}`;
+            wrapper.dataset.index = index;
+
+            // ด้ามจับย้ายบล็อก (Drag handle)
+            const handle = document.createElement('div');
+            handle.className = "opacity-0 group-hover:opacity-100 cursor-grab text-gray-300 dark:text-gray-600 hover:text-gray-500 pt-1 text-xs select-none w-4 flex justify-center";
+            handle.innerHTML = '<i class="fa-solid fa-grip-vertical"></i>';
+
+            // ปุ่มลบบล็อก (Delete block button)
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = "opacity-0 group-hover:opacity-100 text-gray-300 dark:text-gray-600 hover:text-red-500 pt-1 text-xs select-none w-4 flex justify-center transition";
+            deleteBtn.innerHTML = '<i class="fa-regular fa-trash-can"></i>';
+            deleteBtn.title = "ลบบล็อกนี้";
+            deleteBtn.onclick = (e) => {
+                e.stopPropagation();
+                deleteBlock(index);
+            };
+
+            let contentWrapper = document.createElement('div');
+            contentWrapper.className = "flex-1 flex items-start gap-2 min-w-0";
+
+            if (block.type === 'todo') {
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.checked = !!block.checked;
+                checkbox.className = "mt-1.5 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer";
+                checkbox.onchange = (e) => {
+                    block.checked = e.target.checked;
+                    saveState();
+                    renderTasksListView();
+                    renderKanbanView();
+                };
+                contentWrapper.appendChild(checkbox);
+            } else if (block.type === 'bullet') {
+                const bullet = document.createElement('span');
+                bullet.className = "mt-2 w-1.5 h-1.5 rounded-full bg-gray-600 dark:bg-gray-400 flex-shrink-0";
+                contentWrapper.appendChild(bullet);
+            } else if (block.type === 'callout') {
+                contentWrapper.className += " bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 p-3 rounded-lg";
+                const icon = document.createElement('span');
+                icon.innerText = '💡';
+                contentWrapper.appendChild(icon);
+            }
+
+            const input = document.createElement('div');
+            input.contentEditable = "true";
+            input.dataset.index = index;
+            input.placeholder = block.type === 'h1' ? 'หัวข้อหลัก...' : (block.type === 'h2' ? 'หัวข้อย่อย...' : "พิมพ์ข้อความ หรือพิมพ์ '/' เพื่อใช้คำสั่ง...");
+
+            let textClasses = "w-full text-sm leading-relaxed focus:outline-none min-h-[1.5rem] break-words";
+            if (block.type === 'h1') textClasses += " text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100";
+            else if (block.type === 'h2') textClasses += " text-xl font-semibold tracking-tight text-gray-800 dark:text-gray-200";
+            else if (block.type === 'code') textClasses += " code-font bg-gray-900 text-green-400 p-3 rounded-md text-xs font-mono";
+            else if (block.type === 'todo' && block.checked) textClasses += " line-through text-gray-400 dark:text-gray-500";
+
+            input.className = textClasses;
+            input.innerText = block.text || '';
+
+            input.addEventListener('keydown', (e) => handleBlockKeyDown(e, index, block));
+
+            input.addEventListener('input', () => {
+                block.text = input.innerText;
                 saveState();
-                renderTasksListView();
-                renderKanbanView();
-            };
-            contentWrapper.appendChild(checkbox);
-        } else if (block.type === 'bullet') {
-            const bullet = document.createElement('span');
-            bullet.className = "mt-2 w-1.5 h-1.5 rounded-full bg-gray-600 dark:bg-gray-400 flex-shrink-0";
-            contentWrapper.appendChild(bullet);
-        } else if (block.type === 'callout') {
-            contentWrapper.className += " bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 p-3 rounded-lg";
-            const icon = document.createElement('span');
-            icon.innerText = '💡';
-            contentWrapper.appendChild(icon);
-        }
 
-        const input = document.createElement('div');
-        input.contentEditable = "true";
-        input.dataset.index = index;
-        input.placeholder = block.type === 'h1' ? 'หัวข้อหลัก...' : (block.type === 'h2' ? 'หัวข้อย่อย...' : "พิมพ์ข้อความ หรือพิมพ์ '/' เพื่อใช้คำสั่ง...");
-        
-        let textClasses = "w-full text-sm leading-relaxed focus:outline-none min-h-[1.5rem] break-words";
-        if (block.type === 'h1') textClasses += " text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100";
-        else if (block.type === 'h2') textClasses += " text-xl font-semibold tracking-tight text-gray-800 dark:text-gray-200";
-        else if (block.type === 'code') textClasses += " code-font bg-gray-900 text-green-400 p-3 rounded-md text-xs font-mono";
-        else if (block.type === 'todo' && block.checked) textClasses += " line-through text-gray-400 dark:text-gray-500";
-        
-        input.className = textClasses;
-        input.innerText = block.text || '';
-
-        input.addEventListener('keydown', (e) => handleBlockKeyDown(e, index, block));
-        
-        input.addEventListener('input', () => {
-            block.text = input.innerText;
-            saveState();
-
-            if (input.innerText.endsWith('/')) {
-                showSlashMenu(input);
-            } else {
-                hideSlashMenu();
-            }
-        });
-
-        contentWrapper.appendChild(input);
-        wrapper.appendChild(handle);
-        wrapper.appendChild(deleteBtn);
-        wrapper.appendChild(contentWrapper);
-
-        return wrapper;
-    }
-
-    // ฟังก์ชันลบบล็อกข้อความ
-    function deleteBlock(index) {
-        const activeDoc = getActiveDoc();
-        if (!activeDoc) return;
-
-        if (activeDoc.blocks.length > 1) {
-            activeDoc.blocks.splice(index, 1);
-            saveState();
-            renderBlocks();
-            focusBlock(Math.max(0, index - 1));
-        } else {
-            // เคลียร์ข้อความถ้ารีเทิร์นลบบล็อกสุดท้าย
-            activeDoc.blocks[0].text = '';
-            activeDoc.blocks[0].type = 'text';
-            activeDoc.blocks[0].indent = 0;
-            saveState();
-            renderBlocks();
-            focusBlock(0);
-        }
-    }
-
-    // ฟังก์ชันลบเอกสาร
-    window.deleteDocument = (docId, event) => {
-        if (event) event.stopPropagation();
-
-        if (state.documents.length <= 1) {
-            alert("ไม่สามารถลบเอกสารสุดท้ายได้ครับ");
-            return;
-        }
-
-        if (confirm("คุณต้องการลบเอกสารนี้ใช่หรือไม่?")) {
-            state.documents = state.documents.filter(d => d.id !== docId);
-            
-            if (state.activeDocId === docId) {
-                state.activeDocId = state.documents[0].id;
-            }
-
-            if (db) {
-                deleteDoc(doc(db, "notion_workspace", docId)).catch(err => {
-                    console.error("Error deleting document from Firestore:", err);
-                });
-            }
-
-            renderSidebar();
-            renderBlocks();
-        }
-    };
-
-    function handleBlockKeyDown(e, index, block) {
-        const activeDoc = getActiveDoc();
-
-        if (e.key === 'Tab') {
-            e.preventDefault();
-            if (e.shiftKey) {
-                if (block.indent > 0) {
-                    block.indent--;
-                    saveState();
-                    renderBlocks();
-                    focusBlock(index);
+                if (input.innerText.endsWith('/')) {
+                    showSlashMenu(input);
+                } else {
+                    hideSlashMenu();
                 }
+            });
+
+            contentWrapper.appendChild(input);
+            wrapper.appendChild(handle);
+            wrapper.appendChild(deleteBtn);
+            wrapper.appendChild(contentWrapper);
+
+            return wrapper;
+        }
+
+        // ฟังก์ชันลบบล็อกข้อความ
+        function deleteBlock(index) {
+            const activeDoc = getActiveDoc();
+            if (!activeDoc) return;
+
+            if (activeDoc.blocks.length > 1) {
+                activeDoc.blocks.splice(index, 1);
+                saveState();
+                renderBlocks();
+                focusBlock(Math.max(0, index - 1));
             } else {
-                if (block.indent < 4) {
-                    block.indent++;
-                    saveState();
-                    renderBlocks();
-                    focusBlock(index);
+                // เคลียร์ข้อความถ้ารีเทิร์นลบบล็อกสุดท้าย
+                activeDoc.blocks[0].text = '';
+                activeDoc.blocks[0].type = 'text';
+                activeDoc.blocks[0].indent = 0;
+                saveState();
+                renderBlocks();
+                focusBlock(0);
+            }
+        }
+
+        // ฟังก์ชันลบเอกสาร
+        window.deleteDocument = (docId, event) => {
+            if (event) event.stopPropagation();
+
+            if (state.documents.length <= 1) {
+                alert("ไม่สามารถลบเอกสารสุดท้ายได้ครับ");
+                return;
+            }
+
+            if (confirm("คุณต้องการลบเอกสารนี้ใช่หรือไม่?")) {
+                state.documents = state.documents.filter(d => d.id !== docId);
+
+                if (state.activeDocId === docId) {
+                    state.activeDocId = state.documents[0].id;
                 }
+
+                if (db) {
+                    deleteDoc(doc(db, "notion_workspace", docId)).catch(err => {
+                        console.error("Error deleting document from Firestore:", err);
+                    });
+                }
+
+                renderSidebar();
+                renderBlocks();
             }
-            return;
-        }
-
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            hideSlashMenu();
-
-            const newType = (block.type === 'todo' || block.type === 'bullet') ? block.type : 'text';
-            const newBlock = {
-                id: 'b-' + Date.now(),
-                type: newType,
-                text: '',
-                checked: false,
-                indent: block.indent
-            };
-
-            activeDoc.blocks.splice(index + 1, 0, newBlock);
-            saveState();
-            renderBlocks();
-            focusBlock(index + 1);
-            return;
-        }
-
-        if (e.key === 'Backspace' && e.target.innerText === '') {
-            e.preventDefault();
-            hideSlashMenu();
-            deleteBlock(index);
-            return;
-        }
-
-        if (e.key === 'ArrowUp' && index > 0) {
-            e.preventDefault();
-            focusBlock(index - 1);
-        } else if (e.key === 'ArrowDown' && index < activeDoc.blocks.length - 1) {
-            e.preventDefault();
-            focusBlock(index + 1);
-        }
-    }
-
-    function focusBlock(index) {
-        setTimeout(() => {
-            const el = blocksContainer.querySelector(`[data-index="${index}"] [contenteditable="true"]`);
-            if (el) {
-                el.focus();
-                const range = document.createRange();
-                const sel = window.getSelection();
-                range.selectNodeContents(el);
-                range.collapse(false);
-                sel.removeAllRanges();
-                sel.addRange(range);
-            }
-        }, 10);
-    }
-
-    function showSlashMenu(inputEl) {
-        const rect = inputEl.getBoundingClientRect();
-        slashMenu.style.top = `${rect.bottom + window.scrollY + 4}px`;
-        slashMenu.style.left = `${rect.left + window.scrollX}px`;
-        slashMenu.classList.remove('hidden');
-        state.activeBlockIndex = parseInt(inputEl.dataset.index);
-    }
-
-    function hideSlashMenu() {
-        slashMenu.classList.add('hidden');
-    }
-
-    document.getElementById('slash-options').addEventListener('click', (e) => {
-        const btn = e.target.closest('.slash-item');
-        if (!btn) return;
-
-        const type = btn.dataset.type;
-        const activeDoc = getActiveDoc();
-        if (state.activeBlockIndex !== null && activeDoc.blocks[state.activeBlockIndex]) {
-            const block = activeDoc.blocks[state.activeBlockIndex];
-            block.type = type;
-            block.text = block.text.replace(/\/$/, '');
-            saveState();
-            renderBlocks();
-            focusBlock(state.activeBlockIndex);
-        }
-        hideSlashMenu();
-    });
-
-    function renderKanbanView() {
-        const cols = {
-            todo: document.getElementById('kanban-todo'),
-            in_progress: document.getElementById('kanban-in_progress'),
-            completed: document.getElementById('kanban-completed')
         };
 
-        Object.values(cols).forEach(c => c.innerHTML = '');
-        const counts = { todo: 0, in_progress: 0, completed: 0 };
+        function handleBlockKeyDown(e, index, block) {
+            const activeDoc = getActiveDoc();
 
-        state.documents.forEach(doc => {
-            const todoBlocks = doc.blocks.filter(b => b.type === 'todo');
-            const completedBlocks = todoBlocks.filter(b => b.checked);
-            
-            let status = 'todo';
-            if (todoBlocks.length > 0) {
-                if (completedBlocks.length === todoBlocks.length) status = 'completed';
-                else if (completedBlocks.length > 0) status = 'in_progress';
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                if (e.shiftKey) {
+                    if (block.indent > 0) {
+                        block.indent--;
+                        saveState();
+                        renderBlocks();
+                        focusBlock(index);
+                    }
+                } else {
+                    if (block.indent < 4) {
+                        block.indent++;
+                        saveState();
+                        renderBlocks();
+                        focusBlock(index);
+                    }
+                }
+                return;
             }
 
-            counts[status]++;
-            const category = state.categories.find(c => c.id === doc.categoryId);
-            
-            const card = document.createElement('div');
-            card.className = "bg-white dark:bg-notion-darkHover p-3 rounded-lg border border-notion-border dark:border-notion-darkBorder shadow-sm cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 transition";
-            card.onclick = () => switchDocument(doc.id);
-            
-            card.innerHTML = `
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                hideSlashMenu();
+
+                const newType = (block.type === 'todo' || block.type === 'bullet') ? block.type : 'text';
+                const newBlock = {
+                    id: 'b-' + Date.now(),
+                    type: newType,
+                    text: '',
+                    checked: false,
+                    indent: block.indent
+                };
+
+                activeDoc.blocks.splice(index + 1, 0, newBlock);
+                saveState();
+                renderBlocks();
+                focusBlock(index + 1);
+                return;
+            }
+
+            if (e.key === 'Backspace' && e.target.innerText === '') {
+                e.preventDefault();
+                hideSlashMenu();
+                deleteBlock(index);
+                return;
+            }
+
+            if (e.key === 'ArrowUp' && index > 0) {
+                e.preventDefault();
+                focusBlock(index - 1);
+            } else if (e.key === 'ArrowDown' && index < activeDoc.blocks.length - 1) {
+                e.preventDefault();
+                focusBlock(index + 1);
+            }
+        }
+
+        function focusBlock(index) {
+            setTimeout(() => {
+                const el = blocksContainer.querySelector(`[data-index="${index}"] [contenteditable="true"]`);
+                if (el) {
+                    el.focus();
+                    const range = document.createRange();
+                    const sel = window.getSelection();
+                    range.selectNodeContents(el);
+                    range.collapse(false);
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                }
+            }, 10);
+        }
+
+        function showSlashMenu(inputEl) {
+            const rect = inputEl.getBoundingClientRect();
+            slashMenu.style.top = `${rect.bottom + window.scrollY + 4}px`;
+            slashMenu.style.left = `${rect.left + window.scrollX}px`;
+            slashMenu.classList.remove('hidden');
+            state.activeBlockIndex = parseInt(inputEl.dataset.index);
+        }
+
+        function hideSlashMenu() {
+            slashMenu.classList.add('hidden');
+        }
+
+        document.getElementById('slash-options').addEventListener('click', (e) => {
+            const btn = e.target.closest('.slash-item');
+            if (!btn) return;
+
+            const type = btn.dataset.type;
+            const activeDoc = getActiveDoc();
+            if (state.activeBlockIndex !== null && activeDoc.blocks[state.activeBlockIndex]) {
+                const block = activeDoc.blocks[state.activeBlockIndex];
+                block.type = type;
+                block.text = block.text.replace(/\/$/, '');
+                saveState();
+                renderBlocks();
+                focusBlock(state.activeBlockIndex);
+            }
+            hideSlashMenu();
+        });
+
+        function renderKanbanView() {
+            const cols = {
+                todo: document.getElementById('kanban-todo'),
+                in_progress: document.getElementById('kanban-in_progress'),
+                completed: document.getElementById('kanban-completed')
+            };
+
+            Object.values(cols).forEach(c => c.innerHTML = '');
+            const counts = { todo: 0, in_progress: 0, completed: 0 };
+
+            state.documents.forEach(doc => {
+                const todoBlocks = doc.blocks.filter(b => b.type === 'todo');
+                const completedBlocks = todoBlocks.filter(b => b.checked);
+
+                let status = 'todo';
+                if (todoBlocks.length > 0) {
+                    if (completedBlocks.length === todoBlocks.length) status = 'completed';
+                    else if (completedBlocks.length > 0) status = 'in_progress';
+                }
+
+                counts[status]++;
+                const category = state.categories.find(c => c.id === doc.categoryId);
+
+                const card = document.createElement('div');
+                card.className = "bg-white dark:bg-notion-darkHover p-3 rounded-lg border border-notion-border dark:border-notion-darkBorder shadow-sm cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 transition";
+                card.onclick = () => switchDocument(doc.id);
+
+                card.innerHTML = `
                 <div class="flex items-center justify-between mb-2">
                     <span class="text-xs px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 font-medium">${category?.name || 'ทั่วไป'}</span>
                     <span class="text-xs">${doc.emoji || '📄'}</span>
@@ -833,30 +932,30 @@
                 </div>
             `;
 
-            if (cols[status]) cols[status].appendChild(card);
-        });
+                if (cols[status]) cols[status].appendChild(card);
+            });
 
-        document.getElementById('count-todo').innerText = counts.todo;
-        document.getElementById('count-in_progress').innerText = counts.in_progress;
-        document.getElementById('count-completed').innerText = counts.completed;
-    }
+            document.getElementById('count-todo').innerText = counts.todo;
+            document.getElementById('count-in_progress').innerText = counts.in_progress;
+            document.getElementById('count-completed').innerText = counts.completed;
+        }
 
-    function renderTasksListView() {
-        const listEl = document.getElementById('all-tasks-list');
-        listEl.innerHTML = '';
+        function renderTasksListView() {
+            const listEl = document.getElementById('all-tasks-list');
+            listEl.innerHTML = '';
 
-        let totalTasks = 0;
-        let completedTasks = 0;
+            let totalTasks = 0;
+            let completedTasks = 0;
 
-        state.documents.forEach(doc => {
-            const todoBlocks = doc.blocks.filter(b => b.type === 'todo');
-            todoBlocks.forEach((block) => {
-                totalTasks++;
-                if (block.checked) completedTasks++;
+            state.documents.forEach(doc => {
+                const todoBlocks = doc.blocks.filter(b => b.type === 'todo');
+                todoBlocks.forEach((block) => {
+                    totalTasks++;
+                    if (block.checked) completedTasks++;
 
-                const item = document.createElement('div');
-                item.className = "p-3.5 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-notion-darkHover transition";
-                item.innerHTML = `
+                    const item = document.createElement('div');
+                    item.className = "p-3.5 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-notion-darkHover transition";
+                    item.innerHTML = `
                     <div class="flex items-center gap-3">
                         <input type="checkbox" ${block.checked ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600 cursor-pointer">
                         <div>
@@ -866,134 +965,134 @@
                     </div>
                 `;
 
-                item.querySelector('input').onchange = (e) => {
-                    block.checked = e.target.checked;
-                    saveState();
-                    renderBlocks();
-                };
+                    item.querySelector('input').onchange = (e) => {
+                        block.checked = e.target.checked;
+                        saveState();
+                        renderBlocks();
+                    };
 
-                listEl.appendChild(item);
+                    listEl.appendChild(item);
+                });
             });
-        });
 
-        const percent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-        document.getElementById('task-completion-rate').innerText = `ความคืบหน้า ${percent}% (${completedTasks}/${totalTasks})`;
-    }
-
-    window.switchDocument = (id) => {
-        state.activeDocId = id;
-        renderSidebar();
-        renderBlocks();
-        if (window.innerWidth < 768) {
-            sidebar.classList.add('-ml-64');
+            const percent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+            document.getElementById('task-completion-rate').innerText = `ความคืบหน้า ${percent}% (${completedTasks}/${totalTasks})`;
         }
-    };
 
-    document.getElementById('btn-new-doc').addEventListener('click', () => {
-        const newDoc = {
-            id: 'doc-' + Date.now(),
-            title: 'เอกสารใหม่ที่ไม่มีชื่อ',
-            emoji: '📝',
-            categoryId: state.categories[0]?.id || 'cat-work',
-            priority: 'medium',
-            blocks: [
-                { id: 'b1', type: 'h1', text: 'พิมพ์หัวข้อของคุณที่นี่', indent: 0 },
-                { id: 'b2', type: 'text', text: '', indent: 0 }
-            ]
+        window.switchDocument = (id) => {
+            state.activeDocId = id;
+            renderSidebar();
+            renderBlocks();
+            if (window.innerWidth < 768) {
+                sidebar.classList.add('-ml-64');
+            }
         };
-        state.documents.push(newDoc);
-        state.activeDocId = newDoc.id;
-        saveState();
-        renderSidebar();
-        renderBlocks();
-    });
 
-    document.querySelectorAll('.view-tab-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.view-tab-btn').forEach(b => {
-                b.className = "view-tab-btn px-3 py-1 rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition flex items-center gap-1.5";
+        document.getElementById('btn-new-doc').addEventListener('click', () => {
+            const newDoc = {
+                id: 'doc-' + Date.now(),
+                title: 'เอกสารใหม่ที่ไม่มีชื่อ',
+                emoji: '📝',
+                categoryId: state.categories[0]?.id || 'cat-work',
+                priority: 'medium',
+                blocks: [
+                    { id: 'b1', type: 'h1', text: 'พิมพ์หัวข้อของคุณที่นี่', indent: 0 },
+                    { id: 'b2', type: 'text', text: '', indent: 0 }
+                ]
+            };
+            state.documents.push(newDoc);
+            state.activeDocId = newDoc.id;
+            saveState();
+            renderSidebar();
+            renderBlocks();
+        });
+
+        document.querySelectorAll('.view-tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.view-tab-btn').forEach(b => {
+                    b.className = "view-tab-btn px-3 py-1 rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition flex items-center gap-1.5";
+                });
+                btn.className = "view-tab-btn px-3 py-1 rounded-md bg-white dark:bg-gray-700 shadow-sm text-gray-800 dark:text-white transition flex items-center gap-1.5";
+
+                const targetView = btn.dataset.view;
+                document.querySelectorAll('.view-container').forEach(vc => vc.classList.add('hidden'));
+                document.getElementById(`view-${targetView}`).classList.remove('hidden');
             });
-            btn.className = "view-tab-btn px-3 py-1 rounded-md bg-white dark:bg-gray-700 shadow-sm text-gray-800 dark:text-white transition flex items-center gap-1.5";
-            
-            const targetView = btn.dataset.view;
-            document.querySelectorAll('.view-container').forEach(vc => vc.classList.add('hidden'));
-            document.getElementById(`view-${targetView}`).classList.remove('hidden');
         });
-    });
 
-    docTitleEl.addEventListener('input', () => {
-        const activeDoc = getActiveDoc();
-        if (activeDoc) {
-            activeDoc.title = docTitleEl.innerText;
-            saveState();
-            renderSidebar();
-        }
-    });
-
-    categorySelectEl.addEventListener('change', (e) => {
-        const activeDoc = getActiveDoc();
-        if (activeDoc) {
-            activeDoc.categoryId = e.target.value;
-            saveState();
-            renderSidebar();
-        }
-    });
-
-    prioritySelectEl.addEventListener('change', (e) => {
-        const activeDoc = getActiveDoc();
-        if (activeDoc) {
-            activeDoc.priority = e.target.value;
-            saveState();
-            renderKanbanView();
-        }
-    });
-
-    const deleteDocHeaderBtn = document.getElementById('delete-doc-btn');
-    if (deleteDocHeaderBtn) {
-        deleteDocHeaderBtn.addEventListener('click', () => {
-            deleteDocument(state.activeDocId);
+        docTitleEl.addEventListener('input', () => {
+            const activeDoc = getActiveDoc();
+            if (activeDoc) {
+                activeDoc.title = docTitleEl.innerText;
+                saveState();
+                renderSidebar();
+            }
         });
-    }
 
-    document.getElementById('theme-toggle').addEventListener('click', () => {
-        document.documentElement.classList.toggle('dark');
-    });
+        categorySelectEl.addEventListener('change', (e) => {
+            const activeDoc = getActiveDoc();
+            if (activeDoc) {
+                activeDoc.categoryId = e.target.value;
+                saveState();
+                renderSidebar();
+            }
+        });
 
-    document.addEventListener('click', (e) => {
-        if (!slashMenu.contains(e.target) && !e.target.closest('[contenteditable]')) {
-            hideSlashMenu();
+        prioritySelectEl.addEventListener('change', (e) => {
+            const activeDoc = getActiveDoc();
+            if (activeDoc) {
+                activeDoc.priority = e.target.value;
+                saveState();
+                renderKanbanView();
+            }
+        });
+
+        const deleteDocHeaderBtn = document.getElementById('delete-doc-btn');
+        if (deleteDocHeaderBtn) {
+            deleteDocHeaderBtn.addEventListener('click', () => {
+                deleteDocument(state.activeDocId);
+            });
         }
-    });
 
-    const searchModal = document.getElementById('search-modal');
-    const searchInput = document.getElementById('search-input');
-    const searchResults = document.getElementById('search-results');
+        document.getElementById('theme-toggle').addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+        });
 
-    document.getElementById('btn-quick-search').addEventListener('click', openSearch);
-    document.addEventListener('keydown', (e) => {
-        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-            e.preventDefault();
-            openSearch();
-        } else if (e.key === 'Escape') {
-            searchModal.classList.add('hidden');
+        document.addEventListener('click', (e) => {
+            if (!slashMenu.contains(e.target) && !e.target.closest('[contenteditable]')) {
+                hideSlashMenu();
+            }
+        });
+
+        const searchModal = document.getElementById('search-modal');
+        const searchInput = document.getElementById('search-input');
+        const searchResults = document.getElementById('search-results');
+
+        document.getElementById('btn-quick-search').addEventListener('click', openSearch);
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                openSearch();
+            } else if (e.key === 'Escape') {
+                searchModal.classList.add('hidden');
+            }
+        });
+
+        function openSearch() {
+            searchModal.classList.remove('hidden');
+            searchInput.focus();
+            renderSearchResults('');
         }
-    });
 
-    function openSearch() {
-        searchModal.classList.remove('hidden');
-        searchInput.focus();
-        renderSearchResults('');
-    }
+        searchInput.addEventListener('input', (e) => renderSearchResults(e.target.value));
 
-    searchInput.addEventListener('input', (e) => renderSearchResults(e.target.value));
+        function renderSearchResults(query) {
+            const filtered = state.documents.filter(d =>
+                d.title.toLowerCase().includes(query.toLowerCase()) ||
+                d.blocks.some(b => b.text.toLowerCase().includes(query.toLowerCase()))
+            );
 
-    function renderSearchResults(query) {
-        const filtered = state.documents.filter(d => 
-            d.title.toLowerCase().includes(query.toLowerCase()) ||
-            d.blocks.some(b => b.text.toLowerCase().includes(query.toLowerCase()))
-        );
-
-        searchResults.innerHTML = filtered.map(d => `
+            searchResults.innerHTML = filtered.map(d => `
             <div onclick="switchDocument('${d.id}'); document.getElementById('search-modal').classList.add('hidden');" class="p-2 rounded hover:bg-blue-50 dark:hover:bg-gray-800 cursor-pointer flex items-center gap-2">
                 <span>${d.emoji}</span>
                 <div>
@@ -1002,9 +1101,10 @@
                 </div>
             </div>
         `).join('');
-    }
+        }
 
-    initRealtimeSync();
-</script>
+        initRealtimeSync();
+    </script>
 </body>
+
 </html>
