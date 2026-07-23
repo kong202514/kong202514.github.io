@@ -358,648 +358,602 @@
 
     <!-- APPLICATION JAVASCRIPT LOGIC -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Exact User-Provided Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyBfz9eZVukWm8JaarG7FrM9Riq8sds-teU",
-            authDomain: "len-html.firebaseapp.com",
-            databaseURL: "https://len-html-default-rtdb.firebaseio.com",
-            projectId: "len-html",
-            storageBucket: "len-html.firebasestorage.app",
-            messagingSenderId: "128154153096",
-            appId: "1:128154153096:web:39554e3a5b401f05682f3d",
-            measurementId: "G-DY3Q28G20F"
-        };
+    const firebaseConfig = {
+        apiKey: "AIzaSyBfz9eZVukWm8JaarG7FrM9Riq8sds-teU",
+        authDomain: "len-html.firebaseapp.com",
+        databaseURL: "https://len-html-default-rtdb.firebaseio.com",
+        projectId: "len-html",
+        storageBucket: "len-html.firebasestorage.app",
+        messagingSenderId: "128154153096",
+        appId: "1:128154153096:web:39554e3a5b401f05682f3d",
+        measurementId: "G-DY3Q28G20F"
+    };
 
-        let db = null;
-        try {
-            const firebaseApp = initializeApp(firebaseConfig);
-            db = getFirestore(firebaseApp);
-        } catch(e) {
-            console.warn("Firebase initialization error.", e);
-        }
+    let db = null;
+    try {
+        const firebaseApp = initializeApp(firebaseConfig);
+        db = getFirestore(firebaseApp);
+    } catch(e) {
+        console.warn("Firebase initialization error.", e);
+    }
 
-        // APP STATE MANAGEMENT
-        const DEFAULT_CATEGORIES = [
-            { id: 'cat-work', name: '💼 งานโปรเจกต์', color: 'blue' },
-            { id: 'cat-personal', name: '🏠 เรื่องส่วนตัว', color: 'emerald' },
-            { id: 'cat-ideas', name: '💡 ไอเดีย & ความคิด', color: 'amber' }
-        ];
+    const DEFAULT_CATEGORIES = [
+        { id: 'cat-work', name: '💼 งานโปรเจกต์', color: 'blue' },
+        { id: 'cat-personal', name: '🏠 เรื่องส่วนตัว', color: 'emerald' },
+        { id: 'cat-ideas', name: '💡 ไอเดีย & ความคิด', color: 'amber' }
+    ];
 
-        let state = {
-            categories: DEFAULT_CATEGORIES,
-            documents: [],
-            activeDocId: 'doc-1',
-            activeView: 'editor',
-            activeBlockIndex: null
-        };
+    let state = {
+        categories: DEFAULT_CATEGORIES,
+        documents: [],
+        activeDocId: 'doc-1',
+        activeView: 'editor',
+        activeBlockIndex: null
+    };
 
-        let isRemoteUpdating = false;
+    let isLocalEditing = false;
+    let saveTimeout = null;
 
-        // REALTIME DATABASE LISTENER
-        function initRealtimeSync() {
-            if (!db) return;
+    // REALTIME DATABASE LISTENER
+    function initRealtimeSync() {
+        if (!db) return;
 
-            const colRef = collection(db, "notion_workspace");
-            onSnapshot(colRef, (snapshot) => {
-                isRemoteUpdating = true;
-                const docs = [];
-                snapshot.forEach((docSnap) => {
-                    docs.push(docSnap.data());
-                });
-
-                if (docs.length > 0) {
-                    state.documents = docs;
-                    if (!state.documents.some(d => d.id === state.activeDocId)) {
-                        state.activeDocId = state.documents[0].id;
-                    }
-                } else {
-                    // หากยังไม่มีเอกสารในฐานข้อมูลเลย ให้สร้างตัวเริ่มต้นขึ้น Firestore
-                    const initialDoc = {
-                        id: 'doc-1',
-                        title: 'วางแผนพัฒนาแอปพลิเคชันจัดการงาน',
-                        emoji: '🚀',
-                        categoryId: 'cat-work',
-                        priority: 'high',
-                        blocks: [
-                            { id: 'b1', type: 'h1', text: 'เป้าหมายหลักในสัปดาห์นี้', indent: 0 },
-                            { id: 'b2', type: 'todo', text: 'ออกแบบหน้าจอ Notion Block Editor', checked: true, indent: 0 },
-                            { id: 'b3', type: 'todo', text: 'รองรับการกด Tab และ Shift+Tab สำหรับจัดย่อหน้า', checked: true, indent: 1 },
-                            { id: 'b4', type: 'todo', text: 'แยกหมวดหมู่งานและปรับมุมมอง Kanban Board', checked: false, indent: 1 },
-                            { id: 'b5', type: 'callout', text: '💡 ข้อแนะนำ: พิมพ์ / บนบรรทัดใหม่เพื่อเปลี่ยนประเภทของบล็อกข้อความได้ทันที!', indent: 0 },
-                            { id: 'b6', type: 'code', text: 'const greeting = "Hello Notion Application!";', indent: 0 }
-                        ]
-                    };
-                    state.documents = [initialDoc];
-                    setDoc(doc(db, "notion_workspace", initialDoc.id), initialDoc);
-                }
-
-                renderSidebar();
-                renderBlocks();
-                isRemoteUpdating = false;
-
-                const syncInd = document.getElementById('sync-indicator');
-                const syncTxt = document.getElementById('sync-text');
-                if (syncInd) {
-                    syncInd.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
-                    syncTxt.innerText = "เรียลไทม์ซิงค์แล้ว";
-                }
-            }, (error) => {
-                console.error("Firestore sync error:", error);
-                const syncInd = document.getElementById('sync-indicator');
-                const syncTxt = document.getElementById('sync-text');
-                if (syncInd) {
-                    syncInd.className = "w-2.5 h-2.5 rounded-full bg-red-500";
-                    syncTxt.innerText = "เชื่อมต่อล้มเหลว";
-                }
+        const colRef = collection(db, "notion_workspace");
+        onSnapshot(colRef, (snapshot) => {
+            const docs = [];
+            snapshot.forEach((docSnap) => {
+                docs.push(docSnap.data());
             });
-        }
 
-        // SAVE STATE (บันทึกข้อมูลเฉพาะเมื่อผู้ใช้แก้ไขข้อมูลในหน้าจอ)
-        function saveState() {
-            if (isRemoteUpdating) return;
+            if (docs.length > 0) {
+                state.documents = docs;
+                if (!state.documents.some(d => d.id === state.activeDocId)) {
+                    state.activeDocId = state.documents[0].id;
+                }
+            } else {
+                const initialDoc = {
+                    id: 'doc-1',
+                    title: 'วางแผนพัฒนาแอปพลิเคชันจัดการงาน',
+                    emoji: '🚀',
+                    categoryId: 'cat-work',
+                    priority: 'high',
+                    blocks: [
+                        { id: 'b1', type: 'h1', text: 'เป้าหมายหลักในสัปดาห์นี้', indent: 0 },
+                        { id: 'b2', type: 'todo', text: 'ออกแบบหน้าจอ Notion Block Editor', checked: true, indent: 0 },
+                        { id: 'b3', type: 'todo', text: 'รองรับการกด Tab และ Shift+Tab สำหรับจัดย่อหน้า', checked: true, indent: 1 },
+                        { id: 'b4', type: 'todo', text: 'แยกหมวดหมู่งานและปรับมุมมอง Kanban Board', checked: false, indent: 1 },
+                        { id: 'b5', type: 'callout', text: '💡 ข้อแนะนำ: พิมพ์ / บนบรรทัดใหม่เพื่อเปลี่ยนประเภทของบล็อกข้อความได้ทันที!', indent: 0 },
+                        { id: 'b6', type: 'code', text: 'const greeting = "Hello Notion Application!";', indent: 0 }
+                    ]
+                };
+                state.documents = [initialDoc];
+                setDoc(doc(db, "notion_workspace", initialDoc.id), initialDoc);
+            }
+
+            renderSidebar();
+            
+            // ป้องกันการ Re-render ทับถ้าผู้ใช้กำลังพิมพ์อยู่
+            const isTypingInsideEditor = blocksContainer.contains(document.activeElement);
+            if (!isTypingInsideEditor && !isLocalEditing) {
+                renderBlocks();
+            } else {
+                renderKanbanView();
+                renderTasksListView();
+            }
 
             const syncInd = document.getElementById('sync-indicator');
             const syncTxt = document.getElementById('sync-text');
             if (syncInd) {
-                syncInd.className = "w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse";
-                syncTxt.innerText = "กำลังบันทึก...";
+                syncInd.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
+                syncTxt.innerText = "เรียลไทม์ซิงค์แล้ว";
             }
+        });
+    }
 
+    // DEBOUNCED SAVE STATE (หน่วงเวลาเซฟเพื่อไม่ให้รบกวนการพิมพ์)
+    function saveState() {
+        isLocalEditing = true;
+        const syncInd = document.getElementById('sync-indicator');
+        const syncTxt = document.getElementById('sync-text');
+        if (syncInd) {
+            syncInd.className = "w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse";
+            syncTxt.innerText = "กำลังพิมพ์/บันทึก...";
+        }
+
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(() => {
             if (db && state.activeDocId) {
                 const docRef = doc(db, "notion_workspace", state.activeDocId);
-                const activeDoc = state.documents.find(d => d.id === state.activeDocId);
+                const activeDoc = getActiveDoc();
                 if (activeDoc) {
                     setDoc(docRef, activeDoc, { merge: true })
                         .then(() => {
+                            isLocalEditing = false;
                             if (syncInd) {
                                 syncInd.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
                                 syncTxt.innerText = "เรียลไทม์ซิงค์แล้ว";
                             }
                         })
                         .catch((err) => {
-                            console.error("Error saving to Firestore:", err);
-                            if (syncInd) {
-                                syncInd.className = "w-2.5 h-2.5 rounded-full bg-red-500";
-                                syncTxt.innerText = "บันทึกล้มเหลว";
-                            }
+                            isLocalEditing = false;
+                            console.error("Error saving:", err);
                         });
                 }
+            } else {
+                isLocalEditing = false;
             }
-        }
+        }, 500); // บันทึกหลังจากพิมพ์เสร็จ 0.5 วินาที
+    }
 
-        // HELPERS
-        function getActiveDoc() {
-            return state.documents.find(d => d.id === state.activeDocId) || state.documents[0];
-        }
+    function getActiveDoc() {
+        return state.documents.find(d => d.id === state.activeDocId) || state.documents[0];
+    }
 
-        // DOM ELEMENTS
-        const sidebar = document.getElementById('sidebar');
-        const documentListEl = document.getElementById('document-list');
-        const categoryListEl = document.getElementById('category-list');
-        const categorySelectEl = document.getElementById('doc-category-select');
-        const prioritySelectEl = document.getElementById('doc-priority-select');
-        const blocksContainer = document.getElementById('blocks-container');
-        const docTitleEl = document.getElementById('doc-main-title');
-        const docEmojiEl = document.getElementById('doc-emoji-icon');
-        const slashMenu = document.getElementById('slash-menu');
+    const sidebar = document.getElementById('sidebar');
+    const documentListEl = document.getElementById('document-list');
+    const categoryListEl = document.getElementById('category-list');
+    const categorySelectEl = document.getElementById('doc-category-select');
+    const prioritySelectEl = document.getElementById('doc-priority-select');
+    const blocksContainer = document.getElementById('blocks-container');
+    const docTitleEl = document.getElementById('doc-main-title');
+    const docEmojiEl = document.getElementById('doc-emoji-icon');
+    const slashMenu = document.getElementById('slash-menu');
 
-        function renderSidebar() {
-            // Render Categories
-            categoryListEl.innerHTML = state.categories.map(cat => `
-                <li class="group flex items-center justify-between px-2 py-1 rounded-md hover:bg-notion-hover dark:hover:bg-notion-darkHover cursor-pointer text-gray-700 dark:text-gray-300">
+    function renderSidebar() {
+        categoryListEl.innerHTML = state.categories.map(cat => `
+            <li class="group flex items-center justify-between px-2 py-1 rounded-md hover:bg-notion-hover dark:hover:bg-notion-darkHover cursor-pointer text-gray-700 dark:text-gray-300">
+                <span class="truncate flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                    ${cat.name}
+                </span>
+                <span class="text-[10px] text-gray-400">${state.documents.filter(d => d.categoryId === cat.id).length}</span>
+            </li>
+        `).join('');
+
+        documentListEl.innerHTML = state.documents.map(doc => {
+            const isActive = doc.id === state.activeDocId;
+            return `
+                <li onclick="switchDocument('${doc.id}')" class="group flex items-center justify-between px-2 py-1.5 rounded-md cursor-pointer transition ${isActive ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-medium' : 'hover:bg-notion-hover dark:hover:bg-notion-darkHover text-gray-700 dark:text-gray-300'}">
                     <span class="truncate flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-                        ${cat.name}
+                        <span>${doc.emoji || '📄'}</span>
+                        <span class="truncate">${doc.title || 'ไม่มีชื่อหัวข้อ'}</span>
                     </span>
-                    <span class="text-[10px] text-gray-400">${state.documents.filter(d => d.categoryId === cat.id).length}</span>
                 </li>
-            `).join('');
+            `;
+        }).join('');
 
-            // Render Document List
-            documentListEl.innerHTML = state.documents.map(doc => {
-                const isActive = doc.id === state.activeDocId;
-                return `
-                    <li onclick="switchDocument('${doc.id}')" class="group flex items-center justify-between px-2 py-1.5 rounded-md cursor-pointer transition ${isActive ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-medium' : 'hover:bg-notion-hover dark:hover:bg-notion-darkHover text-gray-700 dark:text-gray-300'}">
-                        <span class="truncate flex items-center gap-2">
-                            <span>${doc.emoji || '📄'}</span>
-                            <span class="truncate">${doc.title || 'ไม่มีชื่อหัวข้อ'}</span>
-                        </span>
-                        <span class="text-[10px] opacity-0 group-hover:opacity-100 text-gray-400">
-                            <i class="fa-solid fa-chevron-right"></i>
-                        </span>
-                    </li>
-                `;
-            }).join('');
+        categorySelectEl.innerHTML = state.categories.map(cat => `
+            <option value="${cat.id}" ${getActiveDoc()?.categoryId === cat.id ? 'selected' : ''}>${cat.name}</option>
+        `).join('');
+    }
 
-            // Category Selector in Main view
-            categorySelectEl.innerHTML = state.categories.map(cat => `
-                <option value="${cat.id}" ${getActiveDoc()?.categoryId === cat.id ? 'selected' : ''}>${cat.name}</option>
-            `).join('');
+    function renderBlocks() {
+        const activeDoc = getActiveDoc();
+        if (!activeDoc) return;
+
+        const category = state.categories.find(c => c.id === activeDoc.categoryId);
+        document.getElementById('nav-category-badge').innerText = category ? category.name : 'ทั่วไป';
+        document.getElementById('nav-doc-title').innerText = activeDoc.title || 'ไม่มีชื่อหัวข้อ';
+        
+        if (document.activeElement !== docTitleEl) {
+            docTitleEl.innerText = activeDoc.title || '';
+        }
+        docEmojiEl.innerText = activeDoc.emoji || '📄';
+        prioritySelectEl.value = activeDoc.priority || 'medium';
+
+        blocksContainer.innerHTML = '';
+        
+        if (!activeDoc.blocks || activeDoc.blocks.length === 0) {
+            activeDoc.blocks = [{ id: 'b-' + Date.now(), type: 'text', text: '', indent: 0 }];
         }
 
-        // RENDER EDITOR BLOCKS
-        function renderBlocks() {
-            const activeDoc = getActiveDoc();
-            if (!activeDoc) return;
+        activeDoc.blocks.forEach((block, index) => {
+            const blockEl = createBlockElement(block, index);
+            blocksContainer.appendChild(blockEl);
+        });
 
-            // Update top bar title & meta
-            const category = state.categories.find(c => c.id === activeDoc.categoryId);
-            document.getElementById('nav-category-badge').innerText = category ? category.name : 'ทั่วไป';
-            document.getElementById('nav-doc-title').innerText = activeDoc.title || 'ไม่มีชื่อหัวข้อ';
-            
-            if (document.activeElement !== docTitleEl) {
-                docTitleEl.innerText = activeDoc.title || '';
-            }
-            docEmojiEl.innerText = activeDoc.emoji || '📄';
-            prioritySelectEl.value = activeDoc.priority || 'medium';
+        renderKanbanView();
+        renderTasksListView();
+    }
 
-            // Clear and render blocks
-            blocksContainer.innerHTML = '';
-            
-            if (!activeDoc.blocks || activeDoc.blocks.length === 0) {
-                activeDoc.blocks = [{ id: 'b-' + Date.now(), type: 'text', text: '', indent: 0 }];
-            }
+    function createBlockElement(block, index) {
+        const wrapper = document.createElement('div');
+        const indentClass = block.indent > 0 ? `indent-guide-${Math.min(block.indent, 4)}` : '';
+        wrapper.className = `block-wrapper group flex items-start gap-2 py-0.5 relative transition-all ${indentClass}`;
+        wrapper.dataset.index = index;
 
-            activeDoc.blocks.forEach((block, index) => {
-                const blockEl = createBlockElement(block, index);
-                blocksContainer.appendChild(blockEl);
-            });
+        const handle = document.createElement('div');
+        handle.className = "opacity-0 group-hover:opacity-100 cursor-grab text-gray-300 dark:text-gray-600 hover:text-gray-500 pt-1 text-xs select-none w-4 flex justify-center";
+        handle.innerHTML = '<i class="fa-solid fa-grip-vertical"></i>';
 
-            renderKanbanView();
-            renderTasksListView();
-        }
+        let contentWrapper = document.createElement('div');
+        contentWrapper.className = "flex-1 flex items-start gap-2 min-w-0";
 
-        // CREATE BLOCK DOM ELEMENT
-        function createBlockElement(block, index) {
-            const wrapper = document.createElement('div');
-            const indentClass = block.indent > 0 ? `indent-guide-${Math.min(block.indent, 4)}` : '';
-            wrapper.className = `block-wrapper group flex items-start gap-2 py-0.5 relative transition-all ${indentClass}`;
-            wrapper.dataset.index = index;
-
-            // Handle Drag / Controls
-            const handle = document.createElement('div');
-            handle.className = "opacity-0 group-hover:opacity-100 cursor-grab text-gray-300 dark:text-gray-600 hover:text-gray-500 pt-1 text-xs select-none w-4 flex justify-center";
-            handle.innerHTML = '<i class="fa-solid fa-grip-vertical"></i>';
-
-            let contentWrapper = document.createElement('div');
-            contentWrapper.className = "flex-1 flex items-start gap-2 min-w-0";
-
-            // Block Specific Visual Elements
-            if (block.type === 'todo') {
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.checked = !!block.checked;
-                checkbox.className = "mt-1.5 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer";
-                checkbox.onchange = (e) => {
-                    block.checked = e.target.checked;
-                    saveState();
-                    renderTasksListView();
-                    renderKanbanView();
-                };
-                contentWrapper.appendChild(checkbox);
-            } else if (block.type === 'bullet') {
-                const bullet = document.createElement('span');
-                bullet.className = "mt-2 w-1.5 h-1.5 rounded-full bg-gray-600 dark:bg-gray-400 flex-shrink-0";
-                contentWrapper.appendChild(bullet);
-            } else if (block.type === 'callout') {
-                contentWrapper.className += " bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 p-3 rounded-lg";
-                const icon = document.createElement('span');
-                icon.innerText = '💡';
-                contentWrapper.appendChild(icon);
-            }
-
-            // Editable Input Area
-            const input = document.createElement('div');
-            input.contentEditable = "true";
-            input.dataset.index = index;
-            input.placeholder = block.type === 'h1' ? 'หัวข้อหลัก...' : (block.type === 'h2' ? 'หัวข้อย่อย...' : "พิมพ์ข้อความ หรือพิมพ์ '/' เพื่อใช้คำสั่ง...");
-            
-            // Format styling based on block type
-            let textClasses = "w-full text-sm leading-relaxed focus:outline-none min-h-[1.5rem] break-words";
-            if (block.type === 'h1') textClasses += " text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100";
-            else if (block.type === 'h2') textClasses += " text-xl font-semibold tracking-tight text-gray-800 dark:text-gray-200";
-            else if (block.type === 'code') textClasses += " code-font bg-gray-900 text-green-400 p-3 rounded-md text-xs font-mono";
-            else if (block.type === 'todo' && block.checked) textClasses += " line-through text-gray-400 dark:text-gray-500";
-            
-            input.className = textClasses;
-            input.innerText = block.text || '';
-
-            // KEYBOARD NAVIGATION (ENTER, TAB, BACKSPACE, SLASH)
-            input.addEventListener('keydown', (e) => handleBlockKeyDown(e, index, block));
-            
-            input.addEventListener('input', (e) => {
-                block.text = input.innerText;
+        if (block.type === 'todo') {
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = !!block.checked;
+            checkbox.className = "mt-1.5 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer";
+            checkbox.onchange = (e) => {
+                block.checked = e.target.checked;
                 saveState();
-
-                // Check for Slash Command
-                if (input.innerText.endsWith('/')) {
-                    showSlashMenu(input);
-                } else {
-                    hideSlashMenu();
-                }
-            });
-
-            contentWrapper.appendChild(input);
-            wrapper.appendChild(handle);
-            wrapper.appendChild(contentWrapper);
-
-            return wrapper;
+                renderTasksListView();
+                renderKanbanView();
+            };
+            contentWrapper.appendChild(checkbox);
+        } else if (block.type === 'bullet') {
+            const bullet = document.createElement('span');
+            bullet.className = "mt-2 w-1.5 h-1.5 rounded-full bg-gray-600 dark:bg-gray-400 flex-shrink-0";
+            contentWrapper.appendChild(bullet);
+        } else if (block.type === 'callout') {
+            contentWrapper.className += " bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 p-3 rounded-lg";
+            const icon = document.createElement('span');
+            icon.innerText = '💡';
+            contentWrapper.appendChild(icon);
         }
 
-        // HANDLER: TAB & ENTER KEY EVENTS
-        function handleBlockKeyDown(e, index, block) {
-            const activeDoc = getActiveDoc();
+        const input = document.createElement('div');
+        input.contentEditable = "true";
+        input.dataset.index = index;
+        input.placeholder = block.type === 'h1' ? 'หัวข้อหลัก...' : (block.type === 'h2' ? 'หัวข้อย่อย...' : "พิมพ์ข้อความ หรือพิมพ์ '/' เพื่อใช้คำสั่ง...");
+        
+        let textClasses = "w-full text-sm leading-relaxed focus:outline-none min-h-[1.5rem] break-words";
+        if (block.type === 'h1') textClasses += " text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100";
+        else if (block.type === 'h2') textClasses += " text-xl font-semibold tracking-tight text-gray-800 dark:text-gray-200";
+        else if (block.type === 'code') textClasses += " code-font bg-gray-900 text-green-400 p-3 rounded-md text-xs font-mono";
+        else if (block.type === 'todo' && block.checked) textClasses += " line-through text-gray-400 dark:text-gray-500";
+        
+        input.className = textClasses;
+        input.innerText = block.text || '';
 
-            // 1. TAB & SHIFT+TAB FOR INDENTATION
-            if (e.key === 'Tab') {
-                e.preventDefault();
-                if (e.shiftKey) {
-                    // Outdent
-                    if (block.indent > 0) {
-                        block.indent--;
-                        saveState();
-                        renderBlocks();
-                        focusBlock(index);
-                    }
-                } else {
-                    // Indent
-                    if (block.indent < 4) {
-                        block.indent++;
-                        saveState();
-                        renderBlocks();
-                        focusBlock(index);
-                    }
-                }
-                return;
-            }
+        input.addEventListener('keydown', (e) => handleBlockKeyDown(e, index, block));
+        
+        input.addEventListener('input', () => {
+            block.text = input.innerText;
+            saveState();
 
-            // 2. ENTER KEY: CREATE NEW BLOCK
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
+            if (input.innerText.endsWith('/')) {
+                showSlashMenu(input);
+            } else {
                 hideSlashMenu();
-
-                const newType = (block.type === 'todo' || block.type === 'bullet') ? block.type : 'text';
-                const newBlock = {
-                    id: 'b-' + Date.now(),
-                    type: newType,
-                    text: '',
-                    checked: false,
-                    indent: block.indent
-                };
-
-                activeDoc.blocks.splice(index + 1, 0, newBlock);
-                saveState();
-                renderBlocks();
-                focusBlock(index + 1);
-                return;
             }
+        });
 
-            // 3. BACKSPACE KEY ON EMPTY BLOCK
-            if (e.key === 'Backspace' && e.target.innerText === '') {
-                if (activeDoc.blocks.length > 1) {
-                    e.preventDefault();
-                    hideSlashMenu();
-                    activeDoc.blocks.splice(index, 1);
+        contentWrapper.appendChild(input);
+        wrapper.appendChild(handle);
+        wrapper.appendChild(contentWrapper);
+
+        return wrapper;
+    }
+
+    function handleBlockKeyDown(e, index, block) {
+        const activeDoc = getActiveDoc();
+
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            if (e.shiftKey) {
+                if (block.indent > 0) {
+                    block.indent--;
                     saveState();
                     renderBlocks();
-                    focusBlock(Math.max(0, index - 1));
+                    focusBlock(index);
                 }
-                return;
-            }
-
-            // 4. ARROW UP & DOWN NAVIGATION
-            if (e.key === 'ArrowUp' && index > 0) {
-                e.preventDefault();
-                focusBlock(index - 1);
-            } else if (e.key === 'ArrowDown' && index < activeDoc.blocks.length - 1) {
-                e.preventDefault();
-                focusBlock(index + 1);
-            }
-        }
-
-        // FOCUS HELPER
-        function focusBlock(index) {
-            setTimeout(() => {
-                const el = blocksContainer.querySelector(`[data-index="${index}"] [contenteditable="true"]`);
-                if (el) {
-                    el.focus();
-                    const range = document.createRange();
-                    const sel = window.getSelection();
-                    range.selectNodeContents(el);
-                    range.collapse(false);
-                    sel.removeAllRanges();
-                    sel.addRange(range);
+            } else {
+                if (block.indent < 4) {
+                    block.indent++;
+                    saveState();
+                    renderBlocks();
+                    focusBlock(index);
                 }
-            }, 10);
-        }
-
-        // SLASH COMMAND MENU
-        function showSlashMenu(inputEl) {
-            const rect = inputEl.getBoundingClientRect();
-            slashMenu.style.top = `${rect.bottom + window.scrollY + 4}px`;
-            slashMenu.style.left = `${rect.left + window.scrollX}px`;
-            slashMenu.classList.remove('hidden');
-            state.activeBlockIndex = parseInt(inputEl.dataset.index);
-        }
-
-        function hideSlashMenu() {
-            slashMenu.classList.add('hidden');
-        }
-
-        document.getElementById('slash-options').addEventListener('click', (e) => {
-            const btn = e.target.closest('.slash-item');
-            if (!btn) return;
-
-            const type = btn.dataset.type;
-            const activeDoc = getActiveDoc();
-            if (state.activeBlockIndex !== null && activeDoc.blocks[state.activeBlockIndex]) {
-                const block = activeDoc.blocks[state.activeBlockIndex];
-                block.type = type;
-                block.text = block.text.replace(/\/$/, '');
-                saveState();
-                renderBlocks();
-                focusBlock(state.activeBlockIndex);
             }
+            return;
+        }
+
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
             hideSlashMenu();
-        });
 
-        // VIEW 2: KANBAN BOARD RENDER
-        function renderKanbanView() {
-            const cols = {
-                todo: document.getElementById('kanban-todo'),
-                in_progress: document.getElementById('kanban-in_progress'),
-                completed: document.getElementById('kanban-completed')
+            const newType = (block.type === 'todo' || block.type === 'bullet') ? block.type : 'text';
+            const newBlock = {
+                id: 'b-' + Date.now(),
+                type: newType,
+                text: '',
+                checked: false,
+                indent: block.indent
             };
 
-            Object.values(cols).forEach(c => c.innerHTML = '');
+            activeDoc.blocks.splice(index + 1, 0, newBlock);
+            saveState();
+            renderBlocks();
+            focusBlock(index + 1);
+            return;
+        }
 
-            const counts = { todo: 0, in_progress: 0, completed: 0 };
+        if (e.key === 'Backspace' && e.target.innerText === '') {
+            if (activeDoc.blocks.length > 1) {
+                e.preventDefault();
+                hideSlashMenu();
+                activeDoc.blocks.splice(index, 1);
+                saveState();
+                renderBlocks();
+                focusBlock(Math.max(0, index - 1));
+            }
+            return;
+        }
 
-            state.documents.forEach(doc => {
-                const todoBlocks = doc.blocks.filter(b => b.type === 'todo');
-                const completedBlocks = todoBlocks.filter(b => b.checked);
-                
-                let status = 'todo';
-                if (todoBlocks.length > 0) {
-                    if (completedBlocks.length === todoBlocks.length) status = 'completed';
-                    else if (completedBlocks.length > 0) status = 'in_progress';
-                }
+        if (e.key === 'ArrowUp' && index > 0) {
+            e.preventDefault();
+            focusBlock(index - 1);
+        } else if (e.key === 'ArrowDown' && index < activeDoc.blocks.length - 1) {
+            e.preventDefault();
+            focusBlock(index + 1);
+        }
+    }
 
-                counts[status]++;
+    function focusBlock(index) {
+        setTimeout(() => {
+            const el = blocksContainer.querySelector(`[data-index="${index}"] [contenteditable="true"]`);
+            if (el) {
+                el.focus();
+                const range = document.createRange();
+                const sel = window.getSelection();
+                range.selectNodeContents(el);
+                range.collapse(false);
+                sel.removeAllRanges();
+                sel.addRange(range);
+            }
+        }, 10);
+    }
 
-                const category = state.categories.find(c => c.id === doc.categoryId);
-                
-                const card = document.createElement('div');
-                card.className = "bg-white dark:bg-notion-darkHover p-3 rounded-lg border border-notion-border dark:border-notion-darkBorder shadow-sm cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 transition";
-                card.onclick = () => switchDocument(doc.id);
-                
-                card.innerHTML = `
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-xs px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 font-medium">${category?.name || 'ทั่วไป'}</span>
-                        <span class="text-xs">${doc.emoji || '📄'}</span>
-                    </div>
-                    <h4 class="font-semibold text-xs text-gray-800 dark:text-gray-200 mb-2 truncate">${doc.title || 'ไม่มีชื่อหัวข้อ'}</h4>
-                    <div class="flex items-center justify-between text-[11px] text-gray-400 border-t border-gray-100 dark:border-gray-800 pt-2 mt-2">
-                        <span><i class="fa-regular fa-square-check"></i> ${completedBlocks.length}/${todoBlocks.length} งานย่อย</span>
-                        <span class="capitalize">${doc.priority || 'medium'}</span>
+    function showSlashMenu(inputEl) {
+        const rect = inputEl.getBoundingClientRect();
+        slashMenu.style.top = `${rect.bottom + window.scrollY + 4}px`;
+        slashMenu.style.left = `${rect.left + window.scrollX}px`;
+        slashMenu.classList.remove('hidden');
+        state.activeBlockIndex = parseInt(inputEl.dataset.index);
+    }
+
+    function hideSlashMenu() {
+        slashMenu.classList.add('hidden');
+    }
+
+    document.getElementById('slash-options').addEventListener('click', (e) => {
+        const btn = e.target.closest('.slash-item');
+        if (!btn) return;
+
+        const type = btn.dataset.type;
+        const activeDoc = getActiveDoc();
+        if (state.activeBlockIndex !== null && activeDoc.blocks[state.activeBlockIndex]) {
+            const block = activeDoc.blocks[state.activeBlockIndex];
+            block.type = type;
+            block.text = block.text.replace(/\/$/, '');
+            saveState();
+            renderBlocks();
+            focusBlock(state.activeBlockIndex);
+        }
+        hideSlashMenu();
+    });
+
+    function renderKanbanView() {
+        const cols = {
+            todo: document.getElementById('kanban-todo'),
+            in_progress: document.getElementById('kanban-in_progress'),
+            completed: document.getElementById('kanban-completed')
+        };
+
+        Object.values(cols).forEach(c => c.innerHTML = '');
+        const counts = { todo: 0, in_progress: 0, completed: 0 };
+
+        state.documents.forEach(doc => {
+            const todoBlocks = doc.blocks.filter(b => b.type === 'todo');
+            const completedBlocks = todoBlocks.filter(b => b.checked);
+            
+            let status = 'todo';
+            if (todoBlocks.length > 0) {
+                if (completedBlocks.length === todoBlocks.length) status = 'completed';
+                else if (completedBlocks.length > 0) status = 'in_progress';
+            }
+
+            counts[status]++;
+            const category = state.categories.find(c => c.id === doc.categoryId);
+            
+            const card = document.createElement('div');
+            card.className = "bg-white dark:bg-notion-darkHover p-3 rounded-lg border border-notion-border dark:border-notion-darkBorder shadow-sm cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 transition";
+            card.onclick = () => switchDocument(doc.id);
+            
+            card.innerHTML = `
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 font-medium">${category?.name || 'ทั่วไป'}</span>
+                    <span class="text-xs">${doc.emoji || '📄'}</span>
+                </div>
+                <h4 class="font-semibold text-xs text-gray-800 dark:text-gray-200 mb-2 truncate">${doc.title || 'ไม่มีชื่อหัวข้อ'}</h4>
+                <div class="flex items-center justify-between text-[11px] text-gray-400 border-t border-gray-100 dark:border-gray-800 pt-2 mt-2">
+                    <span><i class="fa-regular fa-square-check"></i> ${completedBlocks.length}/${todoBlocks.length} งานย่อย</span>
+                    <span class="capitalize">${doc.priority || 'medium'}</span>
+                </div>
+            `;
+
+            if (cols[status]) cols[status].appendChild(card);
+        });
+
+        document.getElementById('count-todo').innerText = counts.todo;
+        document.getElementById('count-in_progress').innerText = counts.in_progress;
+        document.getElementById('count-completed').innerText = counts.completed;
+    }
+
+    function renderTasksListView() {
+        const listEl = document.getElementById('all-tasks-list');
+        listEl.innerHTML = '';
+
+        let totalTasks = 0;
+        let completedTasks = 0;
+
+        state.documents.forEach(doc => {
+            const todoBlocks = doc.blocks.filter(b => b.type === 'todo');
+            todoBlocks.forEach((block) => {
+                totalTasks++;
+                if (block.checked) completedTasks++;
+
+                const item = document.createElement('div');
+                item.className = "p-3.5 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-notion-darkHover transition";
+                item.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <input type="checkbox" ${block.checked ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600 cursor-pointer">
+                        <div>
+                            <div class="text-xs font-medium ${block.checked ? 'line-through text-gray-400' : 'text-gray-800 dark:text-gray-200'}">${block.text || 'ไม่มีชื่อรายการ'}</div>
+                            <div class="text-[10px] text-gray-400 mt-0.5">ในเอกสาร: ${doc.emoji} ${doc.title}</div>
+                        </div>
                     </div>
                 `;
 
-                if (cols[status]) cols[status].appendChild(card);
+                item.querySelector('input').onchange = (e) => {
+                    block.checked = e.target.checked;
+                    saveState();
+                    renderBlocks();
+                };
+
+                listEl.appendChild(item);
             });
+        });
 
-            document.getElementById('count-todo').innerText = counts.todo;
-            document.getElementById('count-in_progress').innerText = counts.in_progress;
-            document.getElementById('count-completed').innerText = counts.completed;
+        const percent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+        document.getElementById('task-completion-rate').innerText = `ความคืบหน้า ${percent}% (${completedTasks}/${totalTasks})`;
+    }
+
+    window.switchDocument = (id) => {
+        state.activeDocId = id;
+        renderSidebar();
+        renderBlocks();
+        if (window.innerWidth < 768) {
+            sidebar.classList.add('-ml-64');
         }
+    };
 
-        // VIEW 3: TASK LIST VIEW
-        function renderTasksListView() {
-            const listEl = document.getElementById('all-tasks-list');
-            listEl.innerHTML = '';
-
-            let totalTasks = 0;
-            let completedTasks = 0;
-
-            state.documents.forEach(doc => {
-                const todoBlocks = doc.blocks.filter(b => b.type === 'todo');
-                todoBlocks.forEach((block) => {
-                    totalTasks++;
-                    if (block.checked) completedTasks++;
-
-                    const item = document.createElement('div');
-                    item.className = "p-3.5 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-notion-darkHover transition";
-                    item.innerHTML = `
-                        <div class="flex items-center gap-3">
-                            <input type="checkbox" ${block.checked ? 'checked' : ''} class="w-4 h-4 rounded text-blue-600 cursor-pointer">
-                            <div>
-                                <div class="text-xs font-medium ${block.checked ? 'line-through text-gray-400' : 'text-gray-800 dark:text-gray-200'}">${block.text || 'ไม่มีชื่อรายการ'}</div>
-                                <div class="text-[10px] text-gray-400 mt-0.5">ในเอกสาร: ${doc.emoji} ${doc.title}</div>
-                            </div>
-                        </div>
-                        <span class="text-[10px] px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-500">ย่อหน้าระดับ ${block.indent}</span>
-                    `;
-
-                    item.querySelector('input').onchange = (e) => {
-                        block.checked = e.target.checked;
-                        saveState();
-                        renderBlocks();
-                    };
-
-                    listEl.appendChild(item);
-                });
-            });
-
-            const percent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-            document.getElementById('task-completion-rate').innerText = `ความคืบหน้า ${percent}% (${completedTasks}/${totalTasks})`;
-        }
-
-        // GLOBAL ACTIONS & EVENT LISTENERS
-        window.switchDocument = (id) => {
-            state.activeDocId = id;
-            renderSidebar();
-            renderBlocks();
-            if (window.innerWidth < 768) {
-                sidebar.classList.add('-ml-64');
-            }
+    document.getElementById('btn-new-doc').addEventListener('click', () => {
+        const newDoc = {
+            id: 'doc-' + Date.now(),
+            title: 'เอกสารใหม่ที่ไม่มีชื่อ',
+            emoji: '📝',
+            categoryId: state.categories[0]?.id || 'cat-work',
+            priority: 'medium',
+            blocks: [
+                { id: 'b1', type: 'h1', text: 'พิมพ์หัวข้อของคุณที่นี่', indent: 0 },
+                { id: 'b2', type: 'text', text: '', indent: 0 }
+            ]
         };
+        state.documents.push(newDoc);
+        state.activeDocId = newDoc.id;
+        saveState();
+        renderSidebar();
+        renderBlocks();
+    });
 
-        // Create New Document
-        document.getElementById('btn-new-doc').addEventListener('click', () => {
-            const newDoc = {
-                id: 'doc-' + Date.now(),
-                title: 'เอกสารใหม่ที่ไม่มีชื่อ',
-                emoji: '📝',
-                categoryId: state.categories[0]?.id || 'cat-work',
-                priority: 'medium',
-                blocks: [
-                    { id: 'b1', type: 'h1', text: 'พิมพ์หัวข้อของคุณที่นี่', indent: 0 },
-                    { id: 'b2', type: 'text', text: '', indent: 0 }
-                ]
-            };
-            state.documents.push(newDoc);
-            state.activeDocId = newDoc.id;
+    document.querySelectorAll('.view-tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.view-tab-btn').forEach(b => {
+                b.className = "view-tab-btn px-3 py-1 rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition flex items-center gap-1.5";
+            });
+            btn.className = "view-tab-btn px-3 py-1 rounded-md bg-white dark:bg-gray-700 shadow-sm text-gray-800 dark:text-white transition flex items-center gap-1.5";
+            
+            const targetView = btn.dataset.view;
+            document.querySelectorAll('.view-container').forEach(vc => vc.classList.add('hidden'));
+            document.getElementById(`view-${targetView}`).classList.remove('hidden');
+        });
+    });
+
+    docTitleEl.addEventListener('input', () => {
+        const activeDoc = getActiveDoc();
+        if (activeDoc) {
+            activeDoc.title = docTitleEl.innerText;
             saveState();
             renderSidebar();
-            renderBlocks();
-        });
+        }
+    });
 
-        // View Tabs Switching
-        document.querySelectorAll('.view-tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.view-tab-btn').forEach(b => {
-                    b.className = "view-tab-btn px-3 py-1 rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition flex items-center gap-1.5";
-                });
-                btn.className = "view-tab-btn px-3 py-1 rounded-md bg-white dark:bg-gray-700 shadow-sm text-gray-800 dark:text-white transition flex items-center gap-1.5";
-                
-                const targetView = btn.dataset.view;
-                document.querySelectorAll('.view-container').forEach(vc => vc.classList.add('hidden'));
-                document.getElementById(`view-${targetView}`).classList.remove('hidden');
-            });
-        });
-
-        // Main Title Editable Listener
-        docTitleEl.addEventListener('input', () => {
-            const activeDoc = getActiveDoc();
-            if (activeDoc) {
-                activeDoc.title = docTitleEl.innerText;
-                saveState();
-                renderSidebar();
-            }
-        });
-
-        // Category Selector Listener
-        categorySelectEl.addEventListener('change', (e) => {
-            const activeDoc = getActiveDoc();
-            if (activeDoc) {
-                activeDoc.categoryId = e.target.value;
-                saveState();
-                renderSidebar();
-            }
-        });
-
-        // Priority Selector Listener
-        prioritySelectEl.addEventListener('change', (e) => {
-            const activeDoc = getActiveDoc();
-            if (activeDoc) {
-                activeDoc.priority = e.target.value;
-                saveState();
-                renderKanbanView();
-            }
-        });
-
-        // Delete Current Document
-        document.getElementById('delete-doc-btn').addEventListener('click', () => {
-            if (state.documents.length <= 1) return;
-            const docIdToDelete = state.activeDocId;
-            state.documents = state.documents.filter(d => d.id !== docIdToDelete);
-            state.activeDocId = state.documents[0].id;
-            
-            // Delete from Firestore
-            if (db) {
-                deleteDoc(doc(db, "notion_workspace", docIdToDelete));
-            }
+    categorySelectEl.addEventListener('change', (e) => {
+        const activeDoc = getActiveDoc();
+        if (activeDoc) {
+            activeDoc.categoryId = e.target.value;
+            saveState();
             renderSidebar();
-            renderBlocks();
-        });
-
-        // Dark Theme Toggle
-        document.getElementById('theme-toggle').addEventListener('click', () => {
-            document.documentElement.classList.toggle('dark');
-        });
-
-        // Close slash menu on outside click
-        document.addEventListener('click', (e) => {
-            if (!slashMenu.contains(e.target) && !e.target.closest('[contenteditable]')) {
-                hideSlashMenu();
-            }
-        });
-
-        // Quick Search Modal Logic
-        const searchModal = document.getElementById('search-modal');
-        const searchInput = document.getElementById('search-input');
-        const searchResults = document.getElementById('search-results');
-
-        document.getElementById('btn-quick-search').addEventListener('click', openSearch);
-        document.addEventListener('keydown', (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-                e.preventDefault();
-                openSearch();
-            } else if (e.key === 'Escape') {
-                searchModal.classList.add('hidden');
-            }
-        });
-
-        function openSearch() {
-            searchModal.classList.remove('hidden');
-            searchInput.focus();
-            renderSearchResults('');
         }
+    });
 
-        searchInput.addEventListener('input', (e) => renderSearchResults(e.target.value));
+    prioritySelectEl.addEventListener('change', (e) => {
+        const activeDoc = getActiveDoc();
+        if (activeDoc) {
+            activeDoc.priority = e.target.value;
+            saveState();
+            renderKanbanView();
+        }
+    });
 
-        function renderSearchResults(query) {
-            const filtered = state.documents.filter(d => 
-                d.title.toLowerCase().includes(query.toLowerCase()) ||
-                d.blocks.some(b => b.text.toLowerCase().includes(query.toLowerCase()))
-            );
+    document.getElementById('delete-doc-btn').addEventListener('click', () => {
+        if (state.documents.length <= 1) return;
+        const docIdToDelete = state.activeDocId;
+        state.documents = state.documents.filter(d => d.id !== docIdToDelete);
+        state.activeDocId = state.documents[0].id;
+        
+        if (db) {
+            deleteDoc(doc(db, "notion_workspace", docIdToDelete));
+        }
+        renderSidebar();
+        renderBlocks();
+    });
 
-            searchResults.innerHTML = filtered.map(d => `
-                <div onclick="switchDocument('${d.id}'); document.getElementById('search-modal').classList.add('hidden');" class="p-2 rounded hover:bg-blue-50 dark:hover:bg-gray-800 cursor-pointer flex items-center gap-2">
-                    <span>${d.emoji}</span>
-                    <div>
-                        <div class="font-medium text-gray-800 dark:text-gray-200">${d.title}</div>
-                        <div class="text-[10px] text-gray-400">${d.blocks.length} บล็อกข้อความ</div>
-                    </div>
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+        document.documentElement.classList.toggle('dark');
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!slashMenu.contains(e.target) && !e.target.closest('[contenteditable]')) {
+            hideSlashMenu();
+        }
+    });
+
+    const searchModal = document.getElementById('search-modal');
+    const searchInput = document.getElementById('search-input');
+    const searchResults = document.getElementById('search-results');
+
+    document.getElementById('btn-quick-search').addEventListener('click', openSearch);
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+            e.preventDefault();
+            openSearch();
+        } else if (e.key === 'Escape') {
+            searchModal.classList.add('hidden');
+        }
+    });
+
+    function openSearch() {
+        searchModal.classList.remove('hidden');
+        searchInput.focus();
+        renderSearchResults('');
+    }
+
+    searchInput.addEventListener('input', (e) => renderSearchResults(e.target.value));
+
+    function renderSearchResults(query) {
+        const filtered = state.documents.filter(d => 
+            d.title.toLowerCase().includes(query.toLowerCase()) ||
+            d.blocks.some(b => b.text.toLowerCase().includes(query.toLowerCase()))
+        );
+
+        searchResults.innerHTML = filtered.map(d => `
+            <div onclick="switchDocument('${d.id}'); document.getElementById('search-modal').classList.add('hidden');" class="p-2 rounded hover:bg-blue-50 dark:hover:bg-gray-800 cursor-pointer flex items-center gap-2">
+                <span>${d.emoji}</span>
+                <div>
+                    <div class="font-medium text-gray-800 dark:text-gray-200">${d.title}</div>
+                    <div class="text-[10px] text-gray-400">${d.blocks.length} บล็อกข้อความ</div>
                 </div>
-            `).join('');
-        }
+            </div>
+        `).join('');
+    }
 
-        // INITIAL LOAD & REALTIME LISTENERS
-        initRealtimeSync();
-    </script>
+    initRealtimeSync();
+</script>
 </body>
 </html>
