@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="th" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Prompt Hub • Developer Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darker: '#090d16',
+                        card: '#131c31',
+                        border: '#1e293b',
+                        accent: '#6366f1'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Prompt', sans-serif; }
+        code, pre { font-family: 'Fira Code', monospace; }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #090d16; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #334155; }
+    </style>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+</head>
+<body class="bg-darker text-slate-100 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
+
+    <!-- Top Navigation Bar -->
+    <header class="bg-card/80 backdrop-blur-md border-b border-border sticky top-0 z-40 px-6 py-3.5 flex justify-between items-center shadow-sm">
+        <div class="flex items-center space-x-3">
+            <div class="bg-gradient-to-br from-indigo-500 to-violet-600 p-2 rounded-xl text-white shadow-lg shadow-indigo-500/20">
+                <i class="fa-solid fa-code text-lg"></i>
+            </div>
+            <div>
+                <div class="flex items-center space-x-2">
+                    <h1 class="font-bold text-base tracking-tight">AI Prompt Hub</h1>
+                    <span class="text-[10px] bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded-full font-medium border border-indigo-500/20">Pro Mode</span>
+                </div>
+                <p class="text-xs text-slate-400">ระบบจัดการคำสั่ง AI สำหรับนักพัฒนาซอฟต์แวร์</p>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-3">
+            <!-- Firebase Status Pill -->
+            <div id="dbStatusBadge" class="hidden sm:flex items-center space-x-2 bg-slate-900/80 border border-border px-3 py-1.5 rounded-full text-xs text-slate-300">
+                <span id="dbDot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+                <span id="dbText">กำลังเชื่อมต่อ...</span>
+            </div>
+
+            <button onclick="openSettingsModal()" class="p-2.5 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white rounded-xl text-sm transition border border-border flex items-center justify-center" title="ตั้งค่า Firebase">
+                <i class="fa-solid fa-gear"></i>
+            </button>
+
+            <button onclick="openPromptModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition shadow-lg shadow-indigo-600/25 flex items-center space-x-2">
+                <i class="fa-solid fa-plus text-xs"></i>
+                <span>สร้าง Prompt ใหม่</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <div class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 flex flex-col space-y-6">
+
+        <!-- Control Deck: Search & Categories Bar -->
+        <div class="bg-card border border-border rounded-2xl p-4 sm:p-5 shadow-xl flex flex-col md:flex-row gap-4 justify-between items-center">
+            
+            <!-- Category Tabs / Filter Pills -->
+            <div id="categoryTabs" class="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 scrollbar-none">
+                <button onclick="filterCategory('ทั้งหมด')" class="cat-tab px-4 py-2 rounded-xl text-xs font-medium transition bg-indigo-600 text-white shadow-md shadow-indigo-600/20 whitespace-nowrap" data-cat="ทั้งหมด">
+                    <i class="fa-solid fa-layer-group mr-1.5"></i> ทั้งหมด <span id="cnt-all" class="ml-1 opacity-75">0</span>
+                </button>
+                <button onclick="filterCategory('Coding')" class="cat-tab px-4 py-2 rounded-xl text-xs font-medium transition bg-slate-900/60 text-slate-400 hover:text-slate-200 hover:bg-slate-900 border border-border whitespace-nowrap" data-cat="Coding">
+                    <i class="fa-solid fa-code mr-1.5"></i> Coding <span id="cnt-Coding" class="ml-1 opacity-75">0</span>
+                </button>
+                <button onclick="filterCategory('Debugging')" class="cat-tab px-4 py-2 rounded-xl text-xs font-medium transition bg-slate-900/60 text-slate-400 hover:text-slate-200 hover:bg-slate-900 border border-border whitespace-nowrap" data-cat="Debugging">
+                    <i class="fa-solid fa-bug mr-1.5"></i> Debugging <span id="cnt-Debugging" class="ml-1 opacity-75">0</span>
+                </button>
+                <button onclick="filterCategory('Architecture')" class="cat-tab px-4 py-2 rounded-xl text-xs font-medium transition bg-slate-900/60 text-slate-400 hover:text-slate-200 hover:bg-slate-900 border border-border whitespace-nowrap" data-cat="Architecture">
+                    <i class="fa-solid fa-sitemap mr-1.5"></i> Architecture <span id="cnt-Architecture" class="ml-1 opacity-75">0</span>
+                </button>
+                <button onclick="filterCategory('Documentation')" class="cat-tab px-4 py-2 rounded-xl text-xs font-medium transition bg-slate-900/60 text-slate-400 hover:text-slate-200 hover:bg-slate-900 border border-border whitespace-nowrap" data-cat="Documentation">
+                    <i class="fa-solid fa-file-lines mr-1.5"></i> Docs <span id="cnt-Documentation" class="ml-1 opacity-75">0</span>
+                </button>
+                <button onclick="filterCategory('Testing')" class="cat-tab px-4 py-2 rounded-xl text-xs font-medium transition bg-slate-900/60 text-slate-400 hover:text-slate-200 hover:bg-slate-900 border border-border whitespace-nowrap" data-cat="Testing">
+                    <i class="fa-solid fa-vial mr-1.5"></i> Testing <span id="cnt-Testing" class="ml-1 opacity-75">0</span>
+                </button>
+                <button onclick="filterCategory('Other')" class="cat-tab px-4 py-2 rounded-xl text-xs font-medium transition bg-slate-900/60 text-slate-400 hover:text-slate-200 hover:bg-slate-900 border border-border whitespace-nowrap" data-cat="Other">
+                    <i class="fa-solid fa-folder mr-1.5"></i> อื่นๆ <span id="cnt-Other" class="ml-1 opacity-75">0</span>
+                </button>
+            </div>
+
+            <!-- Search Input Box -->
+            <div class="relative w-full md:w-80">
+                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-500 text-sm"></i>
+                <input type="text" id="searchInput" oninput="handleSearch()" placeholder="ค้นหาหัวข้อ, คำสั่ง, หรือ #tag..." class="w-full bg-slate-900 border border-border rounded-xl pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-indigo-500 text-slate-200 transition shadow-inner">
+            </div>
+
+        </div>
+
+        <!-- Prompts Grid Container (Card Layout) -->
+        <div id="promptsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <!-- Dynamic Content -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden flex-col items-center justify-center py-20 text-center bg-card/40 border border-border border-dashed rounded-2xl">
+            <div class="bg-slate-900 p-4 rounded-full text-slate-600 mb-3 text-2xl border border-border">
+                <i class="fa-solid fa-terminal"></i>
+            </div>
+            <h3 class="text-base font-medium text-slate-300">ไม่พบ Prompt ที่ต้องการ</h3>
+            <p class="text-xs text-slate-500 mt-1">ลองเปลี่ยนคำค้นหา หรือกดสร้าง Prompt ใหม่เพื่อเริ่มต้น</p>
+        </div>
+
+    </div>
+
+    <!-- Modal: Add / Edit Prompt -->
+    <div id="promptModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-card border border-border w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 border-b border-border flex justify-between items-center bg-slate-900/50">
+                <h3 id="modalTitle" class="font-semibold text-sm text-slate-200">สร้าง Prompt ใหม่</h3>
+                <button onclick="closePromptModal()" class="text-slate-400 hover:text-slate-200 transition text-sm"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto space-y-4 flex-1">
+                <input type="hidden" id="promptId">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1.5">ชื่อหัวข้อ (Title)</label>
+                        <input type="text" id="formTitle" placeholder="เช่น Refactor โค้ดให้เป็น Clean Code" class="w-full bg-slate-900 border border-border rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-indigo-500 text-slate-200">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1.5">หมวดหมู่ (Category)</label>
+                        <select id="formCategory" class="w-full bg-slate-900 border border-border rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-indigo-500 text-slate-200">
+                            <option value="Coding">Coding</option>
+                            <option value="Debugging">Debugging</option>
+                            <option value="Architecture">Architecture</option>
+                            <option value="Documentation">Documentation</option>
+                            <option value="Testing">Testing</option>
+                            <option value="Other">อื่นๆ</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1.5">Tags (คั่นด้วยจุลภาค เช่น react, api, performance)</label>
+                    <input type="text" id="formTags" placeholder="javascript, backend, clean-code" class="w-full bg-slate-900 border border-border rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-indigo-500 text-slate-200">
+                </div>
+                <div class="flex-1 flex flex-col">
+                    <label class="block text-xs font-medium text-slate-400 mb-1.5">เนื้อหา Prompt (Prompt Template)</label>
+                    <textarea id="formBody" rows="9" placeholder="เขียนคำสั่งหรือ Template ที่นี่..." class="w-full bg-slate-900 border border-border rounded-xl p-3.5 text-xs font-mono focus:outline-none focus:border-indigo-500 text-slate-200 resize-none"></textarea>
+                </div>
+            </div>
+            <div class="px-6 py-4 border-t border-border bg-slate-900/50 flex justify-end space-x-3">
+                <button onclick="closePromptModal()" class="bg-slate-900 hover:bg-slate-800 text-slate-300 px-4 py-2 rounded-xl text-xs font-medium transition border border-border">ยกเลิก</button>
+                <button onclick="savePrompt()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded-xl text-xs font-medium transition shadow-lg shadow-indigo-600/20">บันทึกข้อมูล</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Settings & Firebase Config -->
+    <div id="settingsModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="bg-card border border-border w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+            <div class="px-6 py-4 border-b border-border flex justify-between items-center bg-slate-900/50">
+                <h3 class="font-semibold text-sm text-slate-200">ตั้งค่าระบบและการเชื่อมต่อ</h3>
+                <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-slate-200 transition text-sm"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1.5">Firebase Configuration (JSON)</label>
+                    <textarea id="settingFirebaseConfig" rows="7" class="w-full bg-slate-900 border border-border rounded-xl p-3.5 text-xs font-mono text-slate-300 focus:outline-none focus:border-indigo-500"></textarea>
+                    <p class="text-[11px] text-slate-500 mt-1">คุณสามารถปรับเปลี่ยน Config ของ Firebase ได้ที่นี่</p>
+                </div>
+                <div class="border-t border-border pt-4 flex justify-between items-center">
+                    <div>
+                        <h4 class="text-xs font-medium text-slate-300">สำรองข้อมูลทั้งหมด (Backup)</h4>
+                        <p class="text-[11px] text-slate-500">ดาวน์โหลดข้อมูลทั้งหมดเป็นไฟล์ JSON เก็บไว้</p>
+                    </div>
+                    <button onclick="exportData()" class="bg-slate-900 hover:bg-slate-800 text-slate-300 px-3.5 py-2 rounded-xl text-xs font-medium transition border border-border flex items-center space-x-1.5">
+                        <i class="fa-solid fa-download text-[11px]"></i>
+                        <span>Export JSON</span>
+                    </button>
+                </div>
+            </div>
+            <div class="px-6 py-4 border-t border-border bg-slate-900/50 flex justify-end space-x-3">
+                <button onclick="closeSettingsModal()" class="bg-slate-900 hover:bg-slate-800 text-slate-300 px-4 py-2 rounded-xl text-xs font-medium transition border border-border">ปิด</button>
+                <button onclick="updateFirebaseConfig()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded-xl text-xs font-medium transition">บันทึกการตั้งค่า</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-card border border-border text-slate-200 px-4 py-3 rounded-xl shadow-2xl transform translate-y-24 opacity-0 transition-all duration-300 z-50 flex items-center space-x-3">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-sm"></i>
+        <span id="toastMessage" class="text-xs font-medium">สำเร็จ!</span>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        let defaultFirebaseConfig = {
+            apiKey: "AIzaSyB3kPHRDHeYd6rjspNjCH11QG7T2bTd7PM",
+            authDomain: "stickey-note-6bb95.firebaseapp.com",
+            projectId: "stickey-note-6bb95",
+            storageBucket: "stickey-note-6bb95.firebasestorage.app",
+            messagingSenderId: "266704545369",
+            appId: "1:266704545369:web:e403d47f324a91234a3348",
+            measurementId: "G-S737QPN1D1"
+        };
+
+        let savedConfig = localStorage.getItem('custom_firebase_config');
+        let currentConfig = savedConfig ? JSON.parse(savedConfig) : defaultFirebaseConfig;
+
+        document.getElementById('settingFirebaseConfig').value = JSON.stringify(currentConfig, null, 2);
+
+        let app, db;
+        try {
+            app = firebase.initializeApp(currentConfig);
+            db = firebase.firestore();
+            updateDbStatus(true, "Connected to Firestore");
+        } catch (error) {
+            console.error("Firebase init error:", error);
+            updateDbStatus(false, "Connection Failed");
+        }
+
+        let allPrompts = [];
+        let currentCategory = 'ทั้งหมด';
+        let currentSearchQuery = '';
+
+        function fetchPrompts() {
+            if (!db) return;
+            db.collection("ai_prompts").orderBy("updatedAt", "desc").onSnapshot((snapshot) => {
+                allPrompts = [];
+                snapshot.forEach((doc) => {
+                    allPrompts.push({ id: doc.id, ...doc.data() });
+                });
+                renderUI();
+            }, (error) => {
+                console.error("Fetch error:", error);
+                updateDbStatus(false, "Permission Error");
+            });
+        }
+
+        function renderUI() {
+            const grid = document.getElementById('promptsGrid');
+            const emptyState = document.getElementById('emptyState');
+            
+            let filtered = allPrompts.filter(p => {
+                let matchCat = currentCategory === 'ทั้งหมด' || p.category === currentCategory;
+                let q = currentSearchQuery.toLowerCase();
+                let matchSearch = !q || p.title.toLowerCase().includes(q) || p.body.toLowerCase().includes(q) || (p.tags && p.tags.some(t => t.toLowerCase().includes(q)));
+                return matchCat && matchSearch;
+            });
+
+            updateCategoryCounts();
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+                return;
+            }
+
+            emptyState.classList.remove('flex');
+            emptyState.classList.add('hidden');
+
+            grid.innerHTML = filtered.map(p => `
+                <div class="bg-card border border-border rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition shadow-lg group">
+                    <div>
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="text-[11px] font-medium px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">${p.category || 'Other'}</span>
+                            <div class="flex items-center space-x-1 opacity-70 group-hover:opacity-100 transition">
+                                <button onclick="editPrompt('${p.id}')" class="p-1.5 text-slate-400 hover:text-indigo-400 rounded-lg hover:bg-slate-900 transition" title="แก้ไข">
+                                    <i class="fa-solid fa-pen-to-square text-xs"></i>
+                                </button>
+                                <button onclick="deletePrompt('${p.id}')" class="p-1.5 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-slate-900 transition" title="ลบ">
+                                    <i class="fa-solid fa-trash text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <h3 class="font-semibold text-slate-100 text-sm mb-3 tracking-tight">${escapeHtml(p.title)}</h3>
+                        
+                        <div class="bg-darker border border-border/80 rounded-xl p-3.5 relative mb-4 group/code shadow-inner">
+                            <pre class="text-xs font-mono text-slate-300 max-h-40 overflow-y-auto whitespace-pre-wrap leading-relaxed">${escapeHtml(p.body)}</pre>
+                            <button onclick="copyToClipboard(this, \`${escapeJsString(p.body)}\`)" class="absolute top-2.5 right-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-lg text-xs border border-slate-700 opacity-0 group-hover/code:opacity-100 transition flex items-center space-x-1.5 shadow">
+                                <i class="fa-regular fa-copy text-[11px]"></i>
+                                <span>Copy</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap items-center justify-between pt-3 border-t border-border/60 text-xs">
+                        <div class="flex flex-wrap gap-1.5">
+                            ${(p.tags || []).map(t => `<span class="bg-slate-900 text-slate-400 px-2 py-0.5 rounded-md text-[10px] border border-border">#${escapeHtml(t.trim())}</span>`).join('')}
+                        </div>
+                        <span class="text-slate-500 text-[10px]">${formatDate(p.updatedAt)}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateCategoryCounts() {
+            let counts = { 'ทั้งหมด': allPrompts.length, 'Coding': 0, 'Debugging': 0, 'Architecture': 0, 'Documentation': 0, 'Testing': 0, 'Other': 0 };
+            allPrompts.forEach(p => {
+                if (counts[p.category] !== undefined) counts[p.category]++;
+                else counts['Other']++;
+            });
+            for (let cat in counts) {
+                let el = document.getElementById(`cnt-${cat}`);
+                if (el) el.innerText = counts[cat];
+            }
+        }
+
+        function filterCategory(category) {
+            currentCategory = category;
+            document.querySelectorAll('.cat-tab').forEach(btn => {
+                if (btn.getAttribute('data-cat') === category) {
+                    btn.className = "cat-tab px-4 py-2 rounded-xl text-xs font-medium transition bg-indigo-600 text-white shadow-md shadow-indigo-600/20 whitespace-nowrap";
+                } else {
+                    btn.className = "cat-tab px-4 py-2 rounded-xl text-xs font-medium transition bg-slate-900/60 text-slate-400 hover:text-slate-200 hover:bg-slate-900 border border-border whitespace-nowrap";
+                }
+            });
+            renderUI();
+        }
+
+        function handleSearch() {
+            currentSearchQuery = document.getElementById('searchInput').value;
+            renderUI();
+        }
+
+        function openPromptModal(isEdit = false) {
+            document.getElementById('promptModal').classList.remove('hidden');
+            if (!isEdit) {
+                document.getElementById('modalTitle').innerText = "สร้าง Prompt ใหม่";
+                document.getElementById('promptId').value = "";
+                document.getElementById('formTitle').value = "";
+                document.getElementById('formCategory').value = "Coding";
+                document.getElementById('formTags').value = "";
+                document.getElementById('formBody').value = "";
+            }
+        }
+
+        function closePromptModal() {
+            document.getElementById('promptModal').classList.add('hidden');
+        }
+
+        function openSettingsModal() {
+            document.getElementById('settingsModal').classList.remove('hidden');
+        }
+
+        function closeSettingsModal() {
+            document.getElementById('settingsModal').classList.add('hidden');
+        }
+
+        function savePrompt() {
+            const id = document.getElementById('promptId').value;
+            const title = document.getElementById('formTitle').value.trim();
+            const category = document.getElementById('formCategory').value;
+            const tagsInput = document.getElementById('formTags').value;
+            const body = document.getElementById('formBody').value.trim();
+
+            if (!title || !body) {
+                showToast("กรุณากรอกชื่อและเนื้อหา Prompt", "error");
+                return;
+            }
+
+            const tags = tagsInput ? tagsInput.split(',').map(t => t.trim()).filter(t => t.length > 0) : [];
+            const promptData = {
+                title,
+                category,
+                tags,
+                body,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            const collection = db.collection("ai_prompts");
+            const promise = id ? collection.doc(id).update(promptData) : collection.add(promptData);
+
+            promise.then(() => {
+                closePromptModal();
+                showToast(id ? "อัปเดต Prompt สำเร็จ" : "สร้าง Prompt สำเร็จ", "success");
+            }).catch(error => {
+                console.error("Save error:", error);
+                showToast("เกิดข้อผิดพลาดในการบันทึก", "error");
+            });
+        }
+
+        function editPrompt(id) {
+            const prompt = allPrompts.find(p => p.id === id);
+            if (!prompt) return;
+
+            document.getElementById('promptId').value = prompt.id;
+            document.getElementById('formTitle').value = prompt.title;
+            document.getElementById('formCategory').value = prompt.category || 'Coding';
+            document.getElementById('formTags').value = (prompt.tags || []).join(', ');
+            document.getElementById('formBody').value = prompt.body;
+            document.getElementById('modalTitle').innerText = "แก้ไข Prompt";
+            
+            document.getElementById('promptModal').classList.remove('hidden');
+        }
+
+        function deletePrompt(id) {
+            if (confirm("ต้องการลบ Prompt นี้ใช่หรือไม่?")) {
+                db.collection("ai_prompts").doc(id).delete().then(() => {
+                    showToast("ลบ Prompt เรียบร้อยแล้ว", "success");
+                }).catch(error => {
+                    console.error("Delete error:", error);
+                    showToast("ไม่สามารถลบข้อมูลได้", "error");
+                });
+            }
+        }
+
+        function updateFirebaseConfig() {
+            try {
+                let newConfig = JSON.parse(document.getElementById('settingFirebaseConfig').value);
+                localStorage.setItem('custom_firebase_config', JSON.stringify(newConfig));
+                alert("บันทึกการตั้งค่าแล้ว หน้าเว็บจะรีโหลดใหม่");
+                location.reload();
+            } catch (e) {
+                alert("รูปแบบ JSON ของ Firebase Config ไม่ถูกต้อง");
+            }
+        }
+
+        function copyToClipboard(btn, text) {
+            navigator.clipboard.writeText(text).then(() => {
+                let originalHTML = btn.innerHTML;
+                btn.innerHTML = `<i class="fa-solid fa-check text-emerald-400 text-[11px]"></i> <span class="text-emerald-400">Copied!</span>`;
+                setTimeout(() => { btn.innerHTML = originalHTML; }, 2000);
+            });
+        }
+
+        function showToast(message, type = "success") {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toastMessage.innerText = message;
+            toastIcon.className = type === "success" ? "fa-solid fa-circle-check text-emerald-400 text-sm" : "fa-solid fa-circle-exclamation text-rose-400 text-sm";
+
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            setTimeout(() => { toast.classList.add('translate-y-24', 'opacity-0'); }, 3000);
+        }
+
+        function updateDbStatus(isConnected, message) {
+            const dot = document.getElementById('dbDot');
+            const text = document.getElementById('dbText');
+            dot.className = isConnected ? "w-2 h-2 rounded-full bg-emerald-500 animate-pulse" : "w-2 h-2 rounded-full bg-rose-500";
+            text.innerText = message;
+        }
+
+        function exportData() {
+            let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(allPrompts, null, 2));
+            let anchor = document.createElement('a');
+            anchor.setAttribute("href", dataStr);
+            anchor.setAttribute("download", `ai_prompts_backup_${new Date().toISOString().slice(0,10)}.json`);
+            document.body.appendChild(anchor);
+            anchor.click();
+            anchor.remove();
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        function escapeJsString(str) {
+            if (!str) return '';
+            return str.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$');
+        }
+
+        function formatDate(timestamp) {
+            if (!timestamp) return 'เมื่อสักครู่';
+            let date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            return date.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' });
+        }
+
+        fetchPrompts();
+    </script>
+</body>
+</html>
