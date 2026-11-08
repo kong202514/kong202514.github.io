@@ -8,8 +8,13 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Font: Kanit / Inter -->
+    <!-- Google Font: Kanit -->
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK Compat (App & Firestore) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
     <script>
         tailwind.config = {
             theme: {
@@ -42,7 +47,6 @@
             background-color: #cbd5e1;
             border-radius: 3px;
         }
-        /* ซ่อน scrollbar สำหรับแท็บหมวดหมู่ */
         .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
@@ -69,7 +73,7 @@
                 </div>
                 <div>
                     <h1 class="text-lg font-semibold leading-tight text-slate-900">AI Prompt Manager</h1>
-                    <p class="text-xs text-slate-500">ระบบคลังและจัดการคำสั่งสำหรับ AI</p>
+                    <p class="text-xs text-slate-500">ระบบคลังและจัดการคำสั่งสำหรับ AI (Firebase)</p>
                 </div>
             </div>
 
@@ -245,7 +249,7 @@
     <footer class="bg-white border-t border-slate-200 py-4 mt-auto">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
             <div>
-                <span>ระบบบันทึกข้อมูลอัตโนมัติในเบราว์เซอร์ของคุณ (LocalStorage)</span>
+                <span>ระบบซิงค์ข้อมูลแบบ Real-time ผ่าน Firebase</span>
             </div>
             <div class="flex items-center gap-4">
                 <button onclick="exportData()" class="hover:text-indigo-600 transition-colors flex items-center gap-1.5">
@@ -261,31 +265,22 @@
 
     <!-- SCRIPT APPLICATION LOGIC -->
     <script>
-        const defaultCategories = ['ทั้งหมด', 'การเขียนโค้ด', 'การตลาด & การขาย', 'งานเขียน & คอนเทนต์', 'แปลภาษา', 'สร้างภาพ (Midjourney)'];
-        
-        const defaultPrompts = [
-            {
-                id: '1',
-                title: 'เขียนฟังก์ชันและอธิบาย โค้ดอย่างละเอียด',
-                category: 'การเขียนโค้ด',
-                tags: ['Coding', 'Python', 'Refactor'],
-                description: 'ช่วยสร้างโค้ดตามความต้องการพร้อมคำอธิบายแบบบรรทัดต่อบรรทัด',
-                content: 'สวมบทบาทเป็น Senior Software Engineer ช่วยเขียนโค้ด [ระบุภาษา/โจทย์] ให้ทำงานได้ตามความต้องการต่อไปนี้: [ใส่ความต้องการ]',
-                createdAt: new Date().toISOString()
-            },
-            {
-                id: '2',
-                title: 'สร้างไอเดียโพสต์โซเชียลมีเดีย 7 วัน',
-                category: 'การตลาด & การขาย',
-                tags: ['Marketing', 'Social', 'ContentPlan'],
-                description: 'วางตาราง คอนเทนต์รายสัปดาห์สำหรับเพจสินค้า',
-                content: 'คุณคือผู้เชี่ยวชาญด้าน Social Media Marketing ช่วยคิดตารางคอนเทนต์ 7 วัน สำหรับสินค้า [ระบุชื่อสินค้า/บริการ]',
-                createdAt: new Date().toISOString()
-            }
-        ];
+        // --- FIREBASE CONFIGURATION ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyB3kPHRDHeYd6rjspNjCH11QG7T2bTd7PM",
+            authDomain: "stickey-note-6bb95.firebaseapp.com",
+            projectId: "stickey-note-6bb95",
+            storageBucket: "stickey-note-6bb95.firebasestorage.app",
+            messagingSenderId: "266704545369",
+            appId: "1:266704545369:web:e403d47f324a91234a3348",
+            measurementId: "G-S737QPN1D1"
+        };
 
-        let categories = JSON.parse(localStorage.getItem('ai_prompt_categories')) || defaultCategories;
-        let prompts = JSON.parse(localStorage.getItem('ai_prompt_data')) || defaultPrompts;
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let categories = ['ทั้งหมด'];
+        let prompts = [];
         let activeCategory = 'ทั้งหมด';
         let deleteActionCallback = null;
 
@@ -358,9 +353,40 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            renderCategoryFilters();
-            renderPrompts();
+            initFirebaseSync();
         });
+
+        // --- FIREBASE REAL-TIME SYNC ---
+        function initFirebaseSync() {
+            // โหลดและซิงค์หมวดหมู่จาก Firestore
+            db.collection("settings").doc("categories_data").onSnapshot((doc) => {
+                if (doc.exists) {
+                    categories = doc.data().list || ['ทั้งหมด'];
+                } else {
+                    categories = ['ทั้งหมด', 'การเขียนโค้ด', 'การตลาด & การขาย', 'งานเขียน & คอนเทนต์', 'แปลภาษา', 'สร้างภาพ (Midjourney)'];
+                    saveCategoriesToFirebase();
+                }
+                renderCategoryFilters();
+                renderCategoryManageList();
+            });
+
+            // โหลดและซิงค์ Prompts จาก Firestore แบบ Real-time
+            db.collection("prompts").onSnapshot((snapshot) => {
+                prompts = [];
+                snapshot.forEach((doc) => {
+                    prompts.push({ id: doc.id, ...doc.data() });
+                });
+                renderPrompts();
+            });
+        }
+
+        function saveCategoriesToFirebase() {
+            db.collection("settings").doc("categories_data").set({
+                list: categories
+            }).catch((error) => {
+                console.error("Error saving categories: ", error);
+            });
+        }
 
         function showDeleteConfirm(title, desc, onConfirm) {
             document.getElementById('deleteConfirmTitle').innerText = title;
@@ -380,11 +406,6 @@
             }
             closeDeleteConfirmModal();
         });
-
-        function saveData() {
-            localStorage.setItem('ai_prompt_categories', JSON.stringify(categories));
-            localStorage.setItem('ai_prompt_data', JSON.stringify(prompts));
-        }
 
         function renderCategoryFilters() {
             const container = document.getElementById('categoryFilterContainer');
@@ -551,31 +572,29 @@
             const tagsStr = document.getElementById('promptTags').value.trim();
             const description = document.getElementById('promptDesc').value.trim();
             const content = document.getElementById('promptContent').value.trim();
-
             const tags = tagsStr ? tagsStr.split(',').map(t => t.trim()).filter(t => t) : [];
 
             if (id) {
-                const index = prompts.findIndex(p => p.id === id);
-                if (index !== -1) {
-                    prompts[index] = { ...prompts[index], title, category, tags, description, content };
-                }
-                showToast('อัปเดตและยืนยันการแก้ไข Prompt เรียบร้อย');
+                // บันทึกการแก้ไขลง Firestore
+                db.collection("prompts").doc(id).update({
+                    title, category, tags, description, content
+                }).then(() => {
+                    showToast('อัปเดตและยืนยันการแก้ไข Prompt เรียบร้อย');
+                }).catch(err => {
+                    showToast('เกิดข้อผิดพลาดในการอัปเดต', true);
+                });
             } else {
-                const newPrompt = {
-                    id: Date.now().toString(),
-                    title,
-                    category,
-                    tags,
-                    description,
-                    content,
-                    createdAt: new Date().toISOString()
-                };
-                prompts.unshift(newPrompt);
-                showToast('เพิ่ม Prompt ใหม่เรียบร้อย');
+                // เพิ่มข้อมูลใหม่ลง Firestore
+                db.collection("prompts").add({
+                    title, category, tags, description, content,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                }).then(() => {
+                    showToast('เพิ่ม Prompt ใหม่เรียบร้อย');
+                }).catch(err => {
+                    showToast('เกิดข้อผิดพลาดในการบันทึก', true);
+                });
             }
 
-            saveData();
-            renderPrompts();
             closePromptForm();
         }
 
@@ -596,10 +615,11 @@
 
         function deletePrompt(id) {
             showDeleteConfirm('ยืนยันการลบ Prompt', 'คุณแน่ใจหรือไม่ว่าต้องการลบ Prompt รายการนี้?', () => {
-                prompts = prompts.filter(p => p.id !== id);
-                saveData();
-                renderPrompts();
-                showToast('ลบรายการเรียบร้อยแล้ว');
+                db.collection("prompts").doc(id).delete().then(() => {
+                    showToast('ลบรายการเรียบร้อยแล้ว');
+                }).catch(err => {
+                    showToast('เกิดข้อผิดพลาดในการลบ', true);
+                });
             });
         }
 
@@ -639,9 +659,7 @@
 
             if (name && !categories.includes(name)) {
                 categories.push(name);
-                saveData();
-                renderCategoryFilters();
-                renderCategoryManageList();
+                saveCategoriesToFirebase();
                 input.value = '';
                 showToast(`เพิ่มหมวดหมู่ "${name}" เรียบร้อย`);
             }
@@ -682,10 +700,14 @@
                 return;
             }
 
+            // อัปเดตรายชื่อหมวดหมู่
             categories = categories.map(c => c === oldName ? newName : c);
+            saveCategoriesToFirebase();
+
+            // อัปเดตหมวดหมู่ใน Prompt ที่เกี่ยวข้องใน Firestore ด้วย
             prompts.forEach(p => {
                 if (p.category === oldName) {
-                    p.category = newName;
+                    db.collection("prompts").doc(p.id).update({ category: newName });
                 }
             });
 
@@ -693,26 +715,23 @@
                 activeCategory = newName;
             }
 
-            saveData();
-            renderCategoryFilters();
             renderCategoryManageList();
-            renderPrompts();
             showToast(`เปลี่ยนชื่อหมวดหมู่เป็น "${newName}" เรียบร้อย`);
         }
 
         function removeCategory(catName) {
             showDeleteConfirm('ยืนยันการลบหมวดหมู่', `ต้องการลบหมวดหมู่ "${catName}" หรือไม่? (คำสั่งในหมวดหมู่นี้จะย้ายไปที่ "ทั้งหมด")`, () => {
                 categories = categories.filter(c => c !== catName);
+                saveCategoriesToFirebase();
+
                 prompts.forEach(p => {
                     if (p.category === catName) {
-                        p.category = 'ทั้งหมด';
+                        db.collection("prompts").doc(p.id).update({ category: 'ทั้งหมด' });
                     }
                 });
+
                 if (activeCategory === catName) activeCategory = 'ทั้งหมด';
-                saveData();
-                renderCategoryFilters();
                 renderCategoryManageList();
-                renderPrompts();
                 showToast(`ลบหมวดหมู่เรียบร้อย`);
             });
         }
@@ -737,10 +756,19 @@
                     const imported = JSON.parse(e.target.result);
                     if (imported.categories && imported.prompts) {
                         categories = Array.from(new Set([...categories, ...imported.categories]));
-                        prompts = [...imported.prompts, ...prompts];
-                        saveData();
-                        renderCategoryFilters();
-                        renderPrompts();
+                        saveCategoriesToFirebase();
+
+                        imported.prompts.forEach(p => {
+                            db.collection("prompts").add({
+                                title: p.title || 'ไม่มีชื่อ',
+                                category: p.category || 'ทั้งหมด',
+                                tags: p.tags || [],
+                                description: p.description || '',
+                                content: p.content || '',
+                                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                        });
+
                         showToast('นำเข้าข้อมูลสำเร็จ!');
                     } else {
                         showToast('รูปแบบไฟล์ไม่ถูกต้อง', true);
