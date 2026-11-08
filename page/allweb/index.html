@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="th" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResourceHub - ศูนย์รวมกลุ่มและแหล่งข้อมูล (User View)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Sarabun', 'sans-serif'] },
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 h-full flex flex-col font-sans antialiased transition-colors duration-200">
+
+    <!-- Top Navigation -->
+    <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 shadow-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md shadow-blue-500/20">
+                    <i class="fa-solid fa-layer-group text-lg"></i>
+                </div>
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <h1 class="font-bold text-lg text-slate-900 dark:text-white leading-tight">ResourceHub</h1>
+                        <span id="syncStatus" class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300">
+                            <span class="w-1.5 h-1.5 mr-1 bg-amber-500 rounded-full animate-pulse"></span> เชื่อมต่อ...
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">ศูนย์รวมกลุ่ม Facebook และคลังข้อมูลด่วน</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-3">
+                <!-- Dark Mode Toggle -->
+                <button onclick="toggleDarkMode()" id="darkModeToggle" title="สลับโหมดสว่าง/มืด" class="p-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl border border-slate-200 dark:border-slate-700 transition cursor-pointer">
+                    <i class="fa-solid fa-moon text-sm" id="darkModeIcon"></i>
+                </button>
+                <a href="admin.html" target="_blank" class="inline-flex items-center px-4 py-2 bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 dark:hover:bg-slate-700 text-white text-xs font-semibold rounded-xl shadow-xs transition">
+                    <i class="fa-solid fa-gears mr-2 text-blue-400"></i> ไปหน้าจัดการ (Admin)
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Layout -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row gap-6">
+        
+        <!-- Sidebar / Category Filters -->
+        <aside class="w-full md:w-64 shrink-0 flex flex-col gap-4">
+            <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
+                <div class="relative mb-4">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                        <i class="fa-solid fa-search text-xs"></i>
+                    </span>
+                    <input type="text" id="searchInput" oninput="filterResources()" placeholder="ค้นหาชื่อ, แท็ก..." class="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <h3 class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">โครงสร้างหมวดหมู่</h3>
+                <div id="categoryFilters" class="space-y-1">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </aside>
+
+        <!-- Resources Section -->
+        <div class="flex-1 flex flex-col gap-4">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
+                <div>
+                    <h2 id="currentCategoryTitle" class="text-base font-bold text-slate-800 dark:text-white">ทั้งหมด (All Resources)</h2>
+                    <p id="currentCategoryDesc" class="text-xs text-slate-500 dark:text-slate-400">แสดงรายการแหล่งข้อมูลทั้งหมดตามโครงสร้าง</p>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="text-xs text-slate-500 dark:text-slate-400">เรียงตาม:</span>
+                    <select id="sortBy" onchange="filterResources()" class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="newest">เพิ่มล่าสุด</option>
+                        <option value="title">ชื่อ (A-Z)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Grid or Tree View -->
+            <div id="resourceGrid" class="space-y-6">
+                <!-- Cards populated by JS -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="hidden flex flex-col items-center justify-center p-12 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 text-center my-6">
+                <div class="w-16 h-16 bg-slate-100 dark:bg-slate-800 text-slate-400 rounded-full flex items-center justify-center text-xl mb-4">
+                    <i class="fa-solid fa-folder-open"></i>
+                </div>
+                <h3 class="text-sm font-bold text-slate-700 dark:text-slate-200">ไม่พบรายการข้อมูลในหมวดนี้</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">คุณสามารถเพิ่มหมวดหมู่หรือรายการลิงก์ได้ที่หน้าจัดการ (Admin)</p>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 bg-slate-900 dark:bg-slate-800 text-white text-xs px-4 py-3 rounded-xl shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 flex items-center space-x-2">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
+        <span id="toastMsg">คัดลอกลิงก์เรียบร้อย</span>
+    </div>
+
+    <!-- User View Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB3kPHRDHeYd6rjspNjCH11QG7T2bTd7PM",
+            authDomain: "stickey-note-6bb95.firebaseapp.com",
+            projectId: "stickey-note-6bb95",
+            storageBucket: "stickey-note-6bb95.firebasestorage.app",
+            messagingSenderId: "266704545369",
+            appId: "1:266704545369:web:e403d47f324a91234a3348",
+            measurementId: "G-S737QPN1D1"
+        };
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-resource-hub';
+        let db, userId = null;
+
+        window.categories = {};
+        window.resources = [];
+        window.currentFilterCategory = 'all';
+
+        const defaultCategories = {
+            facebook_group: { label: "Facebook Groups", icon: "fa-users-rectangle", desc: "กลุ่ม Facebook ทั่วไป", parent: "" },
+            facebook_page: { label: "Facebook Pages", icon: "fa-file-lines", desc: "เพจให้ความรู้ ข่าวสาร", parent: "" },
+            website: { label: "เว็บไซต์ / เครื่องมือ", icon: "fa-globe", desc: "เว็บไซต์สำคัญ", parent: "" },
+            tech_groups: { label: "กลุ่มไอทีและเขียนเว็บ", icon: "fa-code", desc: "กลุ่มย่อยสายเทค", parent: "facebook_group" }
+        };
+
+        const defaultResources = [
+            { id: "res-1", title: "ชุมชนคนทำเว็บ Thailand", url: "https://facebook.com", category: "tech_groups", tags: ["Coding", "WebDev"], notes: "กลุ่มพูดคุยเรื่องเว็บ", createdAt: new Date().toISOString() },
+            { id: "res-2", title: "Tailwind CSS Doc", url: "https://tailwindcss.com", category: "website", tags: ["CSS"], notes: "คู่มือ CSS", createdAt: new Date().toISOString() }
+        ];
+
+        window.toggleDarkMode = function() {
+            const htmlEl = document.documentElement;
+            const iconEl = document.getElementById('darkModeIcon');
+            if (htmlEl.classList.contains('dark')) {
+                htmlEl.classList.remove('dark');
+                localStorage.setItem('rh_theme', 'light');
+                iconEl.className = 'fa-solid fa-moon text-sm';
+            } else {
+                htmlEl.classList.add('dark');
+                localStorage.setItem('rh_theme', 'dark');
+                iconEl.className = 'fa-solid fa-sun text-sm text-amber-400';
+            }
+        };
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem('rh_theme');
+            const iconEl = document.getElementById('darkModeIcon');
+            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                if (iconEl) iconEl.className = 'fa-solid fa-sun text-sm text-amber-400';
+            } else {
+                document.documentElement.classList.remove('dark');
+                if (iconEl) iconEl.className = 'fa-solid fa-moon text-sm';
+            }
+        }
+
+        async function init() {
+            initTheme();
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                const auth = getAuth(app);
+                await signInAnonymously(auth);
+                userId = auth.currentUser ? auth.currentUser.uid : 'anon-user';
+                document.getElementById('syncStatus').innerHTML = `<span class="w-1.5 h-1.5 mr-1 bg-emerald-400 rounded-full"></span> ซิงค์แล้ว`;
+                startListeners();
+            } catch (err) {
+                console.warn("Offline user mode:", err);
+                loadLocalFallback();
+            }
+        }
+
+        function startListeners() {
+            onSnapshot(collection(db, 'artifacts', appId, 'users', userId, 'categories'), snap => {
+                const cats = {};
+                snap.forEach(d => { cats[d.id] = d.data(); });
+                if (Object.keys(cats).length === 0) {
+                    for (const [k, v] of Object.entries(defaultCategories)) {
+                        setDoc(doc(db, 'artifacts', appId, 'users', userId, 'categories', k), v);
+                    }
+                } else {
+                    window.categories = cats;
+                }
+                renderCategorySidebar();
+                filterResources();
+            });
+
+            onSnapshot(collection(db, 'artifacts', appId, 'users', userId, 'resources'), snap => {
+                const res = [];
+                snap.forEach(d => { res.push({ id: d.id, ...d.data() }); });
+                window.resources = res.length > 0 ? res : defaultResources;
+                renderCategorySidebar();
+                filterResources();
+            });
+        }
+
+        function loadLocalFallback() {
+            const savedCats = localStorage.getItem('rh_admin_categories');
+            window.categories = savedCats ? JSON.parse(savedCats) : defaultCategories;
+            const savedRes = localStorage.getItem('rh_admin_resources');
+            window.resources = savedRes ? JSON.parse(savedRes) : defaultResources;
+            renderCategorySidebar();
+            filterResources();
+        }
+
+        window.renderCategorySidebar = function() {
+            const container = document.getElementById('categoryFilters');
+            container.innerHTML = '';
+
+            const allCount = window.resources.length;
+            const isAllActive = window.currentFilterCategory === 'all';
+            const allBtn = document.createElement('button');
+            allBtn.onclick = () => selectCategory('all');
+            allBtn.className = `w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition cursor-pointer ${isAllActive ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400 font-semibold shadow-xs' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'}`;
+            allBtn.innerHTML = `<div class="flex items-center space-x-2.5"><i class="fa-solid fa-border-all w-4 text-center ${isAllActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400'}"></i><span>ทั้งหมด</span></div><span class="px-2 py-0.5 rounded-full ${isAllActive ? 'bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'}">${allCount}</span>`;
+            container.appendChild(allBtn);
+
+            // Render categories as dropdown collapsible tree accordion
+            const renderCategoryNode = (parentKey, level, parentContainer) => {
+                const subCats = Object.entries(window.categories).filter(([k, v]) => (v.parent || '') === parentKey);
+                subCats.forEach(([key, cat]) => {
+                    const count = window.resources.filter(r => r.category === key).length;
+                    const isActive = window.currentFilterCategory === key;
+                    const hasChildren = Object.values(window.categories).some(v => v.parent === key);
+
+                    const nodeWrapper = document.createElement('div');
+                    nodeWrapper.className = level > 0 ? 'ml-3 pl-2 border-l border-slate-200 dark:border-slate-800 space-y-1 mt-1' : 'space-y-1 mt-1';
+
+                    const row = document.createElement('div');
+                    row.className = `w-full flex items-center justify-between py-2 px-3 rounded-xl text-xs font-medium transition cursor-pointer ${isActive ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400 font-semibold shadow-xs' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'}`;
+                    
+                    const leftDiv = document.createElement('div');
+                    leftDiv.className = 'flex items-center space-x-2 truncate flex-1';
+                    leftDiv.onclick = (e) => {
+                        e.stopPropagation();
+                        selectCategory(key);
+                    };
+
+                    leftDiv.innerHTML = `
+                        <i class="fa-solid ${cat.icon || 'fa-folder'} w-4 text-center shrink-0 ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400'}"></i>
+                        <span class="truncate">${escapeHtml(cat.label)}</span>
+                    `;
+
+                    const rightDiv = document.createElement('div');
+                    rightDiv.className = 'flex items-center space-x-2 shrink-0';
+
+                    const badge = document.createElement('span');
+                    badge.className = `px-2 py-0.5 rounded-full text-[10px] ${isActive ? 'bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'}`;
+                    badge.innerText = count;
+                    rightDiv.appendChild(badge);
+
+                    if (hasChildren) {
+                        const toggleBtn = document.createElement('button');
+                        toggleBtn.className = 'w-6 h-6 flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-lg transition';
+                        toggleBtn.innerHTML = `<i class="fa-solid fa-chevron-down text-[10px] transition-transform duration-200" id="icon-${key}"></i>`;
+                        
+                        const childrenContainer = document.createElement('div');
+                        childrenContainer.id = `children-${key}`;
+                        childrenContainer.className = 'space-y-1 hidden';
+
+                        toggleBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            childrenContainer.classList.toggle('hidden');
+                            const icon = toggleBtn.querySelector('i');
+                            icon.classList.toggle('rotate-180');
+                        };
+
+                        rightDiv.appendChild(toggleBtn);
+                        row.appendChild(leftDiv);
+                        row.appendChild(rightDiv);
+                        nodeWrapper.appendChild(row);
+                        nodeWrapper.appendChild(childrenContainer);
+
+                        renderCategoryNode(key, level + 1, childrenContainer);
+                    } else {
+                        row.appendChild(leftDiv);
+                        row.appendChild(rightDiv);
+                        nodeWrapper.appendChild(row);
+                    }
+
+                    parentContainer.appendChild(nodeWrapper);
+                });
+            };
+
+            renderCategoryNode('', 0, container);
+        };
+
+        function selectCategory(key) {
+            window.currentFilterCategory = key;
+            if (key === 'all') {
+                document.getElementById('currentCategoryTitle').innerText = 'ทั้งหมด (All Resources)';
+                document.getElementById('currentCategoryDesc').innerText = 'แสดงรายการแหล่งข้อมูลและกลุ่มทั้งหมดตามโครงสร้าง';
+            } else {
+                const cat = window.categories[key] || { label: key, desc: '' };
+                document.getElementById('currentCategoryTitle').innerText = cat.label;
+                document.getElementById('currentCategoryDesc').innerText = cat.desc || 'แสดงรายการในหมวดหมู่นี้';
+            }
+            renderCategorySidebar();
+            filterResources();
+        }
+
+        window.filterResources = function() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const sortBy = document.getElementById('sortBy').value;
+
+            let filteredResources = [...window.resources];
+            if (window.currentFilterCategory !== 'all') {
+                // Include category and all its nested subcategories recursively
+                const getSubCategoryKeys = (parentKey) => {
+                    let keys = [parentKey];
+                    for (const [k, v] of Object.entries(window.categories)) {
+                        if (v.parent === parentKey) {
+                            keys = keys.concat(getSubCategoryKeys(k));
+                        }
+                    }
+                    return keys;
+                };
+                const targetKeys = getSubCategoryKeys(window.currentFilterCategory);
+                filteredResources = filteredResources.filter(r => targetKeys.includes(r.category));
+            }
+
+            if (searchTerm.trim() !== '') {
+                filteredResources = filteredResources.filter(r => 
+                    r.title.toLowerCase().includes(searchTerm) ||
+                    (r.notes && r.notes.toLowerCase().includes(searchTerm)) ||
+                    (r.tags && r.tags.some(t => t.toLowerCase().includes(searchTerm)))
+                );
+            }
+
+            filteredResources.sort((a, b) => {
+                if (sortBy === 'newest') return new Date(b.createdAt) - new Date(a.createdAt);
+                if (sortBy === 'title') return a.title.localeCompare(b.title, 'th');
+            });
+
+            renderTreeView(filteredResources);
+        };
+
+        function renderTreeView(filteredRes) {
+            const container = document.getElementById('resourceGrid');
+            const emptyState = document.getElementById('emptyState');
+            container.innerHTML = '';
+
+            if (filteredRes.length === 0) {
+                emptyState.classList.remove('hidden');
+                container.classList.add('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            container.classList.remove('hidden');
+
+            // If viewing a specific category or searching, let's group by category or render tree sections
+            const categoriesToDisplay = window.currentFilterCategory === 'all' 
+                ? Object.entries(window.categories).filter(([k, v]) => !v.parent || v.parent === '')
+                : [[window.currentFilterCategory, window.categories[window.currentFilterCategory]]];
+
+            categoriesToDisplay.forEach(([catKey, catVal]) => {
+                const sectionEl = createCategorySectionHtml(catKey, catVal, filteredRes, 0);
+                if (sectionEl) {
+                    container.appendChild(sectionEl);
+                }
+            });
+        }
+
+        function createCategorySectionHtml(key, cat, filteredRes, level) {
+            const children = Object.entries(window.categories).filter(([k, v]) => v.parent === key);
+            const catRes = filteredRes.filter(r => r.category === key);
+
+            // If this category and its children have no matching resources, skip
+            const hasChildrenMatch = children.some(([ck, cv]) => {
+                const subSec = createCategorySectionHtml(ck, cv, filteredRes, level + 1);
+                return subSec !== null;
+            });
+
+            if (catRes.length === 0 && !hasChildrenMatch) return null;
+
+            let levelBg = "bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 shadow-xs";
+            let accentBorder = "border-l-8 border-l-blue-600 dark:border-l-blue-500";
+            let iconBoxBg = "bg-blue-600 text-white shadow-md shadow-blue-500/30";
+
+            if (level === 1) {
+                levelBg = "bg-slate-50 dark:bg-slate-850 border-2 border-indigo-200 dark:border-indigo-900/60 shadow-xs";
+                accentBorder = "border-l-8 border-l-indigo-600 dark:border-l-indigo-400";
+                iconBoxBg = "bg-indigo-600 text-white shadow-md shadow-indigo-500/30";
+            } else if (level >= 2) {
+                levelBg = "bg-slate-100 dark:bg-slate-850/90 border-2 border-emerald-200 dark:border-emerald-900/60 shadow-xs";
+                accentBorder = "border-l-8 border-l-emerald-600 dark:border-l-emerald-400";
+                iconBoxBg = "bg-emerald-600 text-white shadow-md shadow-emerald-500/30";
+            }
+
+            const wrapper = document.createElement('div');
+            wrapper.className = `rounded-3xl p-6 transition-all ${levelBg} ${accentBorder} ${level > 0 ? 'ml-4 sm:ml-8 mt-4' : 'mb-4'}`;
+
+            wrapper.innerHTML = `
+                <div class="flex items-center space-x-4 mb-4">
+                    <span class="w-12 h-12 rounded-2xl ${iconBoxBg} flex items-center justify-center text-lg shrink-0">
+                        <i class="fa-solid ${cat.icon || 'fa-folder'}"></i>
+                    </span>
+                    <div>
+                        <div class="flex items-center space-x-3">
+                            <h4 class="font-extrabold text-slate-900 dark:text-white text-base">${escapeHtml(cat.label)}</h4>
+                            <span class="text-xs px-2.5 py-0.5 rounded-full bg-slate-900 text-white dark:bg-white dark:text-slate-900 font-bold">${catRes.length} ลิงก์</span>
+                        </div>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">${escapeHtml(cat.desc || '')}</p>
+                    </div>
+                </div>
+            `;
+
+            if (catRes.length > 0) {
+                const grid = document.createElement('div');
+                grid.className = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4 pt-4 border-t-2 border-slate-200/80 dark:border-slate-700/80";
+                
+                catRes.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = "bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-2xl p-4 shadow-xs hover:shadow-md transition flex flex-col justify-between group";
+                    
+                    let tagsHtml = item.tags && item.tags.length > 0 ? `<div class="flex flex-wrap gap-1.5 mt-2.5">` + item.tags.map(t => `<span class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] px-2.5 py-0.5 rounded font-semibold border border-slate-200 dark:border-slate-700">#${t}</span>`).join('') + `</div>` : '';
+
+                    card.innerHTML = `
+                        <div>
+                            <h3 class="font-bold text-slate-800 dark:text-white text-sm mb-1 line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">${escapeHtml(item.title)}</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mb-3">${item.notes ? escapeHtml(item.notes) : 'ไม่มีบันทึกย่อ'}</p>
+                            ${tagsHtml}
+                        </div>
+                        <div class="pt-3 mt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                            <button onclick="copyLink('${item.url}')" class="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white font-medium flex items-center space-x-1 cursor-pointer">
+                                <i class="fa-regular fa-copy"></i><span>คัดลอก</span>
+                            </button>
+                            <a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-1 px-3 py-1.5 bg-blue-600 text-white hover:bg-blue-700 rounded-xl text-xs font-bold transition shadow-xs">
+                                <span>เปิดใช้งาน</span><i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                            </a>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+                wrapper.appendChild(grid);
+            }
+
+            if (children.length > 0) {
+                const subContainer = document.createElement('div');
+                subContainer.className = "mt-4 space-y-3";
+                children.forEach(([ck, cv]) => {
+                    const subSec = createCategorySectionHtml(ck, cv, filteredRes, level + 1);
+                    if (subSec) subContainer.appendChild(subSec);
+                });
+                wrapper.appendChild(subContainer);
+            }
+
+            return wrapper;
+        }
+
+        window.copyLink = function(url) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(() => showToast('คัดลอกลิงก์เรียบร้อย')).catch(() => fallbackCopy(url));
+            } else {
+                fallbackCopy(url);
+            }
+        };
+
+        function fallbackCopy(url) {
+            const ta = document.createElement('textarea');
+            ta.value = url;
+            ta.style.position = 'fixed';
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            try {
+                document.execCommand('copy');
+                showToast('คัดลอกลิงก์เรียบร้อย');
+            } catch (e) {
+                showToast('คัดลอกไม่สำเร็จ', 'fa-circle-exclamation', 'text-red-400');
+            }
+            document.body.removeChild(ta);
+        }
+
+        function showToast(msg, icon = 'fa-circle-check', color = 'text-emerald-400') {
+            const t = document.getElementById('toast');
+            document.getElementById('toastMsg').innerText = msg;
+            document.getElementById('toastIcon').className = `fa-solid ${icon} ${color}`;
+            t.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 3000);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+        }
+
+        init();
+    </script>
+</body>
+</html>
