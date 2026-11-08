@@ -1,492 +1,764 @@
-<!DOCTYPE html>
-<html lang="th" class="dark">
+ <!DOCTYPE html>
+<html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Prompt Hub • Developer Dashboard</title>
+    <title>ระบบจัดการคำสั่ง AI (AI Prompt Manager)</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font: Kanit / Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
-            darkMode: 'class',
             theme: {
                 extend: {
+                    fontFamily: {
+                        sans: ['Kanit', 'sans-serif'],
+                    },
                     colors: {
-                        darker: '#090d16',
-                        card: '#131c31',
-                        border: '#1e293b',
-                        accent: '#6366f1'
+                        brand: {
+                            50: '#f0f5ff',
+                            100: '#e5edff',
+                            500: '#4f46e5',
+                            600: '#4338ca',
+                            700: '#3730a3',
+                        }
                     }
                 }
             }
         }
     </script>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: 'Prompt', sans-serif; }
-        code, pre { font-family: 'Fira Code', monospace; }
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #090d16; }
-        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #334155; }
+        body {
+            font-family: 'Kanit', sans-serif;
+            background-color: #f8fafc;
+        }
+        textarea::-webkit-scrollbar {
+            width: 6px;
+        }
+        textarea::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 3px;
+        }
+        /* ซ่อน scrollbar สำหรับแท็บหมวดหมู่ */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
     </style>
-
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 </head>
-<body class="bg-darker text-slate-100 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
+<body class="text-slate-800 flex flex-col min-h-screen">
 
-    <!-- Top Navigation Bar -->
-    <header class="bg-card/80 backdrop-blur-md border-b border-border sticky top-0 z-40 px-6 py-3.5 flex justify-between items-center shadow-sm">
-        <div class="flex items-center space-x-3">
-            <div class="bg-gradient-to-br from-indigo-500 to-violet-600 p-2 rounded-xl text-white shadow-lg shadow-indigo-500/20">
-                <i class="fa-solid fa-code text-lg"></i>
-            </div>
-            <div>
-                <div class="flex items-center space-x-2">
-                    <h1 class="font-bold text-base tracking-tight">AI Prompt Hub</h1>
-                    <span class="text-[10px] bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded-full font-medium border border-indigo-500/20">Pro Mode</span>
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 ease-in-out bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3">
+        <i id="toast-icon" class="fas fa-check-circle text-emerald-400 text-lg"></i>
+        <span id="toast-message" class="text-sm font-medium">คัดลอกข้อความเรียบร้อยแล้ว!</span>
+    </div>
+
+    <!-- Header / Navbar -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-md">
+                    <i class="fas fa-robot text-xl"></i>
                 </div>
-                <p class="text-xs text-slate-400">ระบบจัดการคำสั่ง AI สำหรับนักพัฒนาซอฟต์แวร์</p>
-            </div>
-        </div>
-
-        <div class="flex items-center space-x-3">
-            <!-- Firebase Status Pill -->
-            <div id="dbStatusBadge" class="hidden sm:flex items-center space-x-2 bg-slate-900/80 border border-border px-3 py-1.5 rounded-full text-xs text-slate-300">
-                <span id="dbDot" class="w-2 h-2 rounded-full bg-amber-400"></span>
-                <span id="dbText">กำลังเชื่อมต่อ...</span>
+                <div>
+                    <h1 class="text-lg font-semibold leading-tight text-slate-900">AI Prompt Manager</h1>
+                    <p class="text-xs text-slate-500">ระบบคลังและจัดการคำสั่งสำหรับ AI</p>
+                </div>
             </div>
 
-            <button onclick="openSettingsModal()" class="p-2.5 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white rounded-xl text-sm transition border border-border flex items-center justify-center" title="ตั้งค่า Firebase">
-                <i class="fa-solid fa-gear"></i>
-            </button>
-
-            <button onclick="openPromptModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition shadow-lg shadow-indigo-600/25 flex items-center space-x-2">
-                <i class="fa-solid fa-plus text-xs"></i>
-                <span>สร้าง Prompt ใหม่</span>
-            </button>
+            <!-- Header Action Buttons -->
+            <div class="flex items-center gap-2">
+                <button onclick="openCategoryModal()" class="px-3 py-2 text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors flex items-center gap-2">
+                    <i class="fas fa-tags text-indigo-500"></i>
+                    <span class="hidden sm:inline">จัดการหมวดหมู่</span>
+                </button>
+                <button onclick="openPromptForm()" class="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg shadow-sm hover:shadow transition-all flex items-center gap-2">
+                    <i class="fas fa-plus"></i>
+                    <span>สร้าง Prompt ใหม่</span>
+                </button>
+            </div>
         </div>
     </header>
 
-    <!-- Main Workspace -->
-    <div class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 flex flex-col space-y-6">
-
-        <!-- Control Deck: Search & Categories Bar -->
-        <div class="bg-card border border-border rounded-2xl p-4 sm:p-5 shadow-xl flex flex-col md:flex-row gap-4 justify-between items-center">
+    <!-- Main Content Area -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+        
+        <!-- Search & Filter Controls -->
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 mb-6 flex flex-col md:flex-row gap-4 justify-between items-center">
             
-            <!-- Category Tabs / Filter Pills -->
-            <div id="categoryTabs" class="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 scrollbar-none">
-                <button onclick="filterCategory('ทั้งหมด')" class="cat-tab px-4 py-2 rounded-xl text-xs font-medium transition bg-indigo-600 text-white shadow-md shadow-indigo-600/20 whitespace-nowrap" data-cat="ทั้งหมด">
-                    <i class="fa-solid fa-layer-group mr-1.5"></i> ทั้งหมด <span id="cnt-all" class="ml-1 opacity-75">0</span>
-                </button>
-                <button onclick="filterCategory('Coding')" class="cat-tab px-4 py-2 rounded-xl text-xs font-medium transition bg-slate-900/60 text-slate-400 hover:text-slate-200 hover:bg-slate-900 border border-border whitespace-nowrap" data-cat="Coding">
-                    <i class="fa-solid fa-code mr-1.5"></i> Coding <span id="cnt-Coding" class="ml-1 opacity-75">0</span>
-                </button>
-                <button onclick="filterCategory('Debugging')" class="cat-tab px-4 py-2 rounded-xl text-xs font-medium transition bg-slate-900/60 text-slate-400 hover:text-slate-200 hover:bg-slate-900 border border-border whitespace-nowrap" data-cat="Debugging">
-                    <i class="fa-solid fa-bug mr-1.5"></i> Debugging <span id="cnt-Debugging" class="ml-1 opacity-75">0</span>
-                </button>
-                <button onclick="filterCategory('Architecture')" class="cat-tab px-4 py-2 rounded-xl text-xs font-medium transition bg-slate-900/60 text-slate-400 hover:text-slate-200 hover:bg-slate-900 border border-border whitespace-nowrap" data-cat="Architecture">
-                    <i class="fa-solid fa-sitemap mr-1.5"></i> Architecture <span id="cnt-Architecture" class="ml-1 opacity-75">0</span>
-                </button>
-                <button onclick="filterCategory('Documentation')" class="cat-tab px-4 py-2 rounded-xl text-xs font-medium transition bg-slate-900/60 text-slate-400 hover:text-slate-200 hover:bg-slate-900 border border-border whitespace-nowrap" data-cat="Documentation">
-                    <i class="fa-solid fa-file-lines mr-1.5"></i> Docs <span id="cnt-Documentation" class="ml-1 opacity-75">0</span>
-                </button>
-                <button onclick="filterCategory('Testing')" class="cat-tab px-4 py-2 rounded-xl text-xs font-medium transition bg-slate-900/60 text-slate-400 hover:text-slate-200 hover:bg-slate-900 border border-border whitespace-nowrap" data-cat="Testing">
-                    <i class="fa-solid fa-vial mr-1.5"></i> Testing <span id="cnt-Testing" class="ml-1 opacity-75">0</span>
-                </button>
-                <button onclick="filterCategory('Other')" class="cat-tab px-4 py-2 rounded-xl text-xs font-medium transition bg-slate-900/60 text-slate-400 hover:text-slate-200 hover:bg-slate-900 border border-border whitespace-nowrap" data-cat="Other">
-                    <i class="fa-solid fa-folder mr-1.5"></i> อื่นๆ <span id="cnt-Other" class="ml-1 opacity-75">0</span>
-                </button>
+            <!-- Search Input -->
+            <div class="relative w-full md:w-96">
+                <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                <input type="text" id="searchInput" oninput="renderPrompts()" placeholder="ค้นหาชื่อ, เนื้อหา หรือแท็ก..." 
+                    class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
             </div>
 
-            <!-- Search Input Box -->
-            <div class="relative w-full md:w-80">
-                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-500 text-sm"></i>
-                <input type="text" id="searchInput" oninput="handleSearch()" placeholder="ค้นหาหัวข้อ, คำสั่ง, หรือ #tag..." class="w-full bg-slate-900 border border-border rounded-xl pl-10 pr-4 py-2.5 text-xs focus:outline-none focus:border-indigo-500 text-slate-200 transition shadow-inner">
+            <!-- Categories Tabs / Filter -->
+            <div class="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 no-scrollbar" id="categoryFilterContainer">
+                <!-- Categories buttons inserted dynamically -->
             </div>
-
         </div>
 
-        <!-- Prompts Grid Container (Card Layout) -->
-        <div id="promptsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <!-- Dynamic Content -->
+        <!-- Prompts Grid -->
+        <div id="promptsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Dynamic Prompt Cards -->
         </div>
 
         <!-- Empty State -->
-        <div id="emptyState" class="hidden flex-col items-center justify-center py-20 text-center bg-card/40 border border-border border-dashed rounded-2xl">
-            <div class="bg-slate-900 p-4 rounded-full text-slate-600 mb-3 text-2xl border border-border">
-                <i class="fa-solid fa-terminal"></i>
+        <div id="emptyState" class="hidden text-center py-16 bg-white rounded-2xl border border-dashed border-slate-300 my-4">
+            <div class="w-16 h-16 bg-indigo-50 text-indigo-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fas fa-folder-open"></i>
             </div>
-            <h3 class="text-base font-medium text-slate-300">ไม่พบ Prompt ที่ต้องการ</h3>
-            <p class="text-xs text-slate-500 mt-1">ลองเปลี่ยนคำค้นหา หรือกดสร้าง Prompt ใหม่เพื่อเริ่มต้น</p>
+            <h3 class="text-base font-semibold text-slate-800 mb-1">ไม่พบข้อมูล Prompt</h3>
+            <p class="text-sm text-slate-500 mb-4">ลองเปลี่ยนคำค้นหา หรือกดสร้าง Prompt ใหม่ได้เลย</p>
+            <button onclick="openPromptForm()" class="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors inline-flex items-center gap-2">
+                <i class="fas fa-plus"></i> เพิ่ม Prompt ใหม่
+            </button>
         </div>
 
-    </div>
-
-    <!-- Modal: Add / Edit Prompt -->
-    <div id="promptModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-card border border-border w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="px-6 py-4 border-b border-border flex justify-between items-center bg-slate-900/50">
-                <h3 id="modalTitle" class="font-semibold text-sm text-slate-200">สร้าง Prompt ใหม่</h3>
-                <button onclick="closePromptModal()" class="text-slate-400 hover:text-slate-200 transition text-sm"><i class="fa-solid fa-xmark"></i></button>
+        <!-- INLINE EDIT/CREATE FORM PANEL (อยู่ด้านล่างสุดของเนื้อหาหลัก) -->
+        <div id="promptFormPanel" class="hidden mt-12 mb-8 bg-white border border-indigo-100 rounded-2xl shadow-lg overflow-hidden transition-all duration-300">
+            <div class="bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-4 flex items-center justify-between text-white">
+                <div class="flex items-center gap-2">
+                    <i id="formIcon" class="fas fa-pen-to-square"></i>
+                    <h3 id="promptFormTitle" class="font-semibold text-lg">เพิ่ม Prompt ใหม่</h3>
+                </div>
+                <button onclick="closePromptForm()" class="text-white/80 hover:text-white transition-colors w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/10">
+                    <i class="fas fa-times text-base"></i>
+                </button>
             </div>
-            <div class="p-6 overflow-y-auto space-y-4 flex-1">
+
+            <form id="promptForm" onsubmit="savePrompt(event)" class="p-6 space-y-4">
                 <input type="hidden" id="promptId">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-medium text-slate-400 mb-1.5">ชื่อหัวข้อ (Title)</label>
-                        <input type="text" id="formTitle" placeholder="เช่น Refactor โค้ดให้เป็น Clean Code" class="w-full bg-slate-900 border border-border rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-indigo-500 text-slate-200">
+                        <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">ชื่อคำสั่ง (Title) <span class="text-rose-500">*</span></label>
+                        <input type="text" id="promptTitle" required placeholder="เช่น เขียนแคปชันขายของ, ตรวจสอบโค้ด" 
+                            class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-slate-400 mb-1.5">หมวดหมู่ (Category)</label>
-                        <select id="formCategory" class="w-full bg-slate-900 border border-border rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-indigo-500 text-slate-200">
-                            <option value="Coding">Coding</option>
-                            <option value="Debugging">Debugging</option>
-                            <option value="Architecture">Architecture</option>
-                            <option value="Documentation">Documentation</option>
-                            <option value="Testing">Testing</option>
-                            <option value="Other">อื่นๆ</option>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">หมวดหมู่ <span class="text-rose-500">*</span></label>
+                        <select id="promptCategory" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
+                            <!-- Populated dynamically -->
                         </select>
                     </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-medium text-slate-400 mb-1.5">Tags (คั่นด้วยจุลภาค เช่น react, api, performance)</label>
-                    <input type="text" id="formTags" placeholder="javascript, backend, clean-code" class="w-full bg-slate-900 border border-border rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-indigo-500 text-slate-200">
-                </div>
-                <div class="flex-1 flex flex-col">
-                    <label class="block text-xs font-medium text-slate-400 mb-1.5">เนื้อหา Prompt (Prompt Template)</label>
-                    <textarea id="formBody" rows="9" placeholder="เขียนคำสั่งหรือ Template ที่นี่..." class="w-full bg-slate-900 border border-border rounded-xl p-3.5 text-xs font-mono focus:outline-none focus:border-indigo-500 text-slate-200 resize-none"></textarea>
-                </div>
-            </div>
-            <div class="px-6 py-4 border-t border-border bg-slate-900/50 flex justify-end space-x-3">
-                <button onclick="closePromptModal()" class="bg-slate-900 hover:bg-slate-800 text-slate-300 px-4 py-2 rounded-xl text-xs font-medium transition border border-border">ยกเลิก</button>
-                <button onclick="savePrompt()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded-xl text-xs font-medium transition shadow-lg shadow-indigo-600/20">บันทึกข้อมูล</button>
-            </div>
-        </div>
-    </div>
 
-    <!-- Modal: Settings & Firebase Config -->
-    <div id="settingsModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-card border border-border w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col">
-            <div class="px-6 py-4 border-b border-border flex justify-between items-center bg-slate-900/50">
-                <h3 class="font-semibold text-sm text-slate-200">ตั้งค่าระบบและการเชื่อมต่อ</h3>
-                <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-slate-200 transition text-sm"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="p-6 space-y-4">
-                <div>
-                    <label class="block text-xs font-medium text-slate-400 mb-1.5">Firebase Configuration (JSON)</label>
-                    <textarea id="settingFirebaseConfig" rows="7" class="w-full bg-slate-900 border border-border rounded-xl p-3.5 text-xs font-mono text-slate-300 focus:outline-none focus:border-indigo-500"></textarea>
-                    <p class="text-[11px] text-slate-500 mt-1">คุณสามารถปรับเปลี่ยน Config ของ Firebase ได้ที่นี่</p>
-                </div>
-                <div class="border-t border-border pt-4 flex justify-between items-center">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <h4 class="text-xs font-medium text-slate-300">สำรองข้อมูลทั้งหมด (Backup)</h4>
-                        <p class="text-[11px] text-slate-500">ดาวน์โหลดข้อมูลทั้งหมดเป็นไฟล์ JSON เก็บไว้</p>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">คำอธิบายสั้นๆ (Description)</label>
+                        <input type="text" id="promptDesc" placeholder="อธิบายการใช้งาน หรือคำแนะนำเพิ่มเติม" 
+                            class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
                     </div>
-                    <button onclick="exportData()" class="bg-slate-900 hover:bg-slate-800 text-slate-300 px-3.5 py-2 rounded-xl text-xs font-medium transition border border-border flex items-center space-x-1.5">
-                        <i class="fa-solid fa-download text-[11px]"></i>
-                        <span>Export JSON</span>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1">แท็ก (คั่นด้วยจุลภาค)</label>
+                        <input type="text" id="promptTags" placeholder="เช่น ChatGPT, SEO, Facebook" 
+                            class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider">เนื้อหา Prompt <span class="text-rose-500">*</span></label>
+                        <!-- Voice Input (Mic) Button -->
+                        <button type="button" id="micBtn" onclick="toggleSpeechRecognition()" class="px-2.5 py-1 text-xs bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 rounded-lg transition-colors flex items-center gap-1.5 border border-slate-200">
+                            <i id="micIcon" class="fas fa-microphone"></i>
+                            <span id="micText">พูดเพื่อพิมพ์</span>
+                        </button>
+                    </div>
+                    <textarea id="promptContent" required rows="5" placeholder="ใส่คำสั่งรายละเอียดสำหรับสั่ง AI หรือกดปุ่มไมค์เพื่อพูด..." 
+                        class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"></textarea>
+                </div>
+
+                <div class="pt-2 flex justify-end gap-3 border-t border-slate-100">
+                    <button type="button" onclick="closePromptForm()" class="px-5 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">
+                        ยกเลิก
+                    </button>
+                    <button type="submit" class="px-6 py-2.5 text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-sm transition-all flex items-center gap-2">
+                        <i class="fas fa-save"></i>
+                        <span>ยืนยันการแก้ไข / บันทึก</span>
                     </button>
                 </div>
+            </form>
+        </div>
+
+    </div>
+
+    <!-- MODAL: Custom Delete Confirmation -->
+    <div id="deleteConfirmModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full shadow-2xl p-6 border border-slate-100 text-center">
+            <div class="w-12 h-12 bg-rose-100 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-3 text-xl">
+                <i class="fas fa-exclamation-triangle"></i>
             </div>
-            <div class="px-6 py-4 border-t border-border bg-slate-900/50 flex justify-end space-x-3">
-                <button onclick="closeSettingsModal()" class="bg-slate-900 hover:bg-slate-800 text-slate-300 px-4 py-2 rounded-xl text-xs font-medium transition border border-border">ปิด</button>
-                <button onclick="updateFirebaseConfig()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded-xl text-xs font-medium transition">บันทึกการตั้งค่า</button>
+            <h3 class="font-semibold text-slate-800 text-lg mb-1" id="deleteConfirmTitle">ยืนยันการลบข้อมูล</h3>
+            <p class="text-sm text-slate-500 mb-6" id="deleteConfirmDesc">คุณแน่ใจหรือไม่ว่าต้องการลบรายการนี้?</p>
+            <div class="flex gap-3 justify-center">
+                <button onclick="closeDeleteConfirmModal()" class="flex-1 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition-colors border border-slate-200">
+                    ยกเลิก
+                </button>
+                <button id="confirmDeleteBtn" class="flex-1 py-2.5 text-sm font-medium bg-rose-600 hover:bg-rose-700 text-white rounded-xl shadow-sm transition-colors">
+                    ลบข้อมูล
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- Notification Toast -->
-    <div id="toast" class="fixed bottom-6 right-6 bg-card border border-border text-slate-200 px-4 py-3 rounded-xl shadow-2xl transform translate-y-24 opacity-0 transition-all duration-300 z-50 flex items-center space-x-3">
-        <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-sm"></i>
-        <span id="toastMessage" class="text-xs font-medium">สำเร็จ!</span>
+    <!-- MODAL: Manage Categories (แก้ไขชื่อหมวดหมู่ได้) -->
+    <div id="categoryModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden border border-slate-100">
+            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <h3 class="font-semibold text-slate-800 text-lg">จัดการหมวดหมู่</h3>
+                <button onclick="closeCategoryModal()" class="text-slate-400 hover:text-slate-600 transition-colors w-8 h-8 rounded-lg flex items-center justify-center hover:bg-slate-100">
+                    <i class="fas fa-times text-base"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 space-y-4">
+                <!-- Add Category Form -->
+                <form onsubmit="addCategory(event)" class="flex gap-2">
+                    <input type="text" id="newCategoryName" required placeholder="ชื่อหมวดหมู่ใหม่..." 
+                        class="flex-1 px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-xl transition-colors shrink-0">
+                        เพิ่ม
+                    </button>
+                </form>
+
+                <!-- Category List -->
+                <div class="border border-slate-100 rounded-xl overflow-hidden max-h-60 overflow-y-auto">
+                    <ul id="categoryManageList" class="divide-y divide-slate-100">
+                        <!-- Category Items Loaded dynamically -->
+                    </ul>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- JavaScript Application Logic -->
+    <!-- Backup & Import Footer Toolbar -->
+    <footer class="bg-white border-t border-slate-200 py-4 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+            <div>
+                <span>ระบบบันทึกข้อมูลอัตโนมัติในเบราว์เซอร์ของคุณ (LocalStorage)</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <button onclick="exportData()" class="hover:text-indigo-600 transition-colors flex items-center gap-1.5">
+                    <i class="fas fa-download"></i> สำรองข้อมูล (Export JSON)
+                </button>
+                <label class="hover:text-indigo-600 transition-colors cursor-pointer flex items-center gap-1.5">
+                    <i class="fas fa-upload"></i> นำเข้าข้อมูล (Import)
+                    <input type="file" id="importFile" onchange="importData(event)" accept=".json" class="hidden">
+                </label>
+            </div>
+        </div>
+    </footer>
+
+    <!-- SCRIPT APPLICATION LOGIC -->
     <script>
-        let defaultFirebaseConfig = {
-            apiKey: "AIzaSyB3kPHRDHeYd6rjspNjCH11QG7T2bTd7PM",
-            authDomain: "stickey-note-6bb95.firebaseapp.com",
-            projectId: "stickey-note-6bb95",
-            storageBucket: "stickey-note-6bb95.firebasestorage.app",
-            messagingSenderId: "266704545369",
-            appId: "1:266704545369:web:e403d47f324a91234a3348",
-            measurementId: "G-S737QPN1D1"
-        };
+        const defaultCategories = ['ทั้งหมด', 'การเขียนโค้ด', 'การตลาด & การขาย', 'งานเขียน & คอนเทนต์', 'แปลภาษา', 'สร้างภาพ (Midjourney)'];
+        
+        const defaultPrompts = [
+            {
+                id: '1',
+                title: 'เขียนฟังก์ชันและอธิบาย โค้ดอย่างละเอียด',
+                category: 'การเขียนโค้ด',
+                tags: ['Coding', 'Python', 'Refactor'],
+                description: 'ช่วยสร้างโค้ดตามความต้องการพร้อมคำอธิบายแบบบรรทัดต่อบรรทัด',
+                content: 'สวมบทบาทเป็น Senior Software Engineer ช่วยเขียนโค้ด [ระบุภาษา/โจทย์] ให้ทำงานได้ตามความต้องการต่อไปนี้: [ใส่ความต้องการ]',
+                createdAt: new Date().toISOString()
+            },
+            {
+                id: '2',
+                title: 'สร้างไอเดียโพสต์โซเชียลมีเดีย 7 วัน',
+                category: 'การตลาด & การขาย',
+                tags: ['Marketing', 'Social', 'ContentPlan'],
+                description: 'วางตาราง คอนเทนต์รายสัปดาห์สำหรับเพจสินค้า',
+                content: 'คุณคือผู้เชี่ยวชาญด้าน Social Media Marketing ช่วยคิดตารางคอนเทนต์ 7 วัน สำหรับสินค้า [ระบุชื่อสินค้า/บริการ]',
+                createdAt: new Date().toISOString()
+            }
+        ];
 
-        let savedConfig = localStorage.getItem('custom_firebase_config');
-        let currentConfig = savedConfig ? JSON.parse(savedConfig) : defaultFirebaseConfig;
+        let categories = JSON.parse(localStorage.getItem('ai_prompt_categories')) || defaultCategories;
+        let prompts = JSON.parse(localStorage.getItem('ai_prompt_data')) || defaultPrompts;
+        let activeCategory = 'ทั้งหมด';
+        let deleteActionCallback = null;
 
-        document.getElementById('settingFirebaseConfig').value = JSON.stringify(currentConfig, null, 2);
+        // Speech Recognition Setup (Web Speech API)
+        let recognition = null;
+        let isRecording = false;
 
-        let app, db;
-        try {
-            app = firebase.initializeApp(currentConfig);
-            db = firebase.firestore();
-            updateDbStatus(true, "Connected to Firestore");
-        } catch (error) {
-            console.error("Firebase init error:", error);
-            updateDbStatus(false, "Connection Failed");
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.lang = 'th-TH';
+            recognition.continuous = true;
+            recognition.interimResults = true;
+
+            recognition.onresult = function(event) {
+                let finalTranscript = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript;
+                    }
+                }
+                const contentArea = document.getElementById('promptContent');
+                if (finalTranscript) {
+                    contentArea.value += (contentArea.value ? ' ' : '') + finalTranscript;
+                }
+            };
+
+            recognition.onerror = function(event) {
+                console.error('Speech recognition error', event.error);
+                stopSpeechRecognition();
+                showToast('เกิดข้อผิดพลาดในการฟังเสียง', true);
+            };
+
+            recognition.onend = function() {
+                stopSpeechRecognition();
+            };
         }
 
-        let allPrompts = [];
-        let currentCategory = 'ทั้งหมด';
-        let currentSearchQuery = '';
+        function toggleSpeechRecognition() {
+            if (!recognition) {
+                showToast('เบราว์เซอร์ของคุณไม่รองรับการแปลงเสียงพูดเป็นข้อความ', true);
+                return;
+            }
 
-        function fetchPrompts() {
-            if (!db) return;
-            db.collection("ai_prompts").orderBy("updatedAt", "desc").onSnapshot((snapshot) => {
-                allPrompts = [];
-                snapshot.forEach((doc) => {
-                    allPrompts.push({ id: doc.id, ...doc.data() });
-                });
-                renderUI();
-            }, (error) => {
-                console.error("Fetch error:", error);
-                updateDbStatus(false, "Permission Error");
-            });
+            if (isRecording) {
+                recognition.stop();
+            } else {
+                recognition.start();
+                isRecording = true;
+                const micBtn = document.getElementById('micBtn');
+                const micIcon = document.getElementById('micIcon');
+                const micText = document.getElementById('micText');
+                micBtn.className = 'px-2.5 py-1 text-xs bg-rose-600 text-white rounded-lg transition-colors flex items-center gap-1.5 shadow-sm animate-pulse';
+                micIcon.className = 'fas fa-microphone-slash';
+                micText.innerText = 'กำลังฟัง... (กดเพื่อหยุด)';
+                showToast('เริ่มฟังเสียงพูดแล้ว...');
+            }
         }
 
-        function renderUI() {
+        function stopSpeechRecognition() {
+            isRecording = false;
+            const micBtn = document.getElementById('micBtn');
+            const micIcon = document.getElementById('micIcon');
+            const micText = document.getElementById('micText');
+            if (micBtn) {
+                micBtn.className = 'px-2.5 py-1 text-xs bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 rounded-lg transition-colors flex items-center gap-1.5 border border-slate-200';
+                micIcon.className = 'fas fa-microphone';
+                micText.innerText = 'พูดเพื่อพิมพ์';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderCategoryFilters();
+            renderPrompts();
+        });
+
+        function showDeleteConfirm(title, desc, onConfirm) {
+            document.getElementById('deleteConfirmTitle').innerText = title;
+            document.getElementById('deleteConfirmDesc').innerText = desc;
+            deleteActionCallback = onConfirm;
+            document.getElementById('deleteConfirmModal').classList.remove('hidden');
+        }
+
+        function closeDeleteConfirmModal() {
+            document.getElementById('deleteConfirmModal').classList.add('hidden');
+            deleteActionCallback = null;
+        }
+
+        document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+            if (deleteActionCallback) {
+                deleteActionCallback();
+            }
+            closeDeleteConfirmModal();
+        });
+
+        function saveData() {
+            localStorage.setItem('ai_prompt_categories', JSON.stringify(categories));
+            localStorage.setItem('ai_prompt_data', JSON.stringify(prompts));
+        }
+
+        function renderCategoryFilters() {
+            const container = document.getElementById('categoryFilterContainer');
+            container.innerHTML = categories.map(cat => `
+                <button onclick="setCategory('${cat}')" 
+                    class="px-3.5 py-1.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
+                        activeCategory === cat 
+                        ? 'bg-indigo-600 text-white shadow-sm' 
+                        : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                    }">
+                    ${cat}
+                </button>
+            `).join('');
+        }
+
+        function setCategory(cat) {
+            activeCategory = cat;
+            renderCategoryFilters();
+            renderPrompts();
+        }
+
+        function renderPrompts() {
             const grid = document.getElementById('promptsGrid');
             const emptyState = document.getElementById('emptyState');
-            
-            let filtered = allPrompts.filter(p => {
-                let matchCat = currentCategory === 'ทั้งหมด' || p.category === currentCategory;
-                let q = currentSearchQuery.toLowerCase();
-                let matchSearch = !q || p.title.toLowerCase().includes(q) || p.body.toLowerCase().includes(q) || (p.tags && p.tags.some(t => t.toLowerCase().includes(q)));
-                return matchCat && matchSearch;
-            });
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
 
-            updateCategoryCounts();
+            const filtered = prompts.filter(p => {
+                const matchesCat = activeCategory === 'ทั้งหมด' || p.category === activeCategory;
+                const matchesSearch = p.title.toLowerCase().includes(searchQuery) || 
+                                      p.content.toLowerCase().includes(searchQuery) ||
+                                      (p.description && p.description.toLowerCase().includes(searchQuery)) ||
+                                      (p.tags && p.tags.some(t => t.toLowerCase().includes(searchQuery)));
+                return matchesCat && matchesSearch;
+            });
 
             if (filtered.length === 0) {
                 grid.innerHTML = '';
                 emptyState.classList.remove('hidden');
-                emptyState.classList.add('flex');
                 return;
             }
 
-            emptyState.classList.remove('flex');
             emptyState.classList.add('hidden');
+            grid.innerHTML = filtered.map(p => {
+                const tagsHtml = (p.tags || []).map(t => 
+                    `<span class="px-2 py-0.5 text-xs bg-slate-100 text-slate-600 rounded-md">#${t.trim()}</span>`
+                ).join(' ');
 
-            grid.innerHTML = filtered.map(p => `
-                <div class="bg-card border border-border rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition shadow-lg group">
-                    <div>
-                        <div class="flex justify-between items-start mb-3">
-                            <span class="text-[11px] font-medium px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">${p.category || 'Other'}</span>
-                            <div class="flex items-center space-x-1 opacity-70 group-hover:opacity-100 transition">
-                                <button onclick="editPrompt('${p.id}')" class="p-1.5 text-slate-400 hover:text-indigo-400 rounded-lg hover:bg-slate-900 transition" title="แก้ไข">
-                                    <i class="fa-solid fa-pen-to-square text-xs"></i>
-                                </button>
-                                <button onclick="deletePrompt('${p.id}')" class="p-1.5 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-slate-900 transition" title="ลบ">
-                                    <i class="fa-solid fa-trash text-xs"></i>
+                return `
+                    <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                        <div>
+                            <!-- Category Badge -->
+                            <div class="flex justify-between items-start gap-2 mb-2">
+                                <span class="px-2.5 py-1 text-xs font-medium bg-indigo-50 text-indigo-600 rounded-lg border border-indigo-100/50">
+                                    ${p.category}
+                                </span>
+                            </div>
+
+                            <!-- Title -->
+                            <h3 class="font-semibold text-slate-800 text-base mb-1 hover:text-indigo-600 transition-colors line-clamp-1">${escapeHtml(p.title)}</h3>
+                            
+                            <!-- Description -->
+                            ${p.description ? `<p class="text-xs text-slate-500 mb-3 line-clamp-2">${escapeHtml(p.description)}</p>` : ''}
+                            
+                            <!-- Content Box: แสดงข้อความทั้งหมดแบบเต็ม ไม่จำกัดความสูงและไม่มี scrollbar -->
+                            <div class="relative bg-slate-50 border border-slate-100 rounded-xl p-3 my-2 text-xs font-mono text-slate-700 leading-relaxed whitespace-pre-wrap break-words">
+                                ${escapeHtml(p.content)}
+                            </div>
+                        </div>
+
+                        <div>
+                            <!-- Tags -->
+                            <div class="flex flex-wrap gap-1 overflow-hidden h-6 my-2">
+                                ${tagsHtml}
+                            </div>
+
+                            <!-- Footer Actions: เมนูแก้ไข/ลบ อยู่ด้านล่างสุดของการ์ด -->
+                            <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-1">
+                                    <button onclick="editPrompt('${p.id}')" title="แก้ไข" class="px-2.5 py-1.5 text-xs text-slate-600 hover:text-indigo-600 rounded-lg hover:bg-slate-100 transition-colors flex items-center gap-1">
+                                        <i class="fas fa-pen"></i> แก้ไข
+                                    </button>
+                                    <button onclick="deletePrompt('${p.id}')" title="ลบ" class="px-2.5 py-1.5 text-xs text-slate-600 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors flex items-center gap-1">
+                                        <i class="fas fa-trash"></i> ลบ
+                                    </button>
+                                </div>
+                                <button onclick="copyToClipboard(\`${escapeForJS(p.content)}\`)" 
+                                    class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-medium rounded-lg shadow-sm transition-all flex items-center gap-1.5 shrink-0">
+                                    <i class="fas fa-copy"></i>
+                                    <span>คัดลอก</span>
                                 </button>
                             </div>
                         </div>
-                        <h3 class="font-semibold text-slate-100 text-sm mb-3 tracking-tight">${escapeHtml(p.title)}</h3>
-                        
-                        <div class="bg-darker border border-border/80 rounded-xl p-3.5 relative mb-4 group/code shadow-inner">
-                            <pre class="text-xs font-mono text-slate-300 max-h-40 overflow-y-auto whitespace-pre-wrap leading-relaxed">${escapeHtml(p.body)}</pre>
-                            <button onclick="copyToClipboard(this, \`${escapeJsString(p.body)}\`)" class="absolute top-2.5 right-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-lg text-xs border border-slate-700 opacity-0 group-hover/code:opacity-100 transition flex items-center space-x-1.5 shadow">
-                                <i class="fa-regular fa-copy text-[11px]"></i>
-                                <span>Copy</span>
-                            </button>
-                        </div>
                     </div>
-
-                    <div class="flex flex-wrap items-center justify-between pt-3 border-t border-border/60 text-xs">
-                        <div class="flex flex-wrap gap-1.5">
-                            ${(p.tags || []).map(t => `<span class="bg-slate-900 text-slate-400 px-2 py-0.5 rounded-md text-[10px] border border-border">#${escapeHtml(t.trim())}</span>`).join('')}
-                        </div>
-                        <span class="text-slate-500 text-[10px]">${formatDate(p.updatedAt)}</span>
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
-        function updateCategoryCounts() {
-            let counts = { 'ทั้งหมด': allPrompts.length, 'Coding': 0, 'Debugging': 0, 'Architecture': 0, 'Documentation': 0, 'Testing': 0, 'Other': 0 };
-            allPrompts.forEach(p => {
-                if (counts[p.category] !== undefined) counts[p.category]++;
-                else counts['Other']++;
-            });
-            for (let cat in counts) {
-                let el = document.getElementById(`cnt-${cat}`);
-                if (el) el.innerText = counts[cat];
+        function copyToClipboard(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            
+            try {
+                document.execCommand('copy');
+                showToast('คัดลอก Prompt ไปยัง คลิปบอร์ดแล้ว!');
+            } catch (err) {
+                showToast('ไม่สามารถคัดลอกได้', true);
+            } finally {
+                document.body.removeChild(textarea);
             }
         }
 
-        function filterCategory(category) {
-            currentCategory = category;
-            document.querySelectorAll('.cat-tab').forEach(btn => {
-                if (btn.getAttribute('data-cat') === category) {
-                    btn.className = "cat-tab px-4 py-2 rounded-xl text-xs font-medium transition bg-indigo-600 text-white shadow-md shadow-indigo-600/20 whitespace-nowrap";
-                } else {
-                    btn.className = "cat-tab px-4 py-2 rounded-xl text-xs font-medium transition bg-slate-900/60 text-slate-400 hover:text-slate-200 hover:bg-slate-900 border border-border whitespace-nowrap";
-                }
-            });
-            renderUI();
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-message');
+            const toastIcon = document.getElementById('toast-icon');
+
+            toastMsg.innerText = message;
+            if (isError) {
+                toastIcon.className = 'fas fa-exclamation-circle text-rose-400 text-lg';
+            } else {
+                toastIcon.className = 'fas fa-check-circle text-emerald-400 text-lg';
+            }
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 2500);
         }
 
-        function handleSearch() {
-            currentSearchQuery = document.getElementById('searchInput').value;
-            renderUI();
-        }
+        // --- INLINE PROMPT FORM HANDLERS ---
+        function openPromptForm(isEdit = false) {
+            const select = document.getElementById('promptCategory');
+            select.innerHTML = categories.filter(c => c !== 'ทั้งหมด').map(c => 
+                `<option value="${c}">${c}</option>`
+            ).join('');
 
-        function openPromptModal(isEdit = false) {
-            document.getElementById('promptModal').classList.remove('hidden');
             if (!isEdit) {
-                document.getElementById('modalTitle').innerText = "สร้าง Prompt ใหม่";
-                document.getElementById('promptId').value = "";
-                document.getElementById('formTitle').value = "";
-                document.getElementById('formCategory').value = "Coding";
-                document.getElementById('formTags').value = "";
-                document.getElementById('formBody').value = "";
+                document.getElementById('promptForm').reset();
+                document.getElementById('promptId').value = '';
+                document.getElementById('promptFormTitle').innerText = 'เพิ่ม Prompt ใหม่';
+                document.getElementById('formIcon').className = 'fas fa-plus-circle';
             }
+
+            stopSpeechRecognition();
+            const formPanel = document.getElementById('promptFormPanel');
+            formPanel.classList.remove('hidden');
+            formPanel.scrollIntoView({ behavior: 'smooth', block: 'end' });
         }
 
-        function closePromptModal() {
-            document.getElementById('promptModal').classList.add('hidden');
+        function closePromptForm() {
+            stopSpeechRecognition();
+            document.getElementById('promptFormPanel').classList.add('hidden');
         }
 
-        function openSettingsModal() {
-            document.getElementById('settingsModal').classList.remove('hidden');
-        }
-
-        function closeSettingsModal() {
-            document.getElementById('settingsModal').classList.add('hidden');
-        }
-
-        function savePrompt() {
+        function savePrompt(e) {
+            e.preventDefault();
             const id = document.getElementById('promptId').value;
-            const title = document.getElementById('formTitle').value.trim();
-            const category = document.getElementById('formCategory').value;
-            const tagsInput = document.getElementById('formTags').value;
-            const body = document.getElementById('formBody').value.trim();
+            const title = document.getElementById('promptTitle').value.trim();
+            const category = document.getElementById('promptCategory').value;
+            const tagsStr = document.getElementById('promptTags').value.trim();
+            const description = document.getElementById('promptDesc').value.trim();
+            const content = document.getElementById('promptContent').value.trim();
 
-            if (!title || !body) {
-                showToast("กรุณากรอกชื่อและเนื้อหา Prompt", "error");
-                return;
+            const tags = tagsStr ? tagsStr.split(',').map(t => t.trim()).filter(t => t) : [];
+
+            if (id) {
+                const index = prompts.findIndex(p => p.id === id);
+                if (index !== -1) {
+                    prompts[index] = { ...prompts[index], title, category, tags, description, content };
+                }
+                showToast('อัปเดตและยืนยันการแก้ไข Prompt เรียบร้อย');
+            } else {
+                const newPrompt = {
+                    id: Date.now().toString(),
+                    title,
+                    category,
+                    tags,
+                    description,
+                    content,
+                    createdAt: new Date().toISOString()
+                };
+                prompts.unshift(newPrompt);
+                showToast('เพิ่ม Prompt ใหม่เรียบร้อย');
             }
 
-            const tags = tagsInput ? tagsInput.split(',').map(t => t.trim()).filter(t => t.length > 0) : [];
-            const promptData = {
-                title,
-                category,
-                tags,
-                body,
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            };
-
-            const collection = db.collection("ai_prompts");
-            const promise = id ? collection.doc(id).update(promptData) : collection.add(promptData);
-
-            promise.then(() => {
-                closePromptModal();
-                showToast(id ? "อัปเดต Prompt สำเร็จ" : "สร้าง Prompt สำเร็จ", "success");
-            }).catch(error => {
-                console.error("Save error:", error);
-                showToast("เกิดข้อผิดพลาดในการบันทึก", "error");
-            });
+            saveData();
+            renderPrompts();
+            closePromptForm();
         }
 
         function editPrompt(id) {
-            const prompt = allPrompts.find(p => p.id === id);
+            const prompt = prompts.find(p => p.id === id);
             if (!prompt) return;
 
+            openPromptForm(true);
+            document.getElementById('promptFormTitle').innerText = 'แก้ไข Prompt';
+            document.getElementById('formIcon').className = 'fas fa-pen-to-square';
             document.getElementById('promptId').value = prompt.id;
-            document.getElementById('formTitle').value = prompt.title;
-            document.getElementById('formCategory').value = prompt.category || 'Coding';
-            document.getElementById('formTags').value = (prompt.tags || []).join(', ');
-            document.getElementById('formBody').value = prompt.body;
-            document.getElementById('modalTitle').innerText = "แก้ไข Prompt";
-            
-            document.getElementById('promptModal').classList.remove('hidden');
+            document.getElementById('promptTitle').value = prompt.title;
+            document.getElementById('promptCategory').value = prompt.category;
+            document.getElementById('promptTags').value = (prompt.tags || []).join(', ');
+            document.getElementById('promptDesc').value = prompt.description || '';
+            document.getElementById('promptContent').value = prompt.content;
         }
 
         function deletePrompt(id) {
-            if (confirm("ต้องการลบ Prompt นี้ใช่หรือไม่?")) {
-                db.collection("ai_prompts").doc(id).delete().then(() => {
-                    showToast("ลบ Prompt เรียบร้อยแล้ว", "success");
-                }).catch(error => {
-                    console.error("Delete error:", error);
-                    showToast("ไม่สามารถลบข้อมูลได้", "error");
-                });
-            }
-        }
-
-        function updateFirebaseConfig() {
-            try {
-                let newConfig = JSON.parse(document.getElementById('settingFirebaseConfig').value);
-                localStorage.setItem('custom_firebase_config', JSON.stringify(newConfig));
-                alert("บันทึกการตั้งค่าแล้ว หน้าเว็บจะรีโหลดใหม่");
-                location.reload();
-            } catch (e) {
-                alert("รูปแบบ JSON ของ Firebase Config ไม่ถูกต้อง");
-            }
-        }
-
-        function copyToClipboard(btn, text) {
-            navigator.clipboard.writeText(text).then(() => {
-                let originalHTML = btn.innerHTML;
-                btn.innerHTML = `<i class="fa-solid fa-check text-emerald-400 text-[11px]"></i> <span class="text-emerald-400">Copied!</span>`;
-                setTimeout(() => { btn.innerHTML = originalHTML; }, 2000);
+            showDeleteConfirm('ยืนยันการลบ Prompt', 'คุณแน่ใจหรือไม่ว่าต้องการลบ Prompt รายการนี้?', () => {
+                prompts = prompts.filter(p => p.id !== id);
+                saveData();
+                renderPrompts();
+                showToast('ลบรายการเรียบร้อยแล้ว');
             });
         }
 
-        function showToast(message, type = "success") {
-            const toast = document.getElementById('toast');
-            const toastMessage = document.getElementById('toastMessage');
-            const toastIcon = document.getElementById('toastIcon');
-
-            toastMessage.innerText = message;
-            toastIcon.className = type === "success" ? "fa-solid fa-circle-check text-emerald-400 text-sm" : "fa-solid fa-circle-exclamation text-rose-400 text-sm";
-
-            toast.classList.remove('translate-y-24', 'opacity-0');
-            setTimeout(() => { toast.classList.add('translate-y-24', 'opacity-0'); }, 3000);
+        // --- CATEGORY MODAL & EDIT HANDLERS ---
+        function openCategoryModal() {
+            renderCategoryManageList();
+            document.getElementById('categoryModal').classList.remove('hidden');
         }
 
-        function updateDbStatus(isConnected, message) {
-            const dot = document.getElementById('dbDot');
-            const text = document.getElementById('dbText');
-            dot.className = isConnected ? "w-2 h-2 rounded-full bg-emerald-500 animate-pulse" : "w-2 h-2 rounded-full bg-rose-500";
-            text.innerText = message;
+        function closeCategoryModal() {
+            document.getElementById('categoryModal').classList.add('hidden');
+        }
+
+        function renderCategoryManageList() {
+            const list = document.getElementById('categoryManageList');
+            const customCategories = categories.filter(c => c !== 'ทั้งหมด');
+
+            list.innerHTML = customCategories.map(cat => `
+                <li class="px-4 py-2.5 flex items-center justify-between text-sm text-slate-700 hover:bg-slate-50">
+                    <span id="cat-text-${escapeHtml(cat)}">${cat}</span>
+                    <div class="flex items-center gap-1">
+                        <button onclick="editCategoryPrompt('${escapeForJS(cat)}')" class="text-slate-400 hover:text-indigo-600 transition-colors p-1" title="แก้ไขชื่อ">
+                            <i class="fas fa-pen text-xs"></i>
+                        </button>
+                        <button onclick="removeCategory('${escapeForJS(cat)}')" class="text-slate-400 hover:text-rose-600 transition-colors p-1" title="ลบ">
+                            <i class="fas fa-trash-alt text-xs"></i>
+                        </button>
+                    </div>
+                </li>
+            `).join('');
+        }
+
+        function addCategory(e) {
+            e.preventDefault();
+            const input = document.getElementById('newCategoryName');
+            const name = input.value.trim();
+
+            if (name && !categories.includes(name)) {
+                categories.push(name);
+                saveData();
+                renderCategoryFilters();
+                renderCategoryManageList();
+                input.value = '';
+                showToast(`เพิ่มหมวดหมู่ "${name}" เรียบร้อย`);
+            }
+        }
+
+        function editCategoryPrompt(oldName) {
+            const list = document.getElementById('categoryManageList');
+            const items = list.querySelectorAll('li');
+            
+            items.forEach(li => {
+                if (li.innerHTML.includes(oldName)) {
+                    li.innerHTML = `
+                        <form onsubmit="saveCategoryEdit(event, '${escapeForJS(oldName)}')" class="flex items-center gap-2 w-full py-0.5">
+                            <input type="text" id="edit-cat-input-${escapeForJS(oldName)}" value="${oldName}" required
+                                class="flex-1 px-2.5 py-1 text-sm bg-slate-50 border border-indigo-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+                            <button type="submit" class="px-2.5 py-1 text-xs bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">บันทึก</button>
+                            <button type="button" onclick="renderCategoryManageList()" class="px-2 py-1 text-xs bg-slate-200 text-slate-600 rounded-lg hover:bg-slate-300">ยกเลิก</button>
+                        </form>
+                    `;
+                    const inputField = document.getElementById(`edit-cat-input-${oldName}`);
+                    if (inputField) inputField.focus();
+                }
+            });
+        }
+
+        function saveCategoryEdit(e, oldName) {
+            e.preventDefault();
+            const inputField = document.getElementById(`edit-cat-input-${oldName}`);
+            if (!inputField) return;
+            const newName = inputField.value.trim();
+
+            if (!newName) {
+                showToast('ชื่อหมวดหมู่ห้ามว่างเปล่า', true);
+                return;
+            }
+            if (categories.includes(newName) && newName !== oldName) {
+                showToast('มีชื่อหมวดหมู่นี้อยู่แล้ว', true);
+                return;
+            }
+
+            categories = categories.map(c => c === oldName ? newName : c);
+            prompts.forEach(p => {
+                if (p.category === oldName) {
+                    p.category = newName;
+                }
+            });
+
+            if (activeCategory === oldName) {
+                activeCategory = newName;
+            }
+
+            saveData();
+            renderCategoryFilters();
+            renderCategoryManageList();
+            renderPrompts();
+            showToast(`เปลี่ยนชื่อหมวดหมู่เป็น "${newName}" เรียบร้อย`);
+        }
+
+        function removeCategory(catName) {
+            showDeleteConfirm('ยืนยันการลบหมวดหมู่', `ต้องการลบหมวดหมู่ "${catName}" หรือไม่? (คำสั่งในหมวดหมู่นี้จะย้ายไปที่ "ทั้งหมด")`, () => {
+                categories = categories.filter(c => c !== catName);
+                prompts.forEach(p => {
+                    if (p.category === catName) {
+                        p.category = 'ทั้งหมด';
+                    }
+                });
+                if (activeCategory === catName) activeCategory = 'ทั้งหมด';
+                saveData();
+                renderCategoryFilters();
+                renderCategoryManageList();
+                renderPrompts();
+                showToast(`ลบหมวดหมู่เรียบร้อย`);
+            });
         }
 
         function exportData() {
-            let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(allPrompts, null, 2));
-            let anchor = document.createElement('a');
-            anchor.setAttribute("href", dataStr);
-            anchor.setAttribute("download", `ai_prompts_backup_${new Date().toISOString().slice(0,10)}.json`);
-            document.body.appendChild(anchor);
-            anchor.click();
-            anchor.remove();
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ categories, prompts }, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `ai-prompts-backup-${new Date().toISOString().slice(0,10)}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
         }
 
-        function escapeHtml(text) {
-            if (!text) return '';
-            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (imported.categories && imported.prompts) {
+                        categories = Array.from(new Set([...categories, ...imported.categories]));
+                        prompts = [...imported.prompts, ...prompts];
+                        saveData();
+                        renderCategoryFilters();
+                        renderPrompts();
+                        showToast('นำเข้าข้อมูลสำเร็จ!');
+                    } else {
+                        showToast('รูปแบบไฟล์ไม่ถูกต้อง', true);
+                    }
+                } catch (err) {
+                    showToast('เกิดข้อผิดพลาดในการอ่านไฟล์', true);
+                }
+            };
+            reader.readAsText(file);
         }
 
-        function escapeJsString(str) {
-            if (!str) return '';
-            return str.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$');
+        function escapeHtml(str) {
+            return str ? str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;") : '';
         }
 
-        function formatDate(timestamp) {
-            if (!timestamp) return 'เมื่อสักครู่';
-            let date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-            return date.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' });
+        function escapeForJS(str) {
+            return str ? str.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\${/g, '\\${') : '';
         }
-
-        fetchPrompts();
     </script>
 </body>
 </html>
