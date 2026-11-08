@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="th" class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResourceHub Admin - ระบบจัดการหมวดหมู่และลิงก์</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Sarabun', 'sans-serif'] },
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body
+    class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 h-full flex flex-col font-sans antialiased transition-colors duration-200">
+
+    <!-- Top Navigation Header -->
+    <header
+        class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 shadow-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div
+                    class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-blue-500/20 text-xl">
+                    <i class="fa-solid fa-folder-tree"></i>
+                </div>
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <h1 class="font-bold text-lg text-slate-900 dark:text-white leading-tight">ระบบจัดการ
+                            ResourceHub</h1>
+                        <span id="syncStatus"
+                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300">
+                            <span class="w-1.5 h-1.5 mr-1.5 bg-amber-500 rounded-full animate-pulse"></span>
+                            เชื่อมต่อ...
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">จัดระเบียบกลุ่ม Facebook
+                        และลิงก์สำคัญของคุณแบบโครงสร้างต้นไม้</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-2 sm:space-x-3">
+                <!-- Dark Mode Toggle -->
+                <button onclick="toggleDarkMode()" id="darkModeToggle" title="สลับโหมดสว่าง/มืด"
+                    class="p-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-2xl border border-slate-200 dark:border-slate-700 transition cursor-pointer">
+                    <i class="fa-solid fa-moon text-sm" id="darkModeIcon"></i>
+                </button>
+                <a href="index.html" target="_blank"
+                    class="hidden sm:inline-flex items-center px-4 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-2xl border border-slate-200 dark:border-slate-700 transition">
+                    <i class="fa-solid fa-eye mr-2 text-blue-500 text-sm"></i> เปิดหน้าผู้ใช้ (User View)
+                </a>
+                <button onclick="openCategoryModal()"
+                    class="inline-flex items-center px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-2xl shadow-lg shadow-blue-500/20 transition cursor-pointer">
+                    <i class="fa-solid fa-folder-plus mr-2 text-sm"></i> สร้างหมวดหมู่หลักใหม่
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Layout -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-8">
+
+        <!-- Summary Stats Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            <div
+                class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                        หมวดหมู่ทั้งหมด</p>
+                    <h3 id="statCategoriesCount" class="text-3xl font-extrabold text-slate-800 dark:text-white mt-1">0
+                    </h3>
+                </div>
+                <div
+                    class="w-14 h-14 bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center text-2xl shadow-inner">
+                    <i class="fa-solid fa-folder-tree"></i>
+                </div>
+            </div>
+            <div
+                class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                        ลิงก์แหล่งข้อมูลทั้งหมด</p>
+                    <h3 id="statResourcesCount" class="text-3xl font-extrabold text-slate-800 dark:text-white mt-1">0
+                    </h3>
+                </div>
+                <div
+                    class="w-14 h-14 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center text-2xl shadow-inner">
+                    <i class="fa-solid fa-link"></i>
+                </div>
+            </div>
+            <div
+                class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">สำรอง /
+                        กู้คืนข้อมูล</p>
+                    <div class="flex items-center space-x-2.5 mt-3">
+                        <button onclick="exportAllData()"
+                            class="px-3.5 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-900/40 hover:text-blue-600 dark:hover:text-blue-400 text-slate-700 dark:text-slate-300 text-xs rounded-xl font-semibold transition cursor-pointer flex items-center space-x-1.5">
+                            <i class="fa-solid fa-download"></i><span>Backup</span>
+                        </button>
+                        <label
+                            class="px-3.5 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-900/40 hover:text-blue-600 dark:hover:text-blue-400 text-slate-700 dark:text-slate-300 text-xs rounded-xl font-semibold cursor-pointer transition flex items-center space-x-1.5">
+                            <i class="fa-solid fa-upload"></i><span>Restore</span>
+                            <input type="file" id="importFile" accept=".json" onchange="importAllData(event)"
+                                class="hidden">
+                        </label>
+                    </div>
+                </div>
+                <div
+                    class="w-14 h-14 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center text-2xl shadow-inner">
+                    <i class="fa-solid fa-database"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category & Resource Tree Workspace -->
+        <div
+            class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden">
+            <div
+                class="px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-slate-50/50 dark:bg-slate-900/50">
+                <div>
+                    <h2 class="font-bold text-slate-800 dark:text-white text-lg">โครงสร้างหมวดหมู่และลิงก์ (Tree
+                        Workspace)</h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">จัดการเพิ่มหมวดหมู่ย่อยได้ไม่จำกัดชั้น
+                        และเพิ่มลิงก์หลายๆ อันในแต่ละหมวดหมู่ได้อย่างง่ายดาย</p>
+                </div>
+                <button onclick="openCategoryModal()"
+                    class="inline-flex items-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-2xl shadow-md shadow-blue-500/20 transition cursor-pointer">
+                    <i class="fa-solid fa-folder-plus mr-2"></i> สร้างหมวดหมู่หลัก
+                </button>
+            </div>
+
+            <div class="p-6 sm:p-8">
+                <!-- Search Filter Bar Inside Workspace -->
+                <div class="mb-6 flex flex-col sm:flex-row items-center gap-3">
+                    <div class="relative w-full">
+                        <span
+                            class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">
+                            <i class="fa-solid fa-search text-xs"></i>
+                        </span>
+                        <input type="text" id="workspaceSearch" oninput="renderCategoryTree()"
+                            placeholder="ค้นหาหมวดหมู่ หรือชื่อลิงก์..."
+                            class="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                    </div>
+                </div>
+
+                <!-- Tree Container -->
+                <div id="categoryTreeContainer" class="space-y-4">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Category Modal -->
+    <div id="categoryModal"
+        class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+        <div
+            class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden transform transition-all">
+            <div
+                class="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-900/50">
+                <h3 id="catModalTitle" class="font-bold text-slate-800 dark:text-white text-base">เพิ่มหมวดหมู่ใหม่</h3>
+                <button onclick="closeCategoryModal()"
+                    class="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-white flex items-center justify-center transition cursor-pointer"><i
+                        class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="categoryForm" onsubmit="saveCategory(event)" class="p-6 sm:p-8 space-y-5">
+                <input type="hidden" id="catOriginalKey">
+                <div>
+                    <label
+                        class="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">หมวดหมู่แม่
+                        (เลือกหากต้องการเป็นหมวดหมู่ย่อย)</label>
+                    <select id="catParent"
+                        class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">-- เป็นหมวดหมู่หลัก (Root) --</option>
+                    </select>
+                </div>
+                <div>
+                    <label
+                        class="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">ชื่อหมวดหมู่
+                        *</label>
+                    <input type="text" id="catLabel" required placeholder="เช่น กลุ่ม Facebook น่าสนใจ"
+                        class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label
+                            class="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">ไอคอน
+                            FontAwesome *</label>
+                        <input type="text" id="catIcon" required value="fa-folder" placeholder="fa-users"
+                            class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label
+                            class="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">คำอธิบายสั้นๆ</label>
+                        <input type="text" id="catDesc" placeholder="อธิบายเพิ่มเติม..."
+                            class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+                <div
+                    class="flex items-center justify-end space-x-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <button type="button" onclick="closeCategoryModal()"
+                        class="px-5 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer">ยกเลิก</button>
+                    <button type="submit"
+                        class="px-6 py-2.5 bg-blue-600 text-white text-xs font-semibold rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition cursor-pointer">บันทึกหมวดหมู่</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Resource Modal -->
+    <div id="resourceModal"
+        class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+        <div
+            class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden transform transition-all">
+            <div
+                class="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-900/50">
+                <h3 id="resModalTitle" class="font-bold text-slate-800 dark:text-white text-base">
+                    เพิ่มรายการแหล่งข้อมูลใหม่</h3>
+                <button onclick="closeResourceModal()"
+                    class="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-white flex items-center justify-center transition cursor-pointer"><i
+                        class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="resourceForm" onsubmit="saveResource(event)" class="p-6 sm:p-8 space-y-5">
+                <input type="hidden" id="resId">
+                <div>
+                    <label
+                        class="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">ชื่อรายการ
+                        / ชื่อเพจ / กลุ่ม </label>
+                    <input type="text" id="resTitle" placeholder="เช่น กลุ่มคนทำเว็บ Thailand"
+                        class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label
+                        class="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">ลิงก์
+                        URL *</label>
+                    <input type="url" id="resUrl" required placeholder="https://facebook.com/groups/..."
+                        class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label
+                            class="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">หมวดหมู่
+                            *</label>
+                        <select id="resCategory" required
+                            class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <!-- Populated -->
+                        </select>
+                    </div>
+                    <div>
+                        <label
+                            class="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">แท็ก
+                            (คั่นด้วยจุลภาค ,)</label>
+                        <input type="text" id="resTags" placeholder="เช่น โค้ดดิ้ง, ฟรี"
+                            class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+                <div>
+                    <label
+                        class="block text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">บันทึกย่อ
+                        / รายละเอียด</label>
+                    <textarea id="resNotes" rows="3" placeholder="รายละเอียดเพิ่มเติม..."
+                        class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+                <div
+                    class="flex items-center justify-end space-x-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <button type="button" onclick="closeResourceModal()"
+                        class="px-5 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer">ยกเลิก</button>
+                    <button type="submit"
+                        class="px-6 py-2.5 bg-blue-600 text-white text-xs font-semibold rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition cursor-pointer">บันทึกข้อมูล</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast"
+        class="fixed bottom-6 right-6 z-50 bg-slate-900 text-white text-xs px-5 py-3.5 rounded-2xl shadow-xl transform translate-y-20 opacity-0 transition-all duration-300 flex items-center space-x-3">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-sm"></i>
+        <span id="toastMsg" class="font-medium">บันทึกสำเร็จ</span>
+    </div>
+
+    <!-- Script Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB3kPHRDHeYd6rjspNjCH11QG7T2bTd7PM",
+            authDomain: "stickey-note-6bb95.firebaseapp.com",
+            projectId: "stickey-note-6bb95",
+            storageBucket: "stickey-note-6bb95.firebasestorage.app",
+            messagingSenderId: "266704545369",
+            appId: "1:266704545369:web:e403d47f324a91234a3348",
+            measurementId: "G-S737QPN1D1"
+        };
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-resource-hub';
+        let db, userId = null;
+
+        const defaultCategories = {
+            facebook_group: { label: "Facebook Groups", icon: "fa-users-rectangle", desc: "กลุ่ม Facebook ทั่วไป", parent: "" },
+            facebook_page: { label: "Facebook Pages", icon: "fa-file-lines", desc: "เพจให้ความรู้ ข่าวสาร", parent: "" },
+            website: { label: "เว็บไซต์ / เครื่องมือ", icon: "fa-globe", desc: "เว็บไซต์สำคัญ", parent: "" },
+            tech_groups: { label: "กลุ่มไอทีและเขียนเว็บ", icon: "fa-code", desc: "กลุ่มย่อยสายเทค", parent: "facebook_group" }
+        };
+
+        const defaultResources = [
+            { id: "res-1", title: "ชุมชนคนทำเว็บ Thailand", url: "https://facebook.com", category: "tech_groups", tags: ["Coding", "WebDev"], notes: "กลุ่มพูดคุยเรื่องเว็บ", createdAt: new Date().toISOString() },
+            { id: "res-2", title: "Tailwind CSS Doc", url: "https://tailwindcss.com", category: "website", tags: ["CSS"], notes: "คู่มือ CSS", createdAt: new Date().toISOString() }
+        ];
+
+        window.categories = {};
+        window.resources = [];
+
+        window.toggleDarkMode = function () {
+            const htmlEl = document.documentElement;
+            const iconEl = document.getElementById('darkModeIcon');
+            if (htmlEl.classList.contains('dark')) {
+                htmlEl.classList.remove('dark');
+                localStorage.setItem('rh_theme', 'light');
+                iconEl.className = 'fa-solid fa-moon text-sm';
+            } else {
+                htmlEl.classList.add('dark');
+                localStorage.setItem('rh_theme', 'dark');
+                iconEl.className = 'fa-solid fa-sun text-sm text-amber-400';
+            }
+        };
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem('rh_theme');
+            const iconEl = document.getElementById('darkModeIcon');
+            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                if (iconEl) iconEl.className = 'fa-solid fa-sun text-sm text-amber-400';
+            } else {
+                document.documentElement.classList.remove('dark');
+                if (iconEl) iconEl.className = 'fa-solid fa-moon text-sm';
+            }
+        }
+
+        async function init() {
+            initTheme();
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                const auth = getAuth(app);
+                await signInAnonymously(auth);
+                userId = auth.currentUser ? auth.currentUser.uid : 'anon-admin';
+                document.getElementById('syncStatus').innerHTML = `<span class="w-1.5 h-1.5 mr-1.5 bg-emerald-400 rounded-full"></span> คลาวด์ซิงค์แล้ว`;
+                startListeners();
+            } catch (err) {
+                console.warn("Offline mode:", err);
+                loadLocalFallback();
+            }
+        }
+
+        function startListeners() {
+            onSnapshot(collection(db, 'artifacts', appId, 'users', userId, 'categories'), snap => {
+                const cats = {};
+                snap.forEach(d => { cats[d.id] = d.data(); });
+                if (Object.keys(cats).length === 0) {
+                    for (const [k, v] of Object.entries(defaultCategories)) {
+                        setDoc(doc(db, 'artifacts', appId, 'users', userId, 'categories', k), v);
+                    }
+                } else {
+                    window.categories = cats;
+                }
+                updateAdminUI();
+            });
+
+            onSnapshot(collection(db, 'artifacts', appId, 'users', userId, 'resources'), snap => {
+                const res = [];
+                snap.forEach(d => { res.push({ id: d.id, ...d.data() }); });
+                if (res.length === 0 && window.resources.length === 0) {
+                    defaultResources.forEach(r => {
+                        setDoc(doc(db, 'artifacts', appId, 'users', userId, 'resources', r.id), r);
+                    });
+                } else {
+                    window.resources = res;
+                }
+                updateAdminUI();
+            });
+        }
+
+        function loadLocalFallback() {
+            const savedCats = localStorage.getItem('rh_admin_categories');
+            window.categories = savedCats ? JSON.parse(savedCats) : defaultCategories;
+            const savedRes = localStorage.getItem('rh_admin_resources');
+            window.resources = savedRes ? JSON.parse(savedRes) : defaultResources;
+            updateAdminUI();
+        }
+
+        function saveDataLocal() {
+            localStorage.setItem('rh_admin_categories', JSON.stringify(window.categories));
+            localStorage.setItem('rh_admin_resources', JSON.stringify(window.resources));
+        }
+
+        function updateAdminUI() {
+            document.getElementById('statCategoriesCount').innerText = Object.keys(window.categories).length;
+            document.getElementById('statResourcesCount').innerText = window.resources.length;
+            renderCategoryTree();
+            populateCategorySelects();
+        }
+
+        window.renderCategoryTree = function () {
+            const container = document.getElementById('categoryTreeContainer');
+            const searchTerm = document.getElementById('workspaceSearch').value.toLowerCase();
+            container.innerHTML = '';
+
+            const roots = Object.entries(window.categories).filter(([k, v]) => !v.parent || v.parent === '');
+
+            if (roots.length === 0) {
+                container.innerHTML = `<div class="text-center py-12 text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-900/80 rounded-3xl border-2 border-dashed border-slate-300 dark:border-slate-700">ยังไม่มีหมวดหมู่หลัก กรุณากดปุ่ม "สร้างหมวดหมู่หลักใหม่" ด้านบน</div>`;
+                return;
+            }
+
+            roots.forEach(([key, cat]) => {
+                const nodeElement = createTreeNodeHtml(key, cat, 0, searchTerm);
+                if (nodeElement) container.appendChild(nodeElement);
+            });
+
+            if (container.children.length === 0) {
+                container.innerHTML = `<div class="text-center py-12 text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-900/80 rounded-3xl border-2 border-dashed border-slate-300 dark:border-slate-700">ไม่พบหมวดหมู่หรือลิงก์ที่ตรงกับคำค้นหาของคุณ</div>`;
+            }
+        };
+
+        function createTreeNodeHtml(key, cat, level, searchTerm) {
+            const children = Object.entries(window.categories).filter(([k, v]) => v.parent === key);
+            const categoryResources = window.resources.filter(r => r.category === key);
+
+            const matchesSearch = searchTerm === '' ||
+                cat.label.toLowerCase().includes(searchTerm) ||
+                (cat.desc && cat.desc.toLowerCase().includes(searchTerm)) ||
+                categoryResources.some(r => r.title.toLowerCase().includes(searchTerm) || r.url.toLowerCase().includes(searchTerm));
+
+            if (!matchesSearch && searchTerm !== '') return null;
+
+            // Distinct background styling based on depth level to avoid color blending
+            let levelBg = "bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 shadow-sm";
+            let accentBorder = "border-l-8 border-l-blue-600 dark:border-l-blue-500";
+            let iconBoxBg = "bg-blue-600 text-white shadow-md shadow-blue-500/30";
+
+            if (level === 1) {
+                levelBg = "bg-slate-50 dark:bg-slate-850 border-2 border-indigo-200 dark:border-indigo-900/60 shadow-xs";
+                accentBorder = "border-l-8 border-l-indigo-600 dark:border-l-indigo-400";
+                iconBoxBg = "bg-indigo-600 text-white shadow-md shadow-indigo-500/30";
+            } else if (level >= 2) {
+                levelBg = "bg-slate-100 dark:bg-slate-850/90 border-2 border-emerald-200 dark:border-emerald-900/60 shadow-xs";
+                accentBorder = "border-l-8 border-l-emerald-600 dark:border-l-emerald-400";
+                iconBoxBg = "bg-emerald-600 text-white shadow-md shadow-emerald-500/30";
+            }
+
+            const div = document.createElement('div');
+            div.className = `rounded-3xl p-6 transition-all ${levelBg} ${accentBorder} ${level > 0 ? 'ml-6 sm:ml-10 mt-5' : 'mb-5'}`;
+
+            const headerDiv = document.createElement('div');
+            headerDiv.className = "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4";
+            headerDiv.innerHTML = `
+                <div class="flex items-center space-x-4">
+                    <span class="w-14 h-14 rounded-2xl ${iconBoxBg} flex items-center justify-center text-xl shrink-0">
+                        <i class="fa-solid ${cat.icon || 'fa-folder'}"></i>
+                    </span>
+                    <div>
+                        <div class="flex items-center space-x-3">
+                            <h4 class="font-extrabold text-slate-900 dark:text-white text-lg">${escapeHtml(cat.label)}</h4>
+                            <span class="text-xs px-3 py-1 rounded-full bg-slate-900 text-white dark:bg-white dark:text-slate-900 font-bold shadow-xs">${categoryResources.length} ลิงก์</span>
+                        </div>
+                        <p class="text-xs font-medium text-slate-600 dark:text-slate-300 mt-1">${escapeHtml(cat.desc || 'ไม่มีคำอธิบายหมวดหมู่')}</p>
+                    </div>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 self-end sm:self-center">
+                    <button onclick="openAddSubCategoryModal('${key}')" class="px-3.5 py-2 bg-indigo-50 dark:bg-indigo-950/80 hover:bg-indigo-600 hover:text-white text-indigo-700 dark:text-indigo-300 text-xs rounded-xl font-bold transition shadow-xs flex items-center space-x-1.5 cursor-pointer border border-indigo-200 dark:border-indigo-800">
+                        <i class="fa-solid fa-folder-plus"></i><span>เพิ่มหมวดหมู่ย่อย</span>
+                    </button>
+                    <button onclick="openAddResourceForCat('${key}')" class="px-3.5 py-2 bg-emerald-50 dark:bg-emerald-950/80 hover:bg-emerald-600 hover:text-white text-emerald-700 dark:text-emerald-300 text-xs rounded-xl font-bold transition shadow-xs flex items-center space-x-1.5 cursor-pointer border border-emerald-200 dark:border-emerald-800">
+                        <i class="fa-solid fa-plus"></i><span>เพิ่มลิงก์ที่นี่</span>
+                    </button>
+                    <button onclick="editCategory('${key}')" class="p-2.5 bg-slate-200 dark:bg-slate-750 hover:bg-blue-600 hover:text-white text-slate-700 dark:text-slate-300 rounded-xl transition cursor-pointer" title="แก้ไขหมวดหมู่"><i class="fa-solid fa-pen text-xs"></i></button>
+                    <button onclick="deleteCategory('${key}')" class="p-2.5 bg-slate-200 dark:bg-slate-750 hover:bg-red-600 hover:text-white text-slate-700 dark:text-slate-300 rounded-xl transition cursor-pointer" title="ลบหมวดหมู่"><i class="fa-solid fa-trash text-xs"></i></button>
+                </div>
+            `;
+            div.appendChild(headerDiv);
+
+            if (categoryResources.length > 0) {
+                const resGrid = document.createElement('div');
+                resGrid.className = "mt-5 pt-5 border-t-2 border-slate-200/80 dark:border-slate-700/80 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4";
+
+                categoryResources.forEach(res => {
+                    const resCard = document.createElement('div');
+                    resCard.className = "bg-white dark:bg-slate-900 hover:bg-blue-50/40 dark:hover:bg-slate-800 p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 shadow-xs flex flex-col justify-between transition group";
+
+                    let tagsHtml = res.tags && res.tags.length > 0 ? `<div class="flex flex-wrap gap-1.5 mt-2.5">` + res.tags.map(t => `<span class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] px-2.5 py-0.5 rounded-md font-semibold border border-slate-200 dark:border-slate-700">#${t}</span>`).join('') + `</div>` : '';
+
+                    resCard.innerHTML = `
+                        <div>
+                            <div class="flex items-start justify-between gap-2 mb-2">
+                                <h5 class="font-bold text-slate-900 dark:text-white text-sm line-clamp-1 group-hover:text-blue-600 transition">${escapeHtml(res.title)}</h5>
+                                <div class="flex items-center space-x-1 shrink-0">
+                                    <button onclick="openResourceModalWithId('${res.id}')" class="p-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-blue-600 hover:text-white text-slate-600 dark:text-slate-300 rounded-lg transition" title="แก้ไขลิงก์"><i class="fa-solid fa-pen text-[11px]"></i></button>
+                                    <button onclick="deleteResource('${res.id}')" class="p-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-red-600 hover:text-white text-slate-600 dark:text-slate-300 rounded-lg transition" title="ลบลิงก์"><i class="fa-solid fa-trash text-[11px]"></i></button>
+                                </div>
+                            </div>
+                            <p class="text-xs text-blue-600 dark:text-blue-400 font-medium truncate mb-2">${escapeHtml(res.url)}</p>
+                            ${tagsHtml}
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                            <span class="text-xs text-slate-500 dark:text-slate-400 italic truncate max-w-[130px]">${res.notes ? escapeHtml(res.notes) : 'ไม่มีบันทึกย่อ'}</span>
+                            <a href="${res.url}" target="_blank" class="inline-flex items-center space-x-1 px-3 py-1.5 bg-blue-600 text-white hover:bg-blue-700 rounded-xl text-xs font-bold transition shadow-xs">
+                                <span>เปิดลิงก์</span><i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                            </a>
+                        </div>
+                    `;
+                    resGrid.appendChild(resCard);
+                });
+                div.appendChild(resGrid);
+            }
+
+            if (children.length > 0) {
+                const childContainer = document.createElement('div');
+                childContainer.className = "mt-5 space-y-4";
+                children.forEach(([ck, cv]) => {
+                    const childNode = createTreeNodeHtml(ck, cv, level + 1, searchTerm);
+                    if (childNode) childContainer.appendChild(childNode);
+                });
+                div.appendChild(childContainer);
+            }
+
+            return div;
+        }
+
+        function populateCategorySelects() {
+            const parentSelect = document.getElementById('catParent');
+            const resSelect = document.getElementById('resCategory');
+
+            let parentOpts = '<option value="">-- เป็นหมวดหมู่หลัก (Root) --</option>';
+            let resOpts = '';
+
+            for (const [key, cat] of Object.entries(window.categories)) {
+                parentOpts += `<option value="${key}">${cat.label}</option>`;
+                resOpts += `<option value="${key}">${cat.label}</option>`;
+            }
+
+            parentSelect.innerHTML = parentOpts;
+            resSelect.innerHTML = resOpts;
+        }
+
+        window.openCategoryModal = function () {
+            document.getElementById('catModalTitle').innerText = 'เพิ่มหมวดหมู่ใหม่';
+            document.getElementById('categoryForm').reset();
+            document.getElementById('catOriginalKey').value = '';
+            document.getElementById('catParent').value = '';
+            document.getElementById('categoryModal').classList.remove('hidden');
+        };
+
+        window.openAddSubCategoryModal = function (parentKey) {
+            openCategoryModal();
+            document.getElementById('catParent').value = parentKey;
+            document.getElementById('catModalTitle').innerText = `เพิ่มหมวดหมู่ย่อยภายใต้ "${window.categories[parentKey]?.label || parentKey}"`;
+        };
+
+        window.closeCategoryModal = function () {
+            document.getElementById('categoryModal').classList.add('hidden');
+        };
+
+        window.editCategory = function (key) {
+            const cat = window.categories[key];
+            if (!cat) return;
+            document.getElementById('catModalTitle').innerText = 'แก้ไขหมวดหมู่';
+            document.getElementById('catOriginalKey').value = key;
+            document.getElementById('catParent').value = cat.parent || '';
+            document.getElementById('catLabel').value = cat.label;
+            document.getElementById('catIcon').value = cat.icon || 'fa-folder';
+            document.getElementById('catDesc').value = cat.desc || '';
+            document.getElementById('categoryModal').classList.remove('hidden');
+        };
+
+        window.saveCategory = async function (e) {
+            e.preventDefault();
+            const originalKey = document.getElementById('catOriginalKey').value;
+            const parent = document.getElementById('catParent').value;
+            const label = document.getElementById('catLabel').value.trim();
+            const icon = document.getElementById('catIcon').value.trim();
+            const desc = document.getElementById('catDesc').value.trim();
+
+            // Automatically generate a unique key if creating new category
+            const key = originalKey || ('cat-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4));
+            const catData = { label, icon, desc, parent };
+
+            if (!userId) {
+                window.categories[key] = catData;
+                saveDataLocal();
+                updateAdminUI();
+                closeCategoryModal();
+                showToast('บันทึกหมวดหมู่เรียบร้อย');
+                return;
+            }
+
+            try {
+                await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'categories', key), catData);
+                closeCategoryModal();
+                showToast('บันทึกหมวดหมู่เรียบร้อย');
+            } catch (err) {
+                console.error("Save category error:", err);
+                showToast('เกิดข้อผิดพลาด', 'fa-circle-exclamation', 'text-red-400');
+            }
+        };
+
+        window.deleteCategory = async function (key) {
+            if (confirm(`คุณต้องการลบหมวดหมู่ "${key}" หรือไม่?`)) {
+                if (!userId) {
+                    delete window.categories[key];
+                    saveDataLocal();
+                    updateAdminUI();
+                    showToast('ลบหมวดหมู่เรียบร้อย');
+                    return;
+                }
+                try {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'categories', key));
+                    showToast('ลบหมวดหมู่เรียบร้อย');
+                } catch (err) {
+                    console.error("Delete category error:", err);
+                }
+            }
+        };
+
+        window.openResourceModal = function () {
+            document.getElementById('resModalTitle').innerText = 'เพิ่มรายการแหล่งข้อมูลใหม่';
+            document.getElementById('resourceForm').reset();
+            document.getElementById('resId').value = '';
+            document.getElementById('resourceModal').classList.remove('hidden');
+        };
+
+        window.openAddResourceForCat = function (catKey) {
+            openResourceModal();
+            document.getElementById('resCategory').value = catKey;
+        };
+
+        window.openResourceModalWithId = function (id) {
+            const item = window.resources.find(r => r.id === id);
+            if (!item) return;
+            document.getElementById('resModalTitle').innerText = 'แก้ไขรายการแหล่งข้อมูล';
+            document.getElementById('resId').value = item.id;
+            document.getElementById('resTitle').value = item.title;
+            document.getElementById('resUrl').value = item.url;
+            document.getElementById('resCategory').value = item.category;
+            document.getElementById('resTags').value = item.tags ? item.tags.join(', ') : '';
+            document.getElementById('resNotes').value = item.notes || '';
+            document.getElementById('resourceModal').classList.remove('hidden');
+        };
+
+        window.closeResourceModal = function () {
+            document.getElementById('resourceModal').classList.add('hidden');
+        };
+
+        window.saveResource = async function (e) {
+            e.preventDefault();
+            const id = document.getElementById('resId').value;
+            const title = document.getElementById('resTitle').value.trim();
+            const url = document.getElementById('resUrl').value.trim();
+            const category = document.getElementById('resCategory').value;
+            const tagsRaw = document.getElementById('resTags').value;
+            const notes = document.getElementById('resNotes').value.trim();
+            const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [];
+
+            const docId = id || ('res-' + Date.now());
+            const resData = {
+                id: docId,
+                title,
+                url,
+                category,
+                tags,
+                notes,
+                createdAt: id ? (window.resources.find(r => r.id === id)?.createdAt || new Date().toISOString()) : new Date().toISOString()
+            };
+
+            if (!userId) {
+                const idx = window.resources.findIndex(r => r.id === docId);
+                if (idx >= 0) window.resources[idx] = resData;
+                else window.resources.unshift(resData);
+                saveDataLocal();
+                updateAdminUI();
+                closeResourceModal();
+                showToast('บันทึกรายการสำเร็จ');
+                return;
+            }
+
+            try {
+                await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'resources', docId), resData);
+                closeResourceModal();
+                showToast('บันทึกรายการสำเร็จ');
+            } catch (err) {
+                console.error("Save resource error:", err);
+                showToast('บันทึกไม่สำเร็จ', 'fa-circle-exclamation', 'text-red-400');
+            }
+        };
+
+        window.deleteResource = async function (id) {
+            if (confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?')) {
+                if (!userId) {
+                    window.resources = window.resources.filter(r => r.id !== id);
+                    saveDataLocal();
+                    updateAdminUI();
+                    showToast('ลบรายการเรียบร้อย');
+                    return;
+                }
+                try {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'resources', id));
+                    showToast('ลบรายการเรียบร้อย');
+                } catch (err) {
+                    console.error("Delete resource error:", err);
+                }
+            }
+        };
+
+        window.exportAllData = function () {
+            const exportObj = { categories: window.categories, resources: window.resources };
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj, null, 2));
+            const dl = document.createElement('a');
+            dl.setAttribute("href", dataStr);
+            dl.setAttribute("download", `resourcehub_full_backup_${new Date().toISOString().slice(0, 10)}.json`);
+            document.body.appendChild(dl);
+            dl.click();
+            dl.remove();
+            showToast('สำรองข้อมูลสำเร็จ');
+        };
+
+        window.importAllData = function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function (evt) {
+                try {
+                    const parsed = JSON.parse(evt.target.result);
+                    if (parsed.categories && parsed.resources) {
+                        if (!userId) {
+                            window.categories = parsed.categories;
+                            window.resources = parsed.resources;
+                            saveDataLocal();
+                            updateAdminUI();
+                            showToast('นำเข้าข้อมูลสำเร็จ');
+                            return;
+                        }
+                        for (const [k, v] of Object.entries(parsed.categories)) {
+                            await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'categories', k), v);
+                        }
+                        for (const r of parsed.resources) {
+                            await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'resources', r.id), r);
+                        }
+                        showToast('นำเข้าข้อมูลสำเร็จ');
+                    } else {
+                        showToast('รูปแบบไฟล์ไม่ถูกต้อง', 'fa-circle-exclamation', 'text-red-400');
+                    }
+                } catch (err) {
+                    showToast('อ่านไฟล์ไม่สำเร็จ', 'fa-circle-exclamation', 'text-red-400');
+                }
+            };
+            reader.readAsText(file);
+        };
+
+        function showToast(msg, icon = 'fa-circle-check', color = 'text-emerald-400') {
+            const t = document.getElementById('toast');
+            document.getElementById('toastMsg').innerText = msg;
+            document.getElementById('toastIcon').className = `fa-solid ${icon} ${color}`;
+            t.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 3000);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+        }
+
+        init();
+    </script>
+</body>
+
+</html>
+```
+eof
+
+I have completely revamped the UI in **`admin.html`** with a clean, modern workspace layout. Every category now clearly
+displays its nested subcategories and resource cards in an organized grid, complete with one-click buttons to add
+subcategories or links directly to that specific section.
