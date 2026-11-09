@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="th" class="h-full">
 <head>
     <meta charset="UTF-8">
@@ -234,7 +234,6 @@
             allBtn.innerHTML = `<div class="flex items-center space-x-2.5"><i class="fa-solid fa-border-all w-4 text-center ${isAllActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400'}"></i><span>ทั้งหมด</span></div><span class="px-2 py-0.5 rounded-full ${isAllActive ? 'bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'}">${allCount}</span>`;
             container.appendChild(allBtn);
 
-            // Render categories as dropdown collapsible tree accordion
             const renderCategoryNode = (parentKey, level, parentContainer) => {
                 const subCats = Object.entries(window.categories).filter(([k, v]) => (v.parent || '') === parentKey);
                 subCats.forEach(([key, cat]) => {
@@ -324,7 +323,6 @@
 
             let filteredResources = [...window.resources];
             if (window.currentFilterCategory !== 'all') {
-                // Include category and all its nested subcategories recursively
                 const getSubCategoryKeys = (parentKey) => {
                     let keys = [parentKey];
                     for (const [k, v] of Object.entries(window.categories)) {
@@ -368,7 +366,6 @@
             emptyState.classList.add('hidden');
             container.classList.remove('hidden');
 
-            // If viewing a specific category or searching, let's group by category or render tree sections
             const categoriesToDisplay = window.currentFilterCategory === 'all' 
                 ? Object.entries(window.categories).filter(([k, v]) => !v.parent || v.parent === '')
                 : [[window.currentFilterCategory, window.categories[window.currentFilterCategory]]];
@@ -385,7 +382,6 @@
             const children = Object.entries(window.categories).filter(([k, v]) => v.parent === key);
             const catRes = filteredRes.filter(r => r.category === key);
 
-            // If this category and its children have no matching resources, skip
             const hasChildrenMatch = children.some(([ck, cv]) => {
                 const subSec = createCategorySectionHtml(ck, cv, filteredRes, level + 1);
                 return subSec !== null;
