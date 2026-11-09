@@ -221,17 +221,18 @@
         import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyB3kPHRDHeYd6rjspNjCH11QG7T2bTd7PM",
-            authDomain: "stickey-note-6bb95.firebaseapp.com",
-            projectId: "stickey-note-6bb95",
-            storageBucket: "stickey-note-6bb95.firebasestorage.app",
-            messagingSenderId: "266704545369",
-            appId: "1:266704545369:web:e403d47f324a91234a3348",
-            measurementId: "G-S737QPN1D1"
+            apiKey: "AIzaSyBfz9eZVukWm8JaarG7FrM9Riq8sds-teU",
+            authDomain: "len-html.firebaseapp.com",
+            databaseURL: "https://len-html-default-rtdb.firebaseio.com",
+            projectId: "len-html",
+            storageBucket: "len-html.firebasestorage.app",
+            messagingSenderId: "128154153096",
+            appId: "1:128154153096:web:39554e3a5b401f05682f3d",
+            measurementId: "G-DY3Q28G20F"
         };
 
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-resource-hub';
-        let db, userId = null;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'resourcehub-system-v1';
+        let db;
 
         const defaultCategories = {
             facebook_group: { label: "Facebook Groups", icon: "fa-users-rectangle", desc: "กลุ่ม Facebook ทั่วไป", parent: "" },
@@ -281,7 +282,6 @@
                 db = getFirestore(app);
                 const auth = getAuth(app);
                 await signInAnonymously(auth);
-                userId = auth.currentUser ? auth.currentUser.uid : 'anon-admin';
                 document.getElementById('syncStatus').innerHTML = `<span class="w-1.5 h-1.5 mr-1.5 bg-emerald-400 rounded-full"></span> คลาวด์ซิงค์แล้ว`;
                 startListeners();
             } catch (err) {
@@ -291,12 +291,13 @@
         }
 
         function startListeners() {
-            onSnapshot(collection(db, 'artifacts', appId, 'users', userId, 'categories'), snap => {
+            // ซิงค์ที่ Path กลาง (ตัด users/userId ออก)
+            onSnapshot(collection(db, 'artifacts', appId, 'categories'), snap => {
                 const cats = {};
                 snap.forEach(d => { cats[d.id] = d.data(); });
                 if (Object.keys(cats).length === 0) {
                     for (const [k, v] of Object.entries(defaultCategories)) {
-                        setDoc(doc(db, 'artifacts', appId, 'users', userId, 'categories', k), v);
+                        setDoc(doc(db, 'artifacts', appId, 'categories', k), v);
                     }
                 } else {
                     window.categories = cats;
@@ -304,12 +305,12 @@
                 updateAdminUI();
             });
 
-            onSnapshot(collection(db, 'artifacts', appId, 'users', userId, 'resources'), snap => {
+            onSnapshot(collection(db, 'artifacts', appId, 'resources'), snap => {
                 const res = [];
                 snap.forEach(d => { res.push({ id: d.id, ...d.data() }); });
                 if (res.length === 0 && window.resources.length === 0) {
                     defaultResources.forEach(r => {
-                        setDoc(doc(db, 'artifacts', appId, 'users', userId, 'resources', r.id), r);
+                        setDoc(doc(db, 'artifacts', appId, 'resources', r.id), r);
                     });
                 } else {
                     window.resources = res;
@@ -371,7 +372,6 @@
 
             if (!matchesSearch && searchTerm !== '') return null;
 
-            // Distinct background styling based on depth level to avoid color blending
             let levelBg = "bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 shadow-sm";
             let accentBorder = "border-l-8 border-l-blue-600 dark:border-l-blue-500";
             let iconBoxBg = "bg-blue-600 text-white shadow-md shadow-blue-500/30";
@@ -518,21 +518,17 @@
             const icon = document.getElementById('catIcon').value.trim();
             const desc = document.getElementById('catDesc').value.trim();
 
-            // Automatically generate a unique key if creating new category
             const key = originalKey || ('cat-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4));
             const catData = { label, icon, desc, parent };
 
-            if (!userId) {
-                window.categories[key] = catData;
-                saveDataLocal();
-                updateAdminUI();
-                closeCategoryModal();
-                showToast('บันทึกหมวดหมู่เรียบร้อย');
-                return;
-            }
-
             try {
-                await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'categories', key), catData);
+                if (db) {
+                    await setDoc(doc(db, 'artifacts', appId, 'categories', key), catData);
+                } else {
+                    window.categories[key] = catData;
+                    saveDataLocal();
+                    updateAdminUI();
+                }
                 closeCategoryModal();
                 showToast('บันทึกหมวดหมู่เรียบร้อย');
             } catch (err) {
@@ -543,15 +539,14 @@
 
         window.deleteCategory = async function(key) {
             if (confirm(`คุณต้องการลบหมวดหมู่ "${key}" หรือไม่?`)) {
-                if (!userId) {
-                    delete window.categories[key];
-                    saveDataLocal();
-                    updateAdminUI();
-                    showToast('ลบหมวดหมู่เรียบร้อย');
-                    return;
-                }
                 try {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'categories', key));
+                    if (db) {
+                        await deleteDoc(doc(db, 'artifacts', appId, 'categories', key));
+                    } else {
+                        delete window.categories[key];
+                        saveDataLocal();
+                        updateAdminUI();
+                    }
                     showToast('ลบหมวดหมู่เรียบร้อย');
                 } catch (err) {
                     console.error("Delete category error:", err);
@@ -609,19 +604,16 @@
                 createdAt: id ? (window.resources.find(r => r.id === id)?.createdAt || new Date().toISOString()) : new Date().toISOString()
             };
 
-            if (!userId) {
-                const idx = window.resources.findIndex(r => r.id === docId);
-                if (idx >= 0) window.resources[idx] = resData;
-                else window.resources.unshift(resData);
-                saveDataLocal();
-                updateAdminUI();
-                closeResourceModal();
-                showToast('บันทึกรายการสำเร็จ');
-                return;
-            }
-
             try {
-                await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'resources', docId), resData);
+                if (db) {
+                    await setDoc(doc(db, 'artifacts', appId, 'resources', docId), resData);
+                } else {
+                    const idx = window.resources.findIndex(r => r.id === docId);
+                    if (idx >= 0) window.resources[idx] = resData;
+                    else window.resources.unshift(resData);
+                    saveDataLocal();
+                    updateAdminUI();
+                }
                 closeResourceModal();
                 showToast('บันทึกรายการสำเร็จ');
             } catch (err) {
@@ -632,15 +624,14 @@
 
         window.deleteResource = async function(id) {
             if (confirm('คุณต้องการลบรายการนี้ใช่หรือไม่?')) {
-                if (!userId) {
-                    window.resources = window.resources.filter(r => r.id !== id);
-                    saveDataLocal();
-                    updateAdminUI();
-                    showToast('ลบรายการเรียบร้อย');
-                    return;
-                }
                 try {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'resources', id));
+                    if (db) {
+                        await deleteDoc(doc(db, 'artifacts', appId, 'resources', id));
+                    } else {
+                        window.resources = window.resources.filter(r => r.id !== id);
+                        saveDataLocal();
+                        updateAdminUI();
+                    }
                     showToast('ลบรายการเรียบร้อย');
                 } catch (err) {
                     console.error("Delete resource error:", err);
@@ -668,19 +659,18 @@
                 try {
                     const parsed = JSON.parse(evt.target.result);
                     if (parsed.categories && parsed.resources) {
-                        if (!userId) {
+                        if (db) {
+                            for (const [k, v] of Object.entries(parsed.categories)) {
+                                await setDoc(doc(db, 'artifacts', appId, 'categories', k), v);
+                            }
+                            for (const r of parsed.resources) {
+                                await setDoc(doc(db, 'artifacts', appId, 'resources', r.id), r);
+                            }
+                        } else {
                             window.categories = parsed.categories;
                             window.resources = parsed.resources;
                             saveDataLocal();
                             updateAdminUI();
-                            showToast('นำเข้าข้อมูลสำเร็จ');
-                            return;
-                        }
-                        for (const [k, v] of Object.entries(parsed.categories)) {
-                            await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'categories', k), v);
-                        }
-                        for (const r of parsed.resources) {
-                            await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'resources', r.id), r);
                         }
                         showToast('นำเข้าข้อมูลสำเร็จ');
                     } else {
@@ -710,7 +700,3 @@
     </script>
 </body>
 </html>
-```
-eof
-
-I have completely revamped the UI in **`admin.html`** with a clean, modern workspace layout. Every category now clearly displays its nested subcategories and resource cards in an organized grid, complete with one-click buttons to add subcategories or links directly to that specific section.

@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="th" class="h-full">
 <head>
     <meta charset="UTF-8">
@@ -42,6 +42,11 @@
             </div>
             
             <div class="flex items-center space-x-3">
+                <!-- Sync Button Added -->
+                <button onclick="manualSyncData()" title="ซิงค์ข้อมูลล่าสุด" class="p-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl border border-slate-200 dark:border-slate-700 transition cursor-pointer flex items-center space-x-1.5">
+                    <i class="fa-solid fa-rotate text-sm" id="syncIcon"></i>
+                    <span class="text-xs font-semibold hidden sm:inline">ซิงค์ข้อมูล</span>
+                </button>
                 <!-- Dark Mode Toggle -->
                 <button onclick="toggleDarkMode()" id="darkModeToggle" title="สลับโหมดสว่าง/มืด" class="p-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl border border-slate-200 dark:border-slate-700 transition cursor-pointer">
                     <i class="fa-solid fa-moon text-sm" id="darkModeIcon"></i>
@@ -116,7 +121,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBfz9eZVukWm8JaarG7FrM9Riq8sds-teU",
@@ -135,6 +140,8 @@
         window.categories = {};
         window.resources = [];
         window.currentFilterCategory = 'all';
+        // เก็บสถานะการเปิด-ปิดของหมวดหมู่ย่อย เพื่อไม่ให้หลุดหรือปิดเองตอนรีเรนเดอร์
+        window.openCategoriesState = JSON.parse(localStorage.getItem('rh_open_cats') || '{}');
 
         const defaultCategories = {
             facebook_group: { label: "Facebook Groups", icon: "fa-users-rectangle", desc: "กลุ่ม Facebook ทั่วไป", parent: "" },
@@ -190,7 +197,6 @@
         }
 
         function startListeners() {
-            // ซิงค์ที่ Path กลาง (ตัด users/userId ออก)
             onSnapshot(collection(db, 'artifacts', appId, 'categories'), snap => {
                 const cats = {};
                 snap.forEach(d => { cats[d.id] = d.data(); });
@@ -220,6 +226,36 @@
             });
         }
 
+        // ฟังก์ชันกดซิงค์ข้อมูลด้วยตนเอง
+        window.manualSyncData = async function() {
+            const syncIcon = document.getElementById('syncIcon');
+            syncIcon.classList.add('fa-spin');
+            showToast('กำลังซิงค์ข้อมูล...', 'fa-rotate', 'text-blue-400');
+            try {
+                if (db) {
+                    const catSnap = await getDocs(collection(db, 'artifacts', appId, 'categories'));
+                    const cats = {};
+                    catSnap.forEach(d => { cats[d.id] = d.data(); });
+                    if (Object.keys(cats).length > 0) window.categories = cats;
+
+                    const resSnap = await getDocs(collection(db, 'artifacts', appId, 'resources'));
+                    const res = [];
+                    resSnap.forEach(d => { res.push({ id: d.id, ...d.data() }); });
+                    if (res.length > 0) window.resources = res;
+
+                    renderCategorySidebar();
+                    filterResources();
+                }
+                setTimeout(() => {
+                    syncIcon.classList.remove('fa-spin');
+                    showToast('ซิงค์ข้อมูลสำเร็จ');
+                }, 500);
+            } catch (err) {
+                syncIcon.classList.remove('fa-spin');
+                showToast('ซิงค์ข้อมูลไม่สำเร็จ', 'fa-circle-exclamation', 'text-red-400');
+            }
+        };
+
         function loadLocalFallback() {
             const savedCats = localStorage.getItem('rh_admin_categories');
             window.categories = savedCats ? JSON.parse(savedCats) : defaultCategories;
@@ -247,6 +283,7 @@
                     const count = window.resources.filter(r => r.category === key).length;
                     const isActive = window.currentFilterCategory === key;
                     const hasChildren = Object.values(window.categories).some(v => v.parent === key);
+                    const isOpen = window.openCategoriesState[key] === true; // ล็อคสถานะเปิด-ปิด
 
                     const nodeWrapper = document.createElement('div');
                     nodeWrapper.className = level > 0 ? 'ml-3 pl-2 border-l border-slate-200 dark:border-slate-800 space-y-1 mt-1' : 'space-y-1 mt-1';
@@ -277,17 +314,21 @@
                     if (hasChildren) {
                         const toggleBtn = document.createElement('button');
                         toggleBtn.className = 'w-6 h-6 flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-lg transition';
-                        toggleBtn.innerHTML = `<i class="fa-solid fa-chevron-down text-[10px] transition-transform duration-200" id="icon-${key}"></i>`;
+                        toggleBtn.innerHTML = `<i class="fa-solid fa-chevron-down text-[10px] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}" id="icon-${key}"></i>`;
                         
                         const childrenContainer = document.createElement('div');
                         childrenContainer.id = `children-${key}`;
-                        childrenContainer.className = 'space-y-1 hidden';
+                        childrenContainer.className = `space-y-1 ${isOpen ? '' : 'hidden'}`; // คงสถานะเปิด/ปิดไม่ให้ยุบเอง
 
                         toggleBtn.onclick = (e) => {
                             e.stopPropagation();
                             childrenContainer.classList.toggle('hidden');
                             const icon = toggleBtn.querySelector('i');
                             icon.classList.toggle('rotate-180');
+                            
+                            // บันทึกสถานะการเปิด/ปิดลง LocalStorage
+                            window.openCategoriesState[key] = !childrenContainer.classList.contains('hidden');
+                            localStorage.setItem('rh_open_cats', JSON.stringify(window.openCategoriesState));
                         };
 
                         rightDiv.appendChild(toggleBtn);
