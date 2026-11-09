@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="th" class="h-full">
 <head>
     <meta charset="UTF-8">
@@ -129,9 +129,8 @@
             measurementId: "G-DY3Q28G20F"
         };
 
-        // ใช้ appId เดียวกันกับหน้า admin.html
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'resourcehub-system-v1';
-        let db, userId = null;
+        let db;
 
         window.categories = {};
         window.resources = [];
@@ -182,7 +181,6 @@
                 db = getFirestore(app);
                 const auth = getAuth(app);
                 await signInAnonymously(auth);
-                userId = auth.currentUser ? auth.currentUser.uid : 'anon-user';
                 document.getElementById('syncStatus').innerHTML = `<span class="w-1.5 h-1.5 mr-1 bg-emerald-400 rounded-full"></span> ซิงค์แล้ว`;
                 startListeners();
             } catch (err) {
@@ -192,12 +190,13 @@
         }
 
         function startListeners() {
-            onSnapshot(collection(db, 'artifacts', appId, 'users', userId, 'categories'), snap => {
+            // ซิงค์ที่ Path กลาง (ตัด users/userId ออก)
+            onSnapshot(collection(db, 'artifacts', appId, 'categories'), snap => {
                 const cats = {};
                 snap.forEach(d => { cats[d.id] = d.data(); });
                 if (Object.keys(cats).length === 0) {
                     for (const [k, v] of Object.entries(defaultCategories)) {
-                        setDoc(doc(db, 'artifacts', appId, 'users', userId, 'categories', k), v);
+                        setDoc(doc(db, 'artifacts', appId, 'categories', k), v);
                     }
                 } else {
                     window.categories = cats;
@@ -206,12 +205,12 @@
                 filterResources();
             });
 
-            onSnapshot(collection(db, 'artifacts', appId, 'users', userId, 'resources'), snap => {
+            onSnapshot(collection(db, 'artifacts', appId, 'resources'), snap => {
                 const res = [];
                 snap.forEach(d => { res.push({ id: d.id, ...d.data() }); });
                 if (res.length === 0 && window.resources.length === 0) {
                     defaultResources.forEach(r => {
-                        setDoc(doc(db, 'artifacts', appId, 'users', userId, 'resources', r.id), r);
+                        setDoc(doc(db, 'artifacts', appId, 'resources', r.id), r);
                     });
                 } else {
                     window.resources = res;
