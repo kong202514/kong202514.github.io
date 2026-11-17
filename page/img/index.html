@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>วางรูปจากคลิปบอร์ด & ดาวน์โหลด PNG</title>
+    <!-- โหลด Tailwind CSS สำหรับตกแต่ง UI -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- โหลดฟอนต์ Prompt และ Inter เพื่อความสวยงามและอ่านง่าย -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Prompt', 'Inter', sans-serif;
+        }
+        /* ลวดลายตารางหมากรุกสำหรับพื้นหลังรูปโปร่งใส */
+        .checkerboard {
+            background-color: #f8fafc;
+            background-image: 
+                linear-gradient(45deg, #e2e8f0 25%, transparent 25%), 
+                linear-gradient(-45deg, #e2e8f0 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, #e2e8f0 75%), 
+                linear-gradient(-45deg, transparent 75%, #e2e8f0 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        }
+        .dark .checkerboard {
+            background-color: #1e293b;
+            background-image: 
+                linear-gradient(45deg, #334155 25%, transparent 25%), 
+                linear-gradient(-45deg, #334155 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, #334155 75%), 
+                linear-gradient(-45deg, transparent 75%, #334155 75%);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 min-h-screen flex flex-col justify-between transition-colors duration-200">
+
+    <!-- ส่วนหัวของเว็บไซต์ -->
+    <header class="w-full max-w-4xl mx-auto pt-8 pb-4 px-4 sm:px-6 text-center">
+        <div class="inline-flex items-center justify-center p-3 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-2xl mb-4 shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+        </div>
+        <h1 class="text-2xl sm:text-4xl font-bold tracking-tight text-slate-900 dark:text-white mb-2">
+            Clipboard to PNG
+        </h1>
+        <p class="text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-xl mx-auto">
+            คัดลอกรูปภาพหรือแคปหน้าจอ แล้วกด <kbd class="px-2 py-1 text-xs font-semibold text-slate-800 bg-slate-200 border border-slate-300 rounded-lg dark:bg-slate-700 dark:text-slate-200 dark:border-slate-600">Ctrl + V</kbd> หรือ <kbd class="px-2 py-1 text-xs font-semibold text-slate-800 bg-slate-200 border border-slate-300 rounded-lg dark:bg-slate-700 dark:text-slate-200 dark:border-slate-600">⌘ + V</kbd> เพื่อวางและดาวน์โหลดเป็นไฟล์ PNG ได้ทันที
+        </p>
+    </header>
+
+    <!-- พื้นที่ทำงานหลัก -->
+    <main class="flex-grow w-full max-w-4xl mx-auto px-4 sm:px-6 py-4 flex flex-col items-center">
+        
+        <!-- กล่องแจ้งเตือนสถานะ (แทนการใช้ alert) -->
+        <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+        <!-- พื้นที่สำหรับวางรูปภาพ (Drop / Paste Zone) -->
+        <div id="paste-zone" tabindex="0" class="w-full bg-white dark:bg-slate-800 rounded-3xl shadow-xl border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-indigo-500 dark:hover:border-indigo-400 focus:border-indigo-500 focus:outline-none transition-all duration-200 p-6 sm:p-10 flex flex-col items-center justify-center min-h-[340px] relative overflow-hidden group">
+            
+            <!-- สถานะเริ่มต้น: ยังไม่มีรูปภาพ -->
+            <div id="empty-state" class="flex flex-col items-center text-center max-w-md">
+                <div class="w-16 h-16 bg-slate-100 dark:bg-slate-700/70 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-200 text-slate-500 dark:text-slate-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                </div>
+                <h2 class="text-lg sm:text-xl font-semibold text-slate-800 dark:text-white mb-2">
+                    วางรูปภาพของคุณที่นี่
+                </h2>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">
+                    กดปุ่มลัด Ctrl+V บนคีย์บอร์ด หรือคลิกปุ่มด้านล่างเพื่อดึงรูปจากคลิปบอร์ด
+                </p>
+
+                <!-- ปุ่มกดวางจากคลิปบอร์ดโดยตรง (รองรับมือถือและเมาส์คลิก) -->
+                <div class="flex flex-wrap items-center justify-center gap-3 w-full">
+                    <button id="btn-paste-clipboard" type="button" class="inline-flex items-center justify-center gap-2 px-5 py-3 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-medium rounded-xl shadow-md hover:shadow-lg transition-all duration-150 cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                        </svg>
+                        <span>วางรูปจากคลิปบอร์ด</span>
+                    </button>
+
+                    <label for="file-input" class="inline-flex items-center justify-center gap-2 px-5 py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium rounded-xl transition-all duration-150 cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                        </svg>
+                        <span>เลือกไฟล์รูป</span>
+                    </label>
+                    <input id="file-input" type="file" accept="image/*" class="hidden">
+                </div>
+            </div>
+
+            <!-- สถานะแสดงผลเมื่อมีรูปภาพแล้ว -->
+            <div id="preview-state" class="hidden w-full flex-col items-center">
+                <!-- กรอบแสดงตัวอย่างรูปภาพ -->
+                <div class="w-full max-h-[55vh] overflow-auto rounded-2xl border border-slate-200 dark:border-slate-700 checkerboard flex items-center justify-center p-2 mb-6 shadow-inner">
+                    <img id="preview-image" src="" alt="รูปภาพที่วางจากคลิปบอร์ด" class="max-w-full max-h-[50vh] object-contain rounded-lg shadow-sm">
+                </div>
+
+                <!-- แถบข้อมูลรูปภาพและตั้งชื่อไฟล์ -->
+                <div class="w-full bg-slate-50 dark:bg-slate-900/60 rounded-2xl p-4 border border-slate-200 dark:border-slate-700/80 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    
+                    <!-- รายละเอียดขนาดและช่องตั้งชื่อไฟล์ -->
+                    <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+                        <div class="flex items-center gap-2 bg-white dark:bg-slate-800 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 w-full sm:w-auto">
+                            <span class="text-xs font-medium text-slate-400">ชื่อไฟล์:</span>
+                            <input id="filename-input" type="text" value="clipboard-image" class="bg-transparent text-sm font-medium text-slate-800 dark:text-white focus:outline-none w-full sm:w-40" placeholder="ตั้งชื่อไฟล์">
+                            <span class="text-xs font-semibold text-indigo-600 dark:text-indigo-400">.png</span>
+                        </div>
+                        
+                        <div id="image-dimensions" class="text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-200/70 dark:bg-slate-800 px-3 py-2 rounded-xl whitespace-nowrap">
+                            ขนาด: - x - px
+                        </div>
+                    </div>
+
+                    <!-- ปุ่มจัดการ (ล้างรูปภาพ & ดาวน์โหลด PNG) -->
+                    <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+                        <button id="btn-clear" type="button" class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white hover:bg-rose-50 dark:bg-slate-800 dark:hover:bg-rose-950/40 text-slate-600 hover:text-rose-600 dark:text-slate-300 dark:hover:text-rose-400 border border-slate-200 dark:border-slate-700 font-medium rounded-xl transition-colors cursor-pointer">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            <span>ล้างรูป</span>
+                        </button>
+
+                        <button id="btn-download" type="button" class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            <span>ดาวน์โหลด PNG</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        
+        <!-- Canvas ลับสำหรับแปลงรูปภาพทุกชนิดให้เป็น PNG แท้ 100% -->
+        <canvas id="conversion-canvas" class="hidden"></canvas>
+    </main>
+
+    <!-- ส่วนท้ายเว็บไซต์ -->
+    <footer class="w-full max-w-4xl mx-auto py-6 px-4 text-center text-xs text-slate-400 dark:text-slate-500">
+        ประมวลผลบนเบราว์เซอร์ของคุณ 100% ไม่มีการอัปโหลดรูปภาพไปยังเซิร์ฟเวอร์ใดๆ
+    </footer>
+
+    <script>
+        // อ้างอิง Element ต่างๆ บนหน้าเว็บ
+        const pasteZone = document.getElementById('paste-zone');
+        const emptyState = document.getElementById('empty-state');
+        const previewState = document.getElementById('preview-state');
+        const previewImage = document.getElementById('preview-image');
+        const btnPasteClipboard = document.getElementById('btn-paste-clipboard');
+        const fileInput = document.getElementById('file-input');
+        const filenameInput = document.getElementById('filename-input');
+        const imageDimensions = document.getElementById('image-dimensions');
+        const btnClear = document.getElementById('btn-clear');
+        const btnDownload = document.getElementById('btn-download');
+        const canvas = document.getElementById('conversion-canvas');
+        const toastContainer = document.getElementById('toast-container');
+
+        // ตัวแปรเก็บ Data URL ของไฟล์ PNG ที่แปลงเสร็จแล้ว
+        let currentPngDataUrl = null;
+
+        /**
+         * ฟังก์ชันแสดงข้อความแจ้งเตือนแบบ Toast (ทดแทน alert)
+         * @param {string} message - ข้อความที่ต้องการแสดง
+         * @param {string} type - ประเภท ('success' | 'error' | 'info')
+         */
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            
+            const colors = {
+                success: 'bg-emerald-600 text-white',
+                error: 'bg-rose-600 text-white',
+                info: 'bg-slate-800 text-white dark:bg-slate-700'
+            };
+
+            toast.className = `${colors[type] || colors.info} px-4 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2 transform transition-all duration-300 translate-y-2 opacity-0`;
+            toast.textContent = message;
+
+            toastContainer.appendChild(toast);
+
+            // สั่งให้แสดงอนิเมชัน
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            });
+
+            // ลบออกอัตโนมัติหลังผ่านไป 3 วินาที
+            setTimeout(() => {
+                toast.classList.add('translate-y-2', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        /**
+         * สร้างชื่อไฟล์เริ่มต้นตามวันและเวลาปัจจุบัน
+         */
+        function generateDefaultFilename() {
+            const now = new Date();
+            const pad = (n) => String(n).padStart(2, '0');
+            const dateStr = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}`;
+            const timeStr = `${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+            return `image_${dateStr}_${timeStr}`;
+        }
+
+        /**
+         * ประมวลผล Blob หรือ File รูปภาพ และแปลงให้เป็น PNG ผ่าน Canvas
+         * @param {Blob|File} imageBlob - ข้อมูลไฟล์รูปภาพ
+         */
+        function processImageBlob(imageBlob) {
+            if (!imageBlob || !imageBlob.type.startsWith('image/')) {
+                showToast('ไม่พบข้อมูลรูปภาพที่รองรับ', 'error');
+                return;
+            }
+
+            const objectUrl = URL.createObjectURL(imageBlob);
+            const img = new Image();
+
+            img.onload = () => {
+                try {
+                    // ตั้งค่าขนาด Canvas ให้ตรงกับรูปภาพต้นฉบับ
+                    canvas.width = img.naturalWidth;
+                    canvas.height = img.naturalHeight;
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0);
+
+                    // แปลงเป็น PNG Data URL
+                    currentPngDataUrl = canvas.toDataURL('image/png');
+
+                    // อัปเดตหน้าจอแสดงผล
+                    previewImage.src = currentPngDataUrl;
+                    imageDimensions.textContent = `ขนาด: ${img.naturalWidth} × ${img.naturalHeight} px`;
+                    filenameInput.value = generateDefaultFilename();
+
+                    // สลับหน้าจอจาก Empty State เป็น Preview State
+                    emptyState.classList.add('hidden');
+                    previewState.classList.remove('hidden');
+                    previewState.classList.add('flex');
+
+                    showToast('วางรูปภาพสำเร็จ! พร้อมดาวน์โหลดเป็น PNG', 'success');
+                } catch (err) {
+                    console.error('Error converting image:', err);
+                    showToast('เกิดข้อผิดพลาดในการประมวลผลรูปภาพ', 'error');
+                } finally {
+                    URL.revokeObjectURL(objectUrl);
+                }
+            };
+
+            img.onerror = () => {
+                URL.revokeObjectURL(objectUrl);
+                showToast('ไม่สามารถอ่านไฟล์รูปภาพนี้ได้', 'error');
+            };
+
+            img.src = objectUrl;
+        }
+
+        /**
+         * ดักจับการกด Paste (Ctrl+V / Cmd+V) ทั่วทั้งหน้าเว็บ
+         */
+        window.addEventListener('paste', (event) => {
+            // หากกำลังพิมพ์ชื่อไฟล์ในช่อง input อยู่ ไม่ต้องดักจับการวางรูป
+            if (document.activeElement === filenameInput) return;
+
+            const items = (event.clipboardData || window.clipboardData)?.items;
+            if (!items) return;
+
+            let foundImage = false;
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf('image') !== -1) {
+                    const blob = items[i].getAsFile();
+                    if (blob) {
+                        event.preventDefault();
+                        processImageBlob(blob);
+                        foundImage = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!foundImage) {
+                showToast('ไม่พบรูปภาพในคลิปบอร์ดของคุณ', 'error');
+            }
+        });
+
+        /**
+         * ปุ่มกดอ่านข้อมูลจาก Clipboard API โดยตรง
+         */
+        btnPasteClipboard.addEventListener('click', async () => {
+            try {
+                if (!navigator.clipboard || !navigator.clipboard.read) {
+                    showToast('เบราว์เซอร์ไม่รองรับปุ่มวางอัตโนมัติ กรุณากด Ctrl+V แทน', 'info');
+                    return;
+                }
+
+                const clipboardItems = await navigator.clipboard.read();
+                let imageFound = false;
+
+                for (const item of clipboardItems) {
+                    const imageType = item.types.find(type => type.startsWith('image/'));
+                    if (imageType) {
+                        const blob = await item.getType(imageType);
+                        processImageBlob(blob);
+                        imageFound = true;
+                        break;
+                    }
+                }
+
+                if (!imageFound) {
+                    showToast('ไม่พบรูปภาพในคลิปบอร์ด กรุณาคัดลอกรูปภาพก่อน', 'error');
+                }
+            } catch (err) {
+                console.warn('Clipboard read permission denied or failed:', err);
+                showToast('กรุณากดปุ่ม Ctrl+V (หรือ Cmd+V) บนคีย์บอร์ดเพื่อวางรูป', 'info');
+            }
+        });
+
+        /**
+         * รองรับการเลือกไฟล์จากเครื่อง
+         */
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+                processImageBlob(file);
+            }
+            fileInput.value = ''; // รีเซ็ตเพื่อให้เลือกไฟล์เดิมซ้ำได้
+        });
+
+        /**
+         * รองรับการลากและวางไฟล์ (Drag & Drop)
+         */
+        pasteZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            pasteZone.classList.add('border-indigo-500', 'bg-indigo-50/40', 'dark:bg-indigo-950/20');
+        });
+
+        pasteZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            pasteZone.classList.remove('border-indigo-500', 'bg-indigo-50/40', 'dark:bg-indigo-950/20');
+        });
+
+        pasteZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            pasteZone.classList.remove('border-indigo-500', 'bg-indigo-50/40', 'dark:bg-indigo-950/20');
+            
+            const file = e.dataTransfer?.files?.[0];
+            if (file) {
+                processImageBlob(file);
+            }
+        });
+
+        /**
+         * ปุ่มดาวน์โหลดเป็นไฟล์ PNG
+         */
+        btnDownload.addEventListener('click', () => {
+            if (!currentPngDataUrl) {
+                showToast('ยังไม่มีรูปภาพสำหรับดาวน์โหลด', 'error');
+                return;
+            }
+
+            // จัดการชื่อไฟล์ให้ถูกต้องและลงท้ายด้วย .png เสมอ
+            let rawName = filenameInput.value.trim() || generateDefaultFilename();
+            rawName = rawName.replace(/\.png$/i, ''); // ตัด .png ออกก่อนหากผู้ใช้พิมพ์ติดมา
+            const finalFilename = `${rawName}.png`;
+
+            const link = document.createElement('a');
+            link.href = currentPngDataUrl;
+            link.download = finalFilename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showToast(`กำลังดาวน์โหลด "${finalFilename}"`, 'success');
+        });
+
+        /**
+         * ปุ่มล้างรูปภาพเพื่อเริ่มต้นใหม่
+         */
+        btnClear.addEventListener('click', () => {
+            currentPngDataUrl = null;
+            previewImage.src = '';
+            previewState.classList.add('hidden');
+            previewState.classList.remove('flex');
+            emptyState.classList.remove('hidden');
+            showToast('ล้างรูปภาพแล้ว', 'info');
+        });
+    </script>
+</body>
+</html>
